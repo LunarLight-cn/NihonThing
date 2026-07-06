@@ -1,4 +1,4 @@
-# 🇯🇵 NihonThing - Japan Import Goods Platform
+# NihonThing - Japan Import Goods Platform
 
 ![Hono](https://img.shields.io/badge/Hono-E36002?style=for-the-badge&logo=hono&logoColor=white)
 ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare%20Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
