@@ -29,121 +29,272 @@ Users can browse products, create custom item requests (tickets), place orders t
 
 ```mermaid
 erDiagram
-    Users ||--o{ Addresses : has
-    Users ||--o{ Orders : "places"
-    Users ||--o{ Orders : "sends (agent)"
-    Users ||--o{ Tickets : "requests (client)"
-    Users ||--o{ Tickets : "handles (agent)"
-    Users ||--o{ Purchases : "buys as agent"
-    Users ||--o{ Follows : follows
-
-    Countries ||--o{ Provinces : contains
-    Provinces ||--o{ Districts : contains
-    Districts ||--o{ Subdistricts : contains
-    Subdistricts ||--o{ Addresses : "used by"
-
-    Countries ||--o{ Ships : "origin"
-    Countries ||--o{ Ships : "destination"
-    Ships ||--o{ Orders : "assigned to"
-    Ships ||--o{ Tickets : "linked to"
-    Ships ||--o{ Events : "tied to"
-
-    Categories ||--o{ Products : categorizes
-    Products ||--o{ Order_Items : "ordered as"
-    Products ||--o{ Product_Locations : "available at"
-    Products ||--o{ Event_Products : "featured in"
-
-    Orders ||--o{ Order_Items : contains
-    Orders ||--o{ Payments : "paid via"
-    Orders }o--|| Addresses : "ships to"
-
-    Order_Items }o--o| Products : references
-    Order_Items }o--o| Tickets : references
-    Order_Items ||--o{ Purchases : "sourced by"
-
-    Tickets ||--o{ Payments : "paid via"
-
-    Areas ||--o{ Shops : contains
-    Areas ||--o{ Product_Locations : "located in"
-    Areas ||--o{ Events : "hosted in"
-
-    Shops ||--o{ Product_Locations : "sold at"
-    Shops ||--o{ Events : "hosted at"
-
-    Events ||--o{ Event_Products : showcases
-
     Users {
-        int id PK
-        varchar username
-        varchar email
-        varchar pass_hash
-        varchar role
-        date cdate
+        integer id PK
+        text username
+        text email UK
+        text password_hash
+        text birth_date
+        text gender
+        text role
+        text cdate
+        text udate
+    }
+
+    Addresses {
+        integer id PK
+        integer user_id FK
+        text title
+        text fullname
+        text surname
+        text tel
+        text address_line
+        integer subdistrict_id FK
+        text tag
+    }
+
+    Countries {
+        integer id PK
+        text name_th
+        text name_en
+        text name_jp
+    }
+
+    Provinces {
+        integer id PK
+        integer country_id FK
+        text name_th
+        text name_en
+        text name_jp
+    }
+
+    Districts {
+        integer id PK
+        integer province_id FK
+        text name_th
+        text name_en
+        text name_jp
+    }
+
+    Subdistricts {
+        integer id PK
+        integer district_id FK
+        text name_th
+        text name_en
+        text name_jp
+        text postal_code
     }
 
     Ships {
-        int id PK
-        varchar type
-        date ship_date
-        varchar track_no
-        varchar status
-        int origin_id FK
-        int destination_id FK
+        integer id PK
+        text type
+        text ship_date
+        text track_no
+        real ship_price
+        text courier_name
+        integer origin_id FK
+        integer destination_id FK
+        text max_cap
+        text current_cap
+        text status
+        text cdate
+        text udate
+    }
+
+    Categories {
+        integer id PK
+        text name_th
+        text name_en
+        text name_jp
     }
 
     Products {
-        int id PK
-        int category_id FK
-        varchar name
-        varchar brand
+        integer id PK
+        integer category_id FK
+        text name
+        text desc
+        text brand
         real price_tentative
-        varchar status
+        text img
+        text tag
+        integer amount
+        integer remain
+        text status
+        text cdate
+        text udate
     }
 
     Orders {
-        int id PK
-        int user_id FK
-        int trip_id FK
-        int address_id FK
+        integer id PK
+        integer user_id FK
+        integer trip_id FK
+        integer address_id FK
+        text deliv_date
+        text track_no
+        text courier_name
+        real item_price_total
+        real shipping_fee_jp_th
+        real shipping_fee_th_th
         real grand_total
-        varchar payment_status
-        varchar status
+        text payment_status
+        text status
+        integer sender_id FK
+        text shipped_date
+        text cdate
+        text udate
     }
 
     Order_Items {
-        int id PK
-        int order_id FK
-        int product_id FK
-        int ticket_id FK
+        integer id PK
+        integer order_id FK
+        integer ticket_id FK
+        integer product_id FK
         real final_price
-        int quantity
-    }
-
-    Tickets {
-        int id PK
-        int client_id FK
-        int agent_id FK
-        int trip_id FK
-        varchar item_name
-        varchar status
-    }
-
-    Payments {
-        int id PK
-        int order_id FK
-        int ticket_id FK
-        real amount
-        varchar payment_type
-        varchar status
+        integer quantity
+        integer missing
+        text udate
     }
 
     Purchases {
-        int id PK
-        int order_item_id FK
-        int agent_id FK
+        integer id PK
+        integer order_item_id FK
+        integer agent_id FK
+        integer quantity
         real actual_cost
-        int quantity
+        text shop_name
+        text receipt_img
+        text cdate
     }
+
+    Tickets {
+        integer id PK
+        integer client_id FK
+        integer agent_id FK
+        integer trip_id FK
+        text item_name
+        text brand
+        text shop_name
+        text area_name
+        text spec
+        text img
+        text external_link
+        text replacement
+        real expected_price
+        real proposed_price
+        text status
+        text cdate
+        text udate
+    }
+
+    Payments {
+        integer id PK
+        integer order_id FK
+        integer ticket_id FK
+        real amount
+        text payment_type
+        text method
+        text slip_img
+        text status
+        text easyslip_ref
+        text cdate
+    }
+
+    Areas {
+        integer id PK
+        text name_th
+        text name_en
+        text name_jp
+        text map_location
+    }
+
+    Shops {
+        integer id PK
+        integer area_id FK
+        text name
+        text map_location
+    }
+
+    Product_Locations {
+        integer id PK
+        integer product_id FK
+        integer area_id FK
+        integer shop_id FK
+    }
+
+    Events {
+        integer id PK
+        text title
+        text desc
+        text start_date
+        text end_date
+        text banner_img
+        integer trip_id FK
+        integer area_id FK
+        integer shop_id FK
+    }
+
+    Event_Products {
+        integer id PK
+        integer event_id FK
+        integer product_id FK
+    }
+
+    Follows {
+        integer id PK
+        integer user_id FK
+        text target_type
+        text target_brand
+        text target_product
+        text target_event
+        text cdate
+    }
+
+    %% Relationships
+    Users ||--o{ Addresses : "has"
+    Subdistricts ||--o{ Addresses : "located in"
+    
+    Countries ||--o{ Provinces : "has"
+    Provinces ||--o{ Districts : "has"
+    Districts ||--o{ Subdistricts : "has"
+    
+    Countries ||--o{ Ships : "origin"
+    Countries ||--o{ Ships : "destination"
+    
+    Categories ||--o{ Products : "categorizes"
+    
+    Users ||--o{ Orders : "customer"
+    Users ||--o{ Orders : "sender"
+    Ships ||--o{ Orders : "transports"
+    Addresses ||--o{ Orders : "delivered to"
+    
+    Orders ||--o{ Order_Items : "contains"
+    Tickets ||--o{ Order_Items : "fulfilled by"
+    Products ||--o{ Order_Items : "includes"
+    
+    Order_Items ||--o{ Purchases : "bought via"
+    Users ||--o{ Purchases : "agent"
+    
+    Users ||--o{ Tickets : "client"
+    Users ||--o{ Tickets : "agent"
+    Ships ||--o{ Tickets : "shipped via"
+    
+    Orders ||--o{ Payments : "paid by"
+    Tickets ||--o{ Payments : "paid by"
+    
+    Areas ||--o{ Shops : "contains"
+    
+    Products ||--o{ Product_Locations : "located at"
+    Areas ||--o{ Product_Locations : "located at"
+    Shops ||--o{ Product_Locations : "located at"
+    
+    Ships ||--o{ Events : "associated with"
+    Areas ||--o{ Events : "held at"
+    Shops ||--o{ Events : "held at"
+    
+    Events ||--o{ Event_Products : "features"
+    Products ||--o{ Event_Products : "featured in"
+    
+    Users ||--o{ Follows : "tracks"
 ```
 
 ## Project Structure
