@@ -1,6 +1,7 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { authGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { getOrderAmountForPayment, generatePromptPayQR, submitPaymentSlip, verifySlip } from '../models/payment.model'
+import { updateOrder } from '../models/order.model'
 
 const paymentRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; PROMPTPAY_ID: string; SLIP_VERIFY_API_KEY: string }; Variables: AuthVariables }>()
 
@@ -73,9 +74,11 @@ paymentRoutes.openapi(submitSlipRoute, async (c) => {
       easyslip_ref: verifyData.rawSlip?.transRef
     })
     
-    // Note: Here you would typically also update the Order's payment_status 
-    // e.g. from 'pending_deposit' to 'deposit_paid'
-    
+    // Update the Order's payment_status to 'deposit_paid'
+    await updateOrder(c.env.nihonthing_db, data.order_id, {
+      payment_status: 'deposit_paid'
+    })
+
     return c.json({ success: true, data: payment, verify_info: verifyData }, 201)
   } catch (error: any) {
     // If verification fails, we could save it as 'failed' or just reject the request.

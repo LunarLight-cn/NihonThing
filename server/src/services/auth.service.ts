@@ -6,6 +6,16 @@ import { hashPassword } from '../utils/hash'
 
 export const registerUser = async (d1: D1Database, username: string, email: string, pass: string, salt: string) => {
   const db = drizzle(d1, { schema })
+  
+  // Check for duplicate email before inserting
+  const existingUser = await db.query.Users.findFirst({
+    where: eq(schema.Users.email, email)
+  })
+
+  if (existingUser) {
+    throw new Error('This email is already registered.')
+  }
+
   const hashedPassword = await hashPassword(pass, salt)
 
   await db.insert(schema.Users).values({

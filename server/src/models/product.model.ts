@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/d1'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import * as schema from '../db/schema'
 
 export const getAllProducts = async (d1: D1Database) => {
@@ -17,16 +17,16 @@ export const getProductById = async (d1: D1Database, id: number) => {
   })
 }
 
-export const createProduct = async (d1: D1Database, data: any) => {
+export const createProduct = async (d1: D1Database, data: typeof schema.Products.$inferInsert) => {
   const db = drizzle(d1, { schema })
   return await db.insert(schema.Products).values(data).returning()
 }
 
-export const updateProduct = async (d1: D1Database, id: number, data: any) => {
+export const updateProduct = async (d1: D1Database, id: number, data: Partial<typeof schema.Products.$inferInsert>) => {
   const db = drizzle(d1, { schema })
   return await db
     .update(schema.Products)
-    .set(data)
+    .set({ ...data, udate: sql`CURRENT_TIMESTAMP` })
     .where(eq(schema.Products.id, id))
     .returning()
 }

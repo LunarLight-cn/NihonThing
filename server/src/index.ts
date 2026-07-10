@@ -1,5 +1,6 @@
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { swaggerUI } from '@hono/swagger-ui'
+import { cors } from 'hono/cors'
 import userRoutes from './routes/user.route'
 import authRoutes from './routes/auth.route'
 import productRoutes from './routes/product.route'
@@ -19,6 +20,12 @@ import locationRoutes from './routes/location.route'
 
 const app = new OpenAPIHono()
 
+app.use('*', cors())
+
+app.onError((err, c) => {
+  console.error(err)
+  return c.json({ success: false, message: err.message || 'Internal Server Error' }, 500)
+})
 app.openAPIRegistry.registerComponent('securitySchemes', 'Bearer', {
   type: 'http',
   scheme: 'bearer',
