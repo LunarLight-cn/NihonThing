@@ -58,7 +58,7 @@ export const verifySlip = async (apiKey: string, imageUrl: string, expectedAmoun
     body: formData
   })
   
-  const result = await thunderRes.json()
+  const result = (await thunderRes.json()) as any
   
   if (!thunderRes.ok || !result.success) {
     throw new Error(result?.error?.message || 'Slip verification failed')

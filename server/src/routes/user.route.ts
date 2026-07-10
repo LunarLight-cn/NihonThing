@@ -1,7 +1,7 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { fetchUsersList } from '../services/user.service'
 import { authGuard, AuthVariables } from '../middlewares/auth.middleware'
-import { updateUserProfile } from '../models/user.model'
+import { updateUserProfile, getUserById } from '../models/user.model'
 import addressRoutes from './address.route'
 
 const userRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database }; Variables: AuthVariables }>()
@@ -56,8 +56,13 @@ const getMeRoute = createRoute({
 
 userRoutes.openapi(getMeRoute, async (c) => {
   const user = c.get('user')
+  const profile = await getUserById(c.env.nihonthing_db, user.id)
 
-  return c.json({ success: true, message: `Hello ID: ${user.id} and role: ${user.role}` }, 200)
+  if (!profile) {
+    return c.json({ success: false, message: 'User not found' }, 404)
+  }
+
+  return c.json({ success: true, data: profile }, 200)
 })
 
 const UpdateProfileSchema = z.object({

@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/d1'
-import { eq, inArray } from 'drizzle-orm'
+import { eq, inArray, sql } from 'drizzle-orm'
 import * as schema from '../db/schema'
 
 export type OrderItemInput = {
@@ -84,11 +84,11 @@ export const getAllOrders = async (d1: D1Database) => {
   return await db.query.Orders.findMany()
 }
 
-export const updateOrder = async (d1: D1Database, id: number, data: any) => {
+export const updateOrder = async (d1: D1Database, id: number, data: Partial<typeof schema.Orders.$inferInsert>) => {
   const db = drizzle(d1, { schema })
   return await db
     .update(schema.Orders)
-    .set(data)
+    .set({ ...data, udate: sql`CURRENT_TIMESTAMP` })
     .where(eq(schema.Orders.id, id))
     .returning()
 }
