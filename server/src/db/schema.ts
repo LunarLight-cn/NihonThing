@@ -93,7 +93,7 @@ export const Products = sqliteTable("Products", {
   tag: text("tag"),
   amount: integer("amount"),
   remain: integer("remain"),
-  status: text("status"), // TODO: add enum
+  status: text("status", { enum: ["active", "inactive", "out_of_stock"] }),
   cdate: text("cdate").default(sql`CURRENT_TIMESTAMP`),
   udate: text("udate"),
 });
@@ -157,7 +157,7 @@ export const Tickets = sqliteTable("Tickets", {
   expected_price: real("expected_price"),
   proposed_price_jpy: real("proposed_price_jpy"),
   proposed_price_thb: real("proposed_price_thb"),
-  status: text("status"), // TODO: add enum
+  status: text("status", { enum: ["pending", "negotiating", "accepted", "rejected", "purchasing", "completed", "cancelled"] }),
   cdate: text("cdate").default(sql`CURRENT_TIMESTAMP`),
   udate: text("udate"),
 });

@@ -1,12 +1,37 @@
 import { drizzle } from 'drizzle-orm/d1'
-import { eq, sql } from 'drizzle-orm'
+import { eq, sql, and, like } from 'drizzle-orm'
 import * as schema from '../db/schema'
 
-export const getAllProducts = async (d1: D1Database) => {
+export const getAllProducts = async (
+  d1: D1Database, 
+  query?: { category_id?: number, brand?: string, page?: number, limit?: number }
+) => {
   const db = drizzle(d1, { schema })
-  return await db.query.Products.findMany({
+  const page = query?.page || 1
+  const limit = query?.limit || 20
+  const offset = (page - 1) * limit
+
+  const conditions = []
+  if (query?.category_id) conditions.push(eq(schema.Products.category_id, query.category_id))
+  if (query?.brand) conditions.push(like(schema.Products.brand, `%${query.brand}%`))
+
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined
+
+  const [countResult] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(schema.Products)
+    .where(whereClause)
+    
+  const total = countResult.count
+
+  const products = await db.query.Products.findMany({
+    where: whereClause,
+    limit,
+    offset,
     with: { category: true }
   })
+
+  return { data: products, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
 }
 
 export const getProductById = async (d1: D1Database, id: number) => {

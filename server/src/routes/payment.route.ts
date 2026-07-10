@@ -74,10 +74,12 @@ paymentRoutes.openapi(submitSlipRoute, async (c) => {
       easyslip_ref: verifyData.rawSlip?.transRef
     })
     
-    // Update the Order's payment_status to 'deposit_paid'
-    await updateOrder(c.env.nihonthing_db, data.order_id, {
-      payment_status: 'deposit_paid'
-    })
+    // Update the Order's payment_status to 'deposit_paid' if order_id is provided
+    if (data.order_id) {
+      await updateOrder(c.env.nihonthing_db, data.order_id, {
+        payment_status: 'deposit_paid'
+      })
+    }
 
     return c.json({ success: true, data: payment, verify_info: verifyData }, 201)
   } catch (error: any) {

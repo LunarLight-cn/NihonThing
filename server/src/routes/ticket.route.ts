@@ -19,8 +19,9 @@ const CreateTicketSchema = z.object({
 const UpdateTicketSchema = z.object({
   agent_id: z.number().optional(),
   trip_id: z.number().optional(),
-  proposed_price: z.number().optional(),
-  status: z.enum(['pending', 'quoted', 'accepted', 'purchasing', 'completed', 'cancelled']).optional()
+  proposed_price_jpy: z.number().optional(),
+  proposed_price_thb: z.number().optional(),
+  status: z.enum(['pending', 'negotiating', 'accepted', 'rejected', 'purchasing', 'completed', 'cancelled']).optional()
 })
 
 const TicketIdParamsSchema = z.object({

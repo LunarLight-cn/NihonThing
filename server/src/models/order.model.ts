@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/d1'
-import { eq, inArray, sql } from 'drizzle-orm'
+import { eq, inArray, sql, and } from 'drizzle-orm'
 import * as schema from '../db/schema'
 
 export type OrderItemInput = {
@@ -49,7 +49,36 @@ export const createOrder = async (
     }
   }
 
-  // 3. Insert Order
+  // 3. Capacity & Anti-Hoarding Limits
+  const PER_USER_LIMIT = 50
+  const orderAmount = items.reduce((sum, item) => sum + item.quantity, 0)
+  
+  // Check global capacity
+  const currentCap = Number(trip.current_cap || 0)
+  const maxCap = Number(trip.max_cap || 1000)
+  if (currentCap + orderAmount > maxCap) {
+    throw new Error(`Trip capacity exceeded. Only ${maxCap - currentCap} items remaining.`)
+  }
+
+  // Check per-user limit
+  const userPastOrders = await db.query.Orders.findMany({
+    where: and(eq(schema.Orders.user_id, userId), eq(schema.Orders.trip_id, tripId))
+  })
+  
+  let userPastAmount = 0
+  if (userPastOrders.length > 0) {
+    const pastOrderIds = userPastOrders.map(o => o.id)
+    const pastItems = await db.query.Order_Items.findMany({
+      where: inArray(schema.Order_Items.order_id, pastOrderIds)
+    })
+    userPastAmount = pastItems.reduce((sum, item) => sum + (item.quantity || 0), 0)
+  }
+
+  if (userPastAmount + orderAmount > PER_USER_LIMIT) {
+    throw new Error(`Per-user limit exceeded. You can only order ${PER_USER_LIMIT} items per trip.`)
+  }
+
+  // 4. Insert Order
   const [newOrder] = await db.insert(schema.Orders).values({
     user_id: userId,
     trip_id: tripId,
@@ -68,6 +97,11 @@ export const createOrder = async (
   }))
 
   await db.insert(schema.Order_Items).values(orderItemsData)
+
+  // 6. Update Ship Capacity
+  await db.update(schema.Ships)
+    .set({ current_cap: String(currentCap + orderAmount) })
+    .where(eq(schema.Ships.id, tripId))
 
   return newOrder
 }
