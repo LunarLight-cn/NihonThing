@@ -17,6 +17,7 @@ import eventProductRoutes from './routes/event_product.route'
 import followRoutes from './routes/follow.route'
 import categoryRoutes from './routes/category.route'
 import locationRoutes from './routes/location.route'
+import uploadRoutes from './routes/upload.route'
 
 const app = new OpenAPIHono()
 
@@ -48,6 +49,7 @@ app.route('/api/event-products', eventProductRoutes)
 app.route('/api/follows', followRoutes)
 app.route('/api/categories', categoryRoutes)
 app.route('/api/locations', locationRoutes)
+app.route('/api/uploads', uploadRoutes)
 
 app.doc('/doc', {
   openapi: '3.0.0',

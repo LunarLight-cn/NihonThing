@@ -25,17 +25,26 @@ const ProductIdParamsSchema = z.object({
   id: z.string().openapi({ description: 'Product ID' })
 })
 
+const ProductQuerySchema = z.object({
+  category_id: z.coerce.number().optional(),
+  brand: z.string().optional(),
+  page: z.coerce.number().min(1).default(1),
+  limit: z.coerce.number().min(1).max(100).default(20)
+})
+
 // GET ญroducts
 const getProductsRoute = createRoute({
   method: 'get',
   path: '/',
   tags: ['Products'],
+  request: { query: ProductQuerySchema },
   responses: { 200: { description: 'Retrieve all products successfully' } }
 })
 
 productRoutes.openapi(getProductsRoute, async (c) => {
-  const products = await getAllProducts(c.env.nihonthing_db)
-  return c.json({ success: true, data: products })
+  const query = c.req.valid('query')
+  const result = await getAllProducts(c.env.nihonthing_db, query)
+  return c.json({ success: true, ...result })
 })
 
 // GET Products by ID

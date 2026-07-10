@@ -9,6 +9,12 @@
 			"database_name": "nihonthing-db",
 			"database_id": "09ee94b2-8f90-493e-a6f2-789371384049"
 		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "nihonthing_bucket",
+			"bucket_name": "nihonthing-bucket"
+		}
 	]
 	// "compatibility_flags": [
 	//   "nodejs_compat"
