@@ -1,6 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "server",
+	"name": "nihonthing-api",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-07-05",
 	"d1_databases": [

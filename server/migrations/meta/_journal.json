@@ -8,6 +8,27 @@
       "when": 1783322555497,
       "tag": "0000_happy_baron_strucker",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1783664504762,
+      "tag": "0001_classy_starjammers",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1783665158209,
+      "tag": "0002_simple_stepford_cuckoos",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1783666214622,
+      "tag": "0003_noisy_tigra",
+      "breakpoints": true
     }
   ]
 }

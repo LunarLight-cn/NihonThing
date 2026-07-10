@@ -2,6 +2,7 @@ import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { fetchUsersList } from '../services/user.service'
 import { authGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { updateUserProfile } from '../models/user.model'
+import addressRoutes from './address.route'
 
 const userRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database }; Variables: AuthVariables }>()
 
@@ -89,5 +90,7 @@ userRoutes.openapi(putMeRoute, async (c) => {
     return c.json({ success: false, message: 'Update Failed!' }, 500)
   }
 })
+
+userRoutes.route('/me/addresses', addressRoutes)
 
 export default userRoutes

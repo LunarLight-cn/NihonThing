@@ -22,3 +22,14 @@ export const authGuard = async (c: Context<{ Bindings: any; Variables: AuthVaria
     return c.json({ success: false, message: 'Invalid or expired token.' }, 401)
   }
 }
+
+export const adminGuard = async (c: Context<{ Bindings: any; Variables: AuthVariables }>, next: Next) => {
+  const user = c.get('user')
+  
+  // Allow both admin and agent for now as requested
+  if (!user || (user.role !== 'admin' && user.role !== 'agent')) {
+    return c.json({ success: false, message: 'Admin or Agent access required.' }, 403)
+  }
+  
+  await next()
+}
