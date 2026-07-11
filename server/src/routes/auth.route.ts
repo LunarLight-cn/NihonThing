@@ -33,8 +33,8 @@ authRoutes.openapi(loginRoute, async (c) => {
   const { email, password } = c.req.valid('json')
 
   try {
-    const token = await loginUser(c.env.nihonthing_db, email, password, c.env.JWT_SECRET, c.env.AUTH_SALT)
-    return c.json({ success: true, token })
+    const { token, user } = await loginUser(c.env.nihonthing_db, email, password, c.env.JWT_SECRET, c.env.AUTH_SALT)
+    return c.json({ success: true, data: { token, user } })
   } catch (error: any) {
     return c.json({ success: false, message: error.message }, 401)
   }

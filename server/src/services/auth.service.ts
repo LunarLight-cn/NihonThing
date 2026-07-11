@@ -47,5 +47,13 @@ export const loginUser = async (d1: D1Database, email: string, pass: string, jwt
     jwtSecret
   )
 
-  return token
+  return {
+    token,
+    user: {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role
+    }
+  }
 }
