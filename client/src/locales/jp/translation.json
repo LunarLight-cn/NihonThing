@@ -138,11 +138,35 @@
   "admin": {
     "overview": "概要",
     "orders": "注文",
-    "trips": "フライト（スケジュール）",
+    "trips": "フライト",
     "tickets": "カスタムリクエスト",
     "catalog": "カタログ",
     "users": "ユーザー",
     "settings": "設定",
     "logout": "ログアウト"
+  },
+  "request": {
+    "title": "カスタムリクエスト",
+    "subtitle": "日本から欲しいものを教えてください。できるだけ詳細をご記入ください。",
+    "itemName": "商品名 *",
+    "itemNamePlaceholder": "例: ソニー α7 IV",
+    "brand": "ブランド",
+    "brandPlaceholder": "例: ソニー",
+    "shopName": "希望の店舗・エリア",
+    "shopNamePlaceholder": "例: ヨドバシAkiba",
+    "spec": "仕様（色、サイズなど）",
+    "specPlaceholder": "例: ブラック、ボディのみ",
+    "img": "参考画像のURL *",
+    "imgPlaceholder": "https://example.com/image.jpg",
+    "externalLink": "参考リンク",
+    "externalLinkPlaceholder": "https://amazon.co.jp/...",
+    "expectedPrice": "希望価格（THB）",
+    "expectedPricePlaceholder": "例: 55000",
+    "replacement": "在庫切れの場合",
+    "replacementPlaceholder": "例: 注文をキャンセルする、またはシルバーを購入する",
+    "submit": "リクエストを送信",
+    "submitting": "送信中...",
+    "success": "リクエストが正常に送信されました！内容を確認いたします。",
+    "error": "リクエストの送信に失敗しました。もう一度お試しください。"
   }
 }
