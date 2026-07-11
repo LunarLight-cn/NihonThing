@@ -124,7 +124,7 @@ CREATE TABLE `Payments` (
 	`method` text,
 	`slip_img` text NOT NULL,
 	`status` text,
-	`easyslip_ref` text,
+	`verify_ref` text,
 	`cdate` text DEFAULT CURRENT_TIMESTAMP,
 	FOREIGN KEY (`order_id`) REFERENCES `Orders`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`ticket_id`) REFERENCES `Tickets`(`id`) ON UPDATE no action ON DELETE no action

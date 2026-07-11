@@ -877,8 +877,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "easyslip_ref": {
-          "name": "easyslip_ref",
+        "verify_ref": {
+          "name": "verify_ref",
           "type": "text",
           "primaryKey": false,
           "notNull": false,

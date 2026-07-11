@@ -195,7 +195,7 @@ erDiagram
         text method
         text slip_img
         text status
-        text easyslip_ref
+        text verify_ref
         text cdate
     }
 

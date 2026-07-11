@@ -171,7 +171,7 @@ export const Payments = sqliteTable("Payments", {
   method: text("method"),
   slip_img: text("slip_img").notNull(),
   status: text("status", { enum: ["pending", "verified", "failed"] }),
-  easyslip_ref: text("easyslip_ref"),
+  verify_ref: text("verify_ref"),
   cdate: text("cdate").default(sql`CURRENT_TIMESTAMP`),
 });
 
