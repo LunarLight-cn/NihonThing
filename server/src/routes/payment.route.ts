@@ -3,7 +3,7 @@ import { authGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { getOrderAmountForPayment, generatePromptPayQR, submitPaymentSlip, verifySlip } from '../models/payment.model'
 import { updateOrder } from '../models/order.model'
 
-const paymentRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; PROMPTPAY_ID: string; SLIP_VERIFY_API_KEY: string }; Variables: AuthVariables }>()
+const paymentRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; PROMPTPAY_ID: string; SLIP_VERIFY_API_KEY: string; SLIP_VERIFY_API_URL: string }; Variables: AuthVariables }>()
 
 const QRCodeQuerySchema = z.object({
   order_id: z.string().openapi({ description: 'Order ID' }),
@@ -60,18 +60,19 @@ paymentRoutes.openapi(submitSlipRoute, async (c) => {
   
   try {
     const apiKey = c.env.SLIP_VERIFY_API_KEY
-    if (!apiKey) {
-      throw new Error('Slip verification API key is not configured')
+    const apiUrl = c.env.SLIP_VERIFY_API_URL
+    if (!apiKey || !apiUrl) {
+      throw new Error('Slip verification service is not configured')
     }
     
-    // Verify slip via Thunder API
-    const verifyData = await verifySlip(apiKey, data.slip_img, data.amount)
+    // Verify slip via external API
+    const verifyData = await verifySlip(apiUrl, apiKey, data.slip_img, data.amount)
     
     // If successful, save to DB with status verified and reference ID
     const payment = await submitPaymentSlip(c.env.nihonthing_db, { 
       ...data, 
       status: 'verified',
-      easyslip_ref: verifyData.rawSlip?.transRef
+      verify_ref: verifyData.rawSlip?.transRef
     })
     
     // Update the Order's payment_status to 'deposit_paid' if order_id is provided
@@ -81,7 +82,10 @@ paymentRoutes.openapi(submitSlipRoute, async (c) => {
       })
     }
 
-    return c.json({ success: true, data: payment, verify_info: verifyData }, 201)
+    const [paymentRecord] = payment
+    const { verify_ref, ...publicPaymentData } = paymentRecord
+
+    return c.json({ success: true, data: publicPaymentData }, 201)
   } catch (error: any) {
     // If verification fails, we could save it as 'failed' or just reject the request.
     // Let's reject the request so the user can try again.

@@ -33,7 +33,7 @@ export const submitPaymentSlip = async (d1: D1Database, data: any) => {
   return await db.insert(schema.Payments).values(data).returning()
 }
 
-export const verifySlip = async (apiKey: string, imageUrl: string, expectedAmount?: number) => {
+export const verifySlip = async (apiUrl: string, apiKey: string, imageUrl: string, expectedAmount?: number) => {
   // Fetch the image from URL as Blob
   const imageResponse = await fetch(imageUrl)
   if (!imageResponse.ok) {
@@ -49,8 +49,8 @@ export const verifySlip = async (apiKey: string, imageUrl: string, expectedAmoun
     formData.append('matchAmount', expectedAmount.toString())
   }
   
-  // Call Thunder API
-  const thunderRes = await fetch('https://api.thunder.in.th/v2/verify/bank', {
+  // Call external slip verification API
+  const verifyRes = await fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${apiKey}`
@@ -58,10 +58,10 @@ export const verifySlip = async (apiKey: string, imageUrl: string, expectedAmoun
     body: formData
   })
   
-  const result = (await thunderRes.json()) as any
+  const result = (await verifyRes.json()) as any
   
-  if (!thunderRes.ok || !result.success) {
-    throw new Error(result?.error?.message || 'Slip verification failed')
+  if (!verifyRes.ok || !result.success) {
+    throw new Error('Slip verification failed: Invalid slip or amount mismatch.')
   }
   
   return result.data

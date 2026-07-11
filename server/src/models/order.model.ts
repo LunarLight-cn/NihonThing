@@ -18,7 +18,7 @@ export const createOrder = async (
 ) => {
   const db = drizzle(d1, { schema })
   
-  // 1. Validate Trip and check Cutoff Date
+  // Validate Trip and check Cutoff Date
   const trip = await db.query.Ships.findFirst({ where: eq(schema.Ships.id, tripId) })
   if (!trip) throw new Error('Trip not found')
   
@@ -34,7 +34,7 @@ export const createOrder = async (
     throw new Error('This trip is closed for new orders.')
   }
 
-  // 2. Calculate Total Price
+  // Calculate Total Price
   let itemPriceTotal = 0
   
   for (const item of items) {
@@ -49,7 +49,7 @@ export const createOrder = async (
     }
   }
 
-  // 3. Capacity & Anti-Hoarding Limits
+  // Capacity & Anti-Hoarding Limits
   const PER_USER_LIMIT = 50
   const orderAmount = items.reduce((sum, item) => sum + item.quantity, 0)
   
@@ -60,50 +60,64 @@ export const createOrder = async (
     throw new Error(`Trip capacity exceeded. Only ${maxCap - currentCap} items remaining.`)
   }
 
-  // Check per-user limit
-  const userPastOrders = await db.query.Orders.findMany({
-    where: and(eq(schema.Orders.user_id, userId), eq(schema.Orders.trip_id, tripId))
-  })
-  
-  let userPastAmount = 0
-  if (userPastOrders.length > 0) {
-    const pastOrderIds = userPastOrders.map(o => o.id)
-    const pastItems = await db.query.Order_Items.findMany({
-      where: inArray(schema.Order_Items.order_id, pastOrderIds)
+  return await db.transaction(async (tx) => {
+    // Check per-user limit
+    const userPastOrders = await tx.query.Orders.findMany({
+      where: and(eq(schema.Orders.user_id, userId), eq(schema.Orders.trip_id, tripId))
     })
-    userPastAmount = pastItems.reduce((sum, item) => sum + (item.quantity || 0), 0)
-  }
+    
+    let userPastAmount = 0
+    if (userPastOrders.length > 0) {
+      const pastOrderIds = userPastOrders.map(o => o.id)
+      const pastItems = await tx.query.Order_Items.findMany({
+        where: inArray(schema.Order_Items.order_id, pastOrderIds)
+      })
+      userPastAmount = pastItems.reduce((sum, item) => sum + (item.quantity || 0), 0)
+    }
 
-  if (userPastAmount + orderAmount > PER_USER_LIMIT) {
-    throw new Error(`Per-user limit exceeded. You can only order ${PER_USER_LIMIT} items per trip.`)
-  }
+    if (userPastAmount + orderAmount > PER_USER_LIMIT) {
+      throw new Error(`Per-user limit exceeded. You can only order ${PER_USER_LIMIT} items per trip.`)
+    }
 
-  // 4. Insert Order
-  const [newOrder] = await db.insert(schema.Orders).values({
-    user_id: userId,
-    trip_id: tripId,
-    address_id: addressId,
-    item_price_total: itemPriceTotal,
-    payment_status: 'pending_deposit',
-    status: 'pending'
-  }).returning()
+    // Atomic Capacity Update & Auto-Close
+    const capacityUpdate = await tx.update(schema.Ships)
+      .set({
+        current_cap: sql`CAST((CAST(COALESCE(current_cap, '0') AS INTEGER) + ${orderAmount}) AS TEXT)`,
+        status: sql`CASE WHEN CAST(COALESCE(current_cap, '0') AS INTEGER) + ${orderAmount} >= CAST(COALESCE(max_cap, '1000') AS INTEGER) THEN 'closed' ELSE status END`
+      })
+      .where(
+        and(
+          eq(schema.Ships.id, tripId),
+          sql`CAST(COALESCE(current_cap, '0') AS INTEGER) + ${orderAmount} <= CAST(COALESCE(max_cap, '1000') AS INTEGER)`
+        )
+      ).returning()
 
-  // 4. Insert Order Items
-  const orderItemsData = items.map(item => ({
-    order_id: newOrder.id,
-    product_id: item.type === 'product' ? item.id : null,
-    ticket_id: item.type === 'ticket' ? item.id : null,
-    quantity: item.quantity
-  }))
+    if (capacityUpdate.length === 0) {
+      throw new Error(`Trip capacity exceeded. Cannot fulfill ${orderAmount} items.`)
+    }
 
-  await db.insert(schema.Order_Items).values(orderItemsData)
+    // Insert Order
+    const [newOrder] = await tx.insert(schema.Orders).values({
+      user_id: userId,
+      trip_id: tripId,
+      address_id: addressId,
+      item_price_total: itemPriceTotal,
+      payment_status: 'pending_deposit',
+      status: 'pending'
+    }).returning()
 
-  // 6. Update Ship Capacity
-  await db.update(schema.Ships)
-    .set({ current_cap: String(currentCap + orderAmount) })
-    .where(eq(schema.Ships.id, tripId))
+    // Insert Order Items
+    const orderItemsData = items.map(item => ({
+      order_id: newOrder.id,
+      product_id: item.type === 'product' ? item.id : null,
+      ticket_id: item.type === 'ticket' ? item.id : null,
+      quantity: item.quantity
+    }))
 
-  return newOrder
+    await tx.insert(schema.Order_Items).values(orderItemsData)
+
+    return newOrder
+  })
 }
 
 export const getMyOrders = async (d1: D1Database, userId: number) => {

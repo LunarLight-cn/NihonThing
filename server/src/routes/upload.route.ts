@@ -28,6 +28,10 @@ const postUploadRoute = createRoute({
   responses: { 201: { description: 'File uploaded successfully' }, 400: { description: 'Bad Request' } }
 })
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
+
 uploadRoutes.openapi(postUploadRoute, async (c) => {
   const body = await c.req.parseBody()
   const file = body['file']
@@ -36,7 +40,22 @@ uploadRoutes.openapi(postUploadRoute, async (c) => {
     return c.json({ success: false, message: 'Invalid file upload' }, 400)
   }
 
-  const ext = file.name.split('.').pop()
+  // Validate file size
+  if (file.size > MAX_FILE_SIZE) {
+    return c.json({ success: false, message: `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB.` }, 400)
+  }
+
+  // Validate file type
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return c.json({ success: false, message: `Invalid file type "${file.type}". Allowed: ${ALLOWED_TYPES.join(', ')}` }, 400)
+  }
+
+  // Validate file extension
+  const ext = file.name.split('.').pop()?.toLowerCase()
+  if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
+    return c.json({ success: false, message: `Invalid file extension ".${ext}". Allowed: ${ALLOWED_EXTENSIONS.join(', ')}` }, 400)
+  }
+
   const fileName = `${crypto.randomUUID()}.${ext}`
   
   await c.env.nihonthing_bucket.put(fileName, await file.arrayBuffer(), {
