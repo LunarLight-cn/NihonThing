@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Japanese Minimalist Theme */
+    --background: 40 33% 98%; /* Soft cream / Washi paper */
+    --foreground: 220 10% 20%; /* Ink gray / Sumi */
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 10% 20%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 10% 20%;
+ 
+    --primary: 350 70% 40%; /* Deep crimson / Japanese red (Shu-iro) */
+    --primary-foreground: 0 0% 100%;
+ 
+    --secondary: 40 20% 90%; /* Light wood / Tatami */
+    --secondary-foreground: 220 10% 20%;
+ 
+    --muted: 40 20% 92%;
+    --muted-foreground: 25 5% 45%;
+ 
+    --accent: 140 30% 45%; /* Matcha green */
+    --accent-foreground: 0 0% 100%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 40 20% 85%; /* Subtle warm border */
+    --input: 40 20% 85%;
+    --ring: 350 70% 40%;
+ 
+    --radius: 0.3rem;
+  }
+ 
+  .dark {
+    --background: 220 10% 10%; /* Very dark ink */
+    --foreground: 40 20% 90%;
+ 
+    --card: 220 10% 15%;
+    --card-foreground: 40 20% 90%;
+ 
+    --popover: 220 10% 15%;
+    --popover-foreground: 40 20% 90%;
+ 
+    --primary: 350 60% 45%; /* Deep red remains prominent */
+    --primary-foreground: 0 0% 100%;
+ 
+    --secondary: 220 10% 20%;
+    --secondary-foreground: 40 20% 90%;
+ 
+    --muted: 220 10% 20%;
+    --muted-foreground: 40 10% 60%;
+ 
+    --accent: 140 20% 40%;
+    --accent-foreground: 0 0% 100%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --border: 220 10% 25%;
+    --input: 220 10% 25%;
+    --ring: 350 60% 45%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

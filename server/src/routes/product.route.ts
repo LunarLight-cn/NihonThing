@@ -8,8 +8,11 @@ const productRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; E
 const CreateProductSchema = z.object({
   category_id: z.number().optional(),
   name: z.string().min(1, 'Product name is required'),
+  name_th: z.string().optional(),
+  name_jp: z.string().optional(),
   desc: z.string().optional(),
   brand: z.string().optional(),
+  origin_country: z.string().optional(),
   price_tentative_jpy: z.number().optional(),
   img: z.string().url('Must be a valid image URL').optional(),
   tag: z.string().optional(),
