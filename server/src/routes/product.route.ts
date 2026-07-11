@@ -7,13 +7,16 @@ const productRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; E
 // Schema for Creating a Product
 const CreateProductSchema = z.object({
   category_id: z.number().optional(),
-  name: z.string().min(1, 'Product name is required'),
+  name_en: z.string().min(1, 'Product name is required'),
   name_th: z.string().optional(),
   name_jp: z.string().optional(),
-  desc: z.string().optional(),
+  desc_en: z.string().optional(),
+  desc_th: z.string().optional(),
+  desc_jp: z.string().optional(),
   brand: z.string().optional(),
   origin_country: z.string().optional(),
   price_tentative_jpy: z.number().optional(),
+  price_tentative_thb: z.number().optional(),
   img: z.string().url('Must be a valid image URL').optional(),
   tag: z.string().optional(),
   amount: z.number().optional(),
@@ -89,7 +92,7 @@ productRoutes.openapi(postProductRoute, async (c) => {
   
   const payload = {
     ...data,
-    price_tentative_thb: data.price_tentative_jpy ? data.price_tentative_jpy * exchangeRate : undefined
+    price_tentative_thb: data.price_tentative_thb !== undefined ? data.price_tentative_thb : (data.price_tentative_jpy ? data.price_tentative_jpy * exchangeRate : undefined)
   }
   
   const newProduct = await createProduct(c.env.nihonthing_db, payload)
@@ -117,7 +120,7 @@ productRoutes.openapi(putProductRoute, async (c) => {
   
   const payload = {
     ...data,
-    price_tentative_thb: data.price_tentative_jpy ? data.price_tentative_jpy * exchangeRate : undefined
+    price_tentative_thb: data.price_tentative_thb !== undefined ? data.price_tentative_thb : (data.price_tentative_jpy ? data.price_tentative_jpy * exchangeRate : undefined)
   }
   
   const updatedProduct = await updateProduct(c.env.nihonthing_db, parseInt(id), payload)

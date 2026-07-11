@@ -1,5 +1,5 @@
 import React from 'react'
-import { Calendar, Package, MapPin, Loader2, AlertCircle, PlaneTakeoff } from 'lucide-react'
+import { Calendar, Package, MapPin, Loader2, AlertCircle, PlaneTakeoff, Ship as ShipIcon } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../../services/api'
 import { useTranslation } from 'react-i18next'
@@ -58,8 +58,17 @@ export const TripSchedule: React.FC = () => {
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <h3 className="text-xl font-bold text-foreground flex items-center">
-                          <PlaneTakeoff className="w-5 h-5 mr-2 text-primary" />
-                          {trip.type} {t('home.schedule.flight')}
+                          {trip.type === 'sea' ? (
+                            <>
+                              <ShipIcon className="w-5 h-5 mr-2 text-primary" />
+                              {t('home.schedule.seaFreight')}
+                            </>
+                          ) : (
+                            <>
+                              <PlaneTakeoff className="w-5 h-5 mr-2 text-primary" />
+                              {trip.type.charAt(0).toUpperCase() + trip.type.slice(1)} {t('home.schedule.flight')}
+                            </>
+                          )}
                         </h3>
                         {trip.close_date && (
                           <p className="text-sm text-muted-foreground mt-1">

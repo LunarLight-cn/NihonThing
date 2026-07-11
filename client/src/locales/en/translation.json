@@ -35,6 +35,7 @@
       "title": "Upcoming Trips",
       "subtitle": "We take orders in batches to ensure the freshest items and best shipping rates.",
       "flight": "Flight",
+      "seaFreight": "Sea Freight",
       "closesOn": "Closes on {{date}}",
       "statusOpen": "Accepting Orders",
       "statusClosed": "Closed",
