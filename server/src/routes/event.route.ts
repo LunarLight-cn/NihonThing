@@ -5,8 +5,12 @@ import { getAllEvents, getEventById, createEvent, updateEvent, deleteEvent } fro
 const eventRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database }; Variables: AuthVariables }>()
 
 const CreateEventSchema = z.object({
-  title: z.string(),
-  desc: z.string().optional(),
+  title_en: z.string(),
+  title_th: z.string().optional(),
+  title_jp: z.string().optional(),
+  desc_en: z.string().optional(),
+  desc_th: z.string().optional(),
+  desc_jp: z.string().optional(),
   start_date: z.string(),
   end_date: z.string().optional(),
   banner_img: z.string().url().optional(),

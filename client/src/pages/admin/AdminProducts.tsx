@@ -6,12 +6,19 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { Package, Tags, Plus, Loader2, Save, X, Image as ImageIcon } from 'lucide-react'
 
 interface Product {
-  id: number
   name_en: string
+  name_th: string
+  name_jp: string
+  desc_en: string
+  desc_th: string
+  desc_jp: string
+  brand: string
   price_tentative_thb: number
+  price_tentative_jpy: number
   amount: number
   status: 'active' | 'inactive' | 'out_of_stock'
   img: string
+  origin_country: string
 }
 
 interface Category {
@@ -26,6 +33,8 @@ export const AdminProducts: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'products' | 'categories'>('products')
   const [isAddingProduct, setIsAddingProduct] = useState(false)
   const [isAddingCategory, setIsAddingCategory] = useState(false)
+  const [editingProductId, setEditingProductId] = useState<number | null>(null)
+  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null)
 
   // -- Queries --
   const { data: products, isLoading: isLoadingProducts } = useQuery({
@@ -60,11 +69,29 @@ export const AdminProducts: React.FC = () => {
     }
   })
 
+  const editProductMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: number, payload: Partial<Product> }) => api.put(`/products/${id}`, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] })
+      setIsAddingProduct(false)
+      setEditingProductId(null)
+    }
+  })
+
   const addCategoryMutation = useMutation({
     mutationFn: (newCategory: Partial<Category>) => api.post('/categories', newCategory),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-categories'] })
       setIsAddingCategory(false)
+    }
+  })
+
+  const editCategoryMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: number, payload: Partial<Category> }) => api.put(`/categories/${id}`, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-categories'] })
+      setIsAddingCategory(false)
+      setEditingCategoryId(null)
     }
   })
 
@@ -101,6 +128,37 @@ export const AdminProducts: React.FC = () => {
           <option value="out_of_stock">Out of Stock</option>
         </select>
       )
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => (
+        <button 
+          onClick={() => {
+            setProductForm({
+              name_en: row.original.name_en || '',
+              name_th: row.original.name_th || '',
+              name_jp: row.original.name_jp || '',
+              desc_en: row.original.desc_en || '',
+              desc_th: row.original.desc_th || '',
+              desc_jp: row.original.desc_jp || '',
+              brand: row.original.brand || '',
+              price_tentative_jpy: row.original.price_tentative_jpy?.toString() || '',
+              price_tentative_thb: row.original.price_tentative_thb?.toString() || '',
+              amount: row.original.amount?.toString() || '0',
+              img: row.original.img || '',
+              category_id: (row.original as any).category_id || 1,
+              status: row.original.status || 'active',
+              origin_country: row.original.origin_country || 'Japan'
+            })
+            setEditingProductId(row.original.id)
+            setIsAddingProduct(true)
+          }}
+          className="text-xs text-primary hover:underline font-medium"
+        >
+          Edit
+        </button>
+      )
     }
   ]
 
@@ -108,13 +166,34 @@ export const AdminProducts: React.FC = () => {
     { accessorKey: 'id', header: 'ID' },
     { accessorKey: 'name_en', header: 'Name (EN)' },
     { accessorKey: 'name_th', header: 'Name (TH)' },
-    { accessorKey: 'name_jp', header: 'Name (JP)' }
+    { accessorKey: 'name_jp', header: 'Name (JP)' },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => (
+        <button 
+          onClick={() => {
+            setCategoryForm({
+              name_en: row.original.name_en || '',
+              name_th: row.original.name_th || '',
+              name_jp: row.original.name_jp || ''
+            })
+            setEditingCategoryId(row.original.id)
+            setIsAddingCategory(true)
+          }}
+          className="text-xs text-primary hover:underline font-medium"
+        >
+          Edit
+        </button>
+      )
+    }
   ]
 
   // -- State for Forms --
   const [productForm, setProductForm] = useState({
     name_en: '', name_th: '', name_jp: '', 
-    price_tentative_thb: '', amount: '10', img: '', category_id: 1, status: 'active'
+    desc_en: '', desc_th: '', desc_jp: '', brand: '',
+    price_tentative_jpy: '', price_tentative_thb: '', amount: '10', img: '', category_id: 1, status: 'active', origin_country: 'Japan'
   })
   
   const [categoryForm, setCategoryForm] = useState({
@@ -179,21 +258,49 @@ export const AdminProducts: React.FC = () => {
           </div>
           
           {isAddingProduct && (
-            <form onSubmit={(e) => { e.preventDefault(); addProductMutation.mutate({...productForm, price_tentative_thb: Number(productForm.price_tentative_thb), amount: Number(productForm.amount), status: productForm.status as 'active' | 'inactive' | 'out_of_stock'}) }} className="bg-card border border-border p-6 rounded-xl shadow-sm space-y-4">
-              <h2 className="text-xl font-bold">New Product</h2>
+            <form onSubmit={(e) => { 
+              e.preventDefault(); 
+              const basePayload = {
+                ...productForm, 
+                price_tentative_jpy: productForm.price_tentative_jpy ? Number(productForm.price_tentative_jpy) : undefined,
+                price_tentative_thb: productForm.price_tentative_thb ? Number(productForm.price_tentative_thb) : undefined, 
+                amount: Number(productForm.amount), 
+                status: productForm.status as 'active' | 'inactive' | 'out_of_stock'
+              };
+              const payload = Object.fromEntries(Object.entries(basePayload).filter(([_, v]) => v !== ''));
+              
+              if (editingProductId) {
+                editProductMutation.mutate({ id: editingProductId, payload })
+              } else {
+                addProductMutation.mutate(payload)
+              }
+            }} className="bg-card border border-border p-6 rounded-xl shadow-sm space-y-4">
+              <h2 className="text-xl font-bold">{editingProductId ? 'Edit Product' : 'New Product'}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div><label className="block text-sm font-medium mb-1">Name (EN)</label><input required type="text" value={productForm.name_en} onChange={e => setProductForm({...productForm, name_en: e.target.value})} className="w-full p-2 border rounded bg-background" /></div>
+                <div className="col-span-3 font-semibold text-primary border-b pb-2 mt-2">Basic Info</div>
+                <div><label className="block text-sm font-medium mb-1">Name (EN) *</label><input required type="text" value={productForm.name_en} onChange={e => setProductForm({...productForm, name_en: e.target.value})} className="w-full p-2 border rounded bg-background" /></div>
                 <div><label className="block text-sm font-medium mb-1">Name (TH)</label><input type="text" value={productForm.name_th} onChange={e => setProductForm({...productForm, name_th: e.target.value})} className="w-full p-2 border rounded bg-background" /></div>
                 <div><label className="block text-sm font-medium mb-1">Name (JP)</label><input type="text" value={productForm.name_jp} onChange={e => setProductForm({...productForm, name_jp: e.target.value})} className="w-full p-2 border rounded bg-background" /></div>
                 
-                <div><label className="block text-sm font-medium mb-1">Price (THB)</label><input required type="number" value={productForm.price_tentative_thb} onChange={e => setProductForm({...productForm, price_tentative_thb: e.target.value})} className="w-full p-2 border rounded bg-background" /></div>
-                <div><label className="block text-sm font-medium mb-1">Stock Amount</label><input required type="number" value={productForm.amount} onChange={e => setProductForm({...productForm, amount: e.target.value})} className="w-full p-2 border rounded bg-background" /></div>
+                <div className="col-span-3 font-semibold text-primary border-b pb-2 mt-2">Descriptions & Details</div>
+                <div><label className="block text-sm font-medium mb-1">Description (EN)</label><textarea value={productForm.desc_en} onChange={e => setProductForm({...productForm, desc_en: e.target.value})} className="w-full p-2 border rounded bg-background" rows={3}></textarea></div>
+                <div><label className="block text-sm font-medium mb-1">Description (TH)</label><textarea value={productForm.desc_th} onChange={e => setProductForm({...productForm, desc_th: e.target.value})} className="w-full p-2 border rounded bg-background" rows={3}></textarea></div>
+                <div><label className="block text-sm font-medium mb-1">Description (JP)</label><textarea value={productForm.desc_jp} onChange={e => setProductForm({...productForm, desc_jp: e.target.value})} className="w-full p-2 border rounded bg-background" rows={3}></textarea></div>
+                <div><label className="block text-sm font-medium mb-1">Brand</label><input type="text" value={productForm.brand} onChange={e => setProductForm({...productForm, brand: e.target.value})} className="w-full p-2 border rounded bg-background" placeholder="e.g. Sony, Shiseido" /></div>
+                <div><label className="block text-sm font-medium mb-1">Origin Country</label><input type="text" value={productForm.origin_country} onChange={e => setProductForm({...productForm, origin_country: e.target.value})} className="w-full p-2 border rounded bg-background" /></div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Category</label>
                   <select value={productForm.category_id} onChange={e => setProductForm({...productForm, category_id: Number(e.target.value)})} className="w-full p-2 border rounded bg-background">
                     {categories?.map(c => <option key={c.id} value={c.id}>{c.name_en}</option>)}
                   </select>
                 </div>
+
+                <div className="col-span-3 font-semibold text-primary border-b pb-2 mt-2">Pricing & Inventory</div>
+                <div><label className="block text-sm font-medium mb-1">Price (JPY)</label><input type="number" required value={productForm.price_tentative_jpy} onChange={e => setProductForm({...productForm, price_tentative_jpy: e.target.value})} className="w-full p-2 border rounded bg-background" /></div>
+                <div><label className="block text-sm font-medium mb-1">Price Override (THB)</label><input type="number" value={productForm.price_tentative_thb} onChange={e => setProductForm({...productForm, price_tentative_thb: e.target.value})} className="w-full p-2 border rounded bg-background" placeholder="Auto calculated if empty" /></div>
+                <div><label className="block text-sm font-medium mb-1">Stock Amount</label><input required type="number" value={productForm.amount} onChange={e => setProductForm({...productForm, amount: e.target.value})} className="w-full p-2 border rounded bg-background" /></div>
+                
+                <div className="col-span-3 font-semibold text-primary border-b pb-2 mt-2">Media</div>
                 <div className="col-span-3">
                   <label className="block text-sm font-medium mb-1">Product Image</label>
                   <div className="flex items-center space-x-4">
@@ -224,8 +331,15 @@ export const AdminProducts: React.FC = () => {
           </div>
           
           {isAddingCategory && (
-            <form onSubmit={(e) => { e.preventDefault(); addCategoryMutation.mutate(categoryForm) }} className="bg-card border border-border p-6 rounded-xl shadow-sm space-y-4">
-              <h2 className="text-xl font-bold">New Category</h2>
+            <form onSubmit={(e) => { 
+              e.preventDefault(); 
+              if (editingCategoryId) {
+                editCategoryMutation.mutate({ id: editingCategoryId, payload: categoryForm })
+              } else {
+                addCategoryMutation.mutate(categoryForm) 
+              }
+            }} className="bg-card border border-border p-6 rounded-xl shadow-sm space-y-4">
+              <h2 className="text-xl font-bold">{editingCategoryId ? 'Edit Category' : 'New Category'}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div><label className="block text-sm font-medium mb-1">Name (EN)</label><input required type="text" value={categoryForm.name_en} onChange={e => setCategoryForm({...categoryForm, name_en: e.target.value})} className="w-full p-2 border rounded bg-background" /></div>
                 <div><label className="block text-sm font-medium mb-1">Name (TH)</label><input required type="text" value={categoryForm.name_th} onChange={e => setCategoryForm({...categoryForm, name_th: e.target.value})} className="w-full p-2 border rounded bg-background" /></div>

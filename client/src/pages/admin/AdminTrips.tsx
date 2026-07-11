@@ -20,6 +20,7 @@ export const AdminTrips: React.FC = () => {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [isAdding, setIsAdding] = useState(false)
+  const [editingTripId, setEditingTripId] = useState<number | null>(null)
   
   const { data: trips, isLoading } = useQuery({
     queryKey: ['admin-trips'],
@@ -41,6 +42,15 @@ export const AdminTrips: React.FC = () => {
     mutationFn: ({ id, status }: { id: number, status: string }) => api.put(`/ships/${id}`, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-trips'] })
+    }
+  })
+
+  const editTripMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: number, payload: Partial<Trip> }) => api.put(`/ships/${id}`, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-trips'] })
+      setIsAdding(false)
+      setEditingTripId(null)
     }
   })
 
@@ -92,6 +102,29 @@ export const AdminTrips: React.FC = () => {
       accessorKey: 'max_cap',
       header: 'Capacity',
       cell: ({ row }) => `${row.original.current_cap || 0} / ${row.original.max_cap || '-'}`
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => (
+        <button 
+          onClick={() => {
+            setNewTripForm({
+              type: row.original.type || 'flight',
+              ship_date: row.original.ship_date ? new Date(row.original.ship_date).toISOString().split('T')[0] : '',
+              close_date: row.original.close_date ? new Date(row.original.close_date).toISOString().split('T')[0] : '',
+              max_cap: row.original.max_cap || '',
+              origin_id: (row.original as any).origin_id || 2,
+              destination_id: (row.original as any).destination_id || 1
+            })
+            setEditingTripId(row.original.id)
+            setIsAdding(true)
+          }}
+          className="text-xs text-primary hover:underline font-medium"
+        >
+          Edit
+        </button>
+      )
     }
   ]
 
@@ -106,7 +139,11 @@ export const AdminTrips: React.FC = () => {
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    addTripMutation.mutate(newTripForm)
+    if (editingTripId) {
+      editTripMutation.mutate({ id: editingTripId, payload: newTripForm })
+    } else {
+      addTripMutation.mutate(newTripForm)
+    }
   }
 
   return (
@@ -127,7 +164,7 @@ export const AdminTrips: React.FC = () => {
 
       {isAdding && (
         <form onSubmit={handleAddSubmit} className="bg-card border border-border p-6 rounded-xl shadow-sm space-y-4">
-          <h2 className="text-xl font-bold">New Trip</h2>
+          <h2 className="text-xl font-bold">{editingTripId ? 'Edit Trip' : 'New Trip'}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Type</label>
@@ -138,6 +175,28 @@ export const AdminTrips: React.FC = () => {
               >
                 <option value="flight">Flight</option>
                 <option value="sea">Sea Freight</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Origin Country</label>
+              <select 
+                value={newTripForm.origin_id}
+                onChange={e => setNewTripForm({...newTripForm, origin_id: Number(e.target.value)})}
+                className="w-full p-2 border border-border rounded bg-background"
+              >
+                <option value={1}>Thailand</option>
+                <option value={2}>Japan</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Destination Country</label>
+              <select 
+                value={newTripForm.destination_id}
+                onChange={e => setNewTripForm({...newTripForm, destination_id: Number(e.target.value)})}
+                className="w-full p-2 border border-border rounded bg-background"
+              >
+                <option value={1}>Thailand</option>
+                <option value={2}>Japan</option>
               </select>
             </div>
             <div>

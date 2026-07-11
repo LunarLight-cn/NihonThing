@@ -177,8 +177,15 @@ export const ShoppingAreasMap: React.FC = () => {
 
   // Map API areas to map markers
   const shoppingAreas = areas && areas.length > 0 ? areas.map((area) => {
+    // Default coordinates (Tokyo center)
     let lat = 35.6895
     let lng = 139.6917
+    
+    // Fallbacks for known areas if map_location is null
+    if (area.name_en.toLowerCase().includes('akihabara')) { lat = 35.69836; lng = 139.77313 }
+    else if (area.name_en.toLowerCase().includes('shibuya')) { lat = 35.6595; lng = 139.7004 }
+    else if (area.name_en.toLowerCase().includes('shinjuku')) { lat = 35.6938; lng = 139.7034 }
+    else if (area.name_en.toLowerCase().includes('harajuku')) { lat = 35.6700; lng = 139.7027 }
     
     // Attempt to parse map_location "lat,lng" if exists
     if (area.map_location && area.map_location.includes(',')) {

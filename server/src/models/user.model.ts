@@ -44,3 +44,33 @@ export const updateUserProfile = async (d1: D1Database, userId: number, data: Up
     .set(updateFields)
     .where(eq(schema.Users.id, userId))
 }
+
+export const updateUserPassword = async (d1: D1Database, userId: number, passwordHash: string) => {
+  const db = drizzle(d1, { schema })
+  await db
+    .update(schema.Users)
+    .set({ password_hash: passwordHash, udate: sql`CURRENT_TIMESTAMP` })
+    .where(eq(schema.Users.id, userId))
+}
+
+export const getUserPasswordHash = async (d1: D1Database, userId: number) => {
+  const db = drizzle(d1, { schema })
+  const user = await db.query.Users.findFirst({
+    where: eq(schema.Users.id, userId),
+    columns: { password_hash: true }
+  })
+  return user?.password_hash
+}
+
+export const updateUserRole = async (d1: D1Database, userId: number, role: string) => {
+  const db = drizzle(d1, { schema })
+  await db
+    .update(schema.Users)
+    .set({ role, udate: sql`CURRENT_TIMESTAMP` })
+    .where(eq(schema.Users.id, userId))
+}
+
+export const deleteUser = async (d1: D1Database, userId: number) => {
+  const db = drizzle(d1, { schema })
+  await db.delete(schema.Users).where(eq(schema.Users.id, userId))
+}

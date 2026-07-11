@@ -35,6 +35,7 @@
       "title": "今後のフライト",
       "subtitle": "最新の商品と最適な配送料を確保するため、バッチごとに注文を受け付けています。",
       "flight": "フライト",
+      "seaFreight": "船便",
       "closesOn": "{{date}}に締切",
       "statusOpen": "注文受付中",
       "statusClosed": "受付終了",

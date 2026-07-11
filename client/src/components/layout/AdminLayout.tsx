@@ -1,7 +1,7 @@
 import React from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { LayoutDashboard, Package, Plane, Ticket, Users, Settings, LogOut, Store, Menu } from 'lucide-react'
+import { LayoutDashboard, Package, Plane, Ticket, Users, Settings, LogOut, Store, Menu, Calendar, Home } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 export const AdminLayout: React.FC = () => {
@@ -15,6 +15,7 @@ export const AdminLayout: React.FC = () => {
     { name: t('admin.trips'), path: '/admin/trips', icon: Plane },
     { name: t('admin.tickets'), path: '/admin/tickets', icon: Ticket },
     { name: t('admin.catalog'), path: '/admin/products', icon: Store },
+    { name: 'Events', path: '/admin/events', icon: Calendar },
     { name: t('admin.users'), path: '/admin/users', icon: Users },
     { name: t('admin.settings'), path: '/admin/settings', icon: Settings },
   ]
@@ -60,6 +61,13 @@ export const AdminLayout: React.FC = () => {
               <p className="text-xs text-muted-foreground truncate">Admin</p>
             </div>
           </div>
+          <Link 
+            to="/"
+            className="flex w-full items-center space-x-3 px-3 py-2 mb-2 rounded-md text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+          >
+            <Home className="w-5 h-5" />
+            <span>Back to Store</span>
+          </Link>
           <button 
             onClick={logout}
             className="flex w-full items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"

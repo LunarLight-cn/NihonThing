@@ -14,6 +14,11 @@ import { CustomRequest } from './pages/customer/CustomRequest'
 import { AdminOrders } from './pages/admin/AdminOrders'
 import { AdminTrips } from './pages/admin/AdminTrips'
 import { AdminProducts } from './pages/admin/AdminProducts'
+import { AdminOverview } from './pages/admin/AdminOverview'
+import { AdminEvents } from './pages/admin/AdminEvents'
+import { AdminSettings } from './pages/admin/AdminSettings'
+import { AdminUsers } from './pages/admin/AdminUsers'
+import { AdminTickets } from './pages/admin/AdminTickets'
 
 const queryClient = new QueryClient()
 
@@ -47,13 +52,14 @@ export default function App() {
                 <AdminLayout />
               </ProtectedRoute>
             }>
-              <Route index element={<div className="p-8"><h1 className="text-3xl font-bold text-primary">Overview</h1></div>} />
+              <Route index element={<AdminOverview />} />
               <Route path="orders" element={<AdminOrders />} />
               <Route path="trips" element={<AdminTrips />} />
-              <Route path="tickets" element={<div className="p-8"><h1 className="text-3xl font-bold text-primary">Tickets</h1></div>} />
+              <Route path="tickets" element={<AdminTickets />} />
               <Route path="products" element={<AdminProducts />} />
-              <Route path="users" element={<div className="p-8"><h1 className="text-3xl font-bold text-primary">Users</h1></div>} />
-              <Route path="settings" element={<div className="p-8"><h1 className="text-3xl font-bold text-primary">Settings</h1></div>} />
+              <Route path="events" element={<AdminEvents />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="settings" element={<AdminSettings />} />
             </Route>
           </Routes>
         </BrowserRouter>
