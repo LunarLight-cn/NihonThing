@@ -84,9 +84,14 @@ export const Categories = sqliteTable("Categories", {
 export const Products = sqliteTable("Products", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   category_id: integer("category_id").references(() => Categories.id),
-  name: text("name").notNull(),
-  desc: text("desc"),
+  name_en: text("name_en").notNull(),
+  name_th: text("name_th"),
+  name_jp: text("name_jp"),
+  desc_en: text("desc_en"),
+  desc_th: text("desc_th"),
+  desc_jp: text("desc_jp"),
   brand: text("brand"),
+  origin_country: text("origin_country"),
   price_tentative_jpy: real("price_tentative_jpy"),
   price_tentative_thb: real("price_tentative_thb"),
   img: text("img"),
@@ -186,7 +191,9 @@ export const Areas = sqliteTable("Areas", {
 export const Shops = sqliteTable("Shops", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   area_id: integer("area_id").notNull().references(() => Areas.id),
-  name: text("name").notNull(),
+  name_th: text("name_th").notNull(),
+  name_en: text("name_en").notNull(),
+  name_jp: text("name_jp"),
   map_location: text("map_location"),
 });
 
@@ -199,8 +206,12 @@ export const Product_Locations = sqliteTable("Product_Locations", {
 
 export const Events = sqliteTable("Events", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  title: text("title").notNull(),
-  desc: text("desc"),
+  title_en: text("title_en").notNull(),
+  title_th: text("title_th"),
+  title_jp: text("title_jp"),
+  desc_en: text("desc_en"),
+  desc_th: text("desc_th"),
+  desc_jp: text("desc_jp"),
   start_date: text("start_date").notNull(),
   end_date: text("end_date"),
   banner_img: text("banner_img"),

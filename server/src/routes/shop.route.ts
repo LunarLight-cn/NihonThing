@@ -6,7 +6,9 @@ const shopRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database }; Va
 
 const CreateShopSchema = z.object({
   area_id: z.number(),
-  name: z.string(),
+  name_th: z.string(),
+  name_en: z.string(),
+  name_jp: z.string().optional(),
   map_location: z.string().optional()
 })
 
