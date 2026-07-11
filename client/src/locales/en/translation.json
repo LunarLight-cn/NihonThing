@@ -138,11 +138,35 @@
   "admin": {
     "overview": "Overview",
     "orders": "Orders",
-    "trips": "Trips (Schedule)",
+    "trips": "Trips",
     "tickets": "Custom Requests",
     "catalog": "Catalog",
     "users": "Users",
     "settings": "Settings",
-    "logout": "Logout"
+    "logout": "Log Out"
+  },
+  "request": {
+    "title": "Custom Request",
+    "subtitle": "Tell us what you want from Japan. Provide as much detail as possible.",
+    "itemName": "Item Name *",
+    "itemNamePlaceholder": "e.g., Sony Alpha A7IV",
+    "brand": "Brand",
+    "brandPlaceholder": "e.g., Sony",
+    "shopName": "Preferred Shop/Area",
+    "shopNamePlaceholder": "e.g., Yodobashi Akiba",
+    "spec": "Specifications (Color, Size, etc.)",
+    "specPlaceholder": "e.g., Black, Body only",
+    "img": "Reference Image URL *",
+    "imgPlaceholder": "https://example.com/image.jpg",
+    "externalLink": "External Link",
+    "externalLinkPlaceholder": "https://amazon.co.jp/...",
+    "expectedPrice": "Expected Price (THB)",
+    "expectedPricePlaceholder": "e.g., 55000",
+    "replacement": "If out of stock",
+    "replacementPlaceholder": "e.g., Cancel order, or buy silver instead",
+    "submit": "Submit Request",
+    "submitting": "Submitting...",
+    "success": "Request submitted successfully! We will review it shortly.",
+    "error": "Failed to submit request. Please try again."
   }
 }
