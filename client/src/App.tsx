@@ -12,6 +12,9 @@ import { Catalog } from './pages/customer/Catalog'
 import { ProductDetails } from './pages/customer/ProductDetails'
 import { CustomRequest } from './pages/customer/CustomRequest'
 import { Support } from './pages/customer/Support'
+import { Terms } from './pages/customer/Terms'
+import { Privacy } from './pages/customer/Privacy'
+import { ShoppingAreasMap } from './components/home/ShoppingAreasMap'
 import { AdminOrders } from './pages/admin/AdminOrders'
 import { AdminTrips } from './pages/admin/AdminTrips'
 import { AdminProducts } from './pages/admin/AdminProducts'
@@ -42,7 +45,9 @@ export default function App() {
               <Route path="product/:id" element={<ProductDetails />} />
               <Route path="request" element={<CustomRequest />} />
               <Route path="support" element={<Support />} />
-              <Route path="areas" element={<div className="p-8"><h1 className="text-3xl font-bold text-primary">Shopping Areas</h1></div>} />
+              <Route path="terms" element={<Terms />} />
+              <Route path="privacy" element={<Privacy />} />
+              <Route path="areas" element={<div className="pb-12"><ShoppingAreasMap /></div>} />
               <Route path="orders" element={
                 <ProtectedRoute>
                   <div className="p-8"><h1 className="text-3xl font-bold text-primary">My Orders</h1></div>

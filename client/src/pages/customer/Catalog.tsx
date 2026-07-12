@@ -84,6 +84,13 @@ export const Catalog: React.FC = () => {
     }
   }
 
+  const clearFilters = () => {
+    handleCollectionChange(null)
+    setSelectedCategory(null)
+    setSelectedBrand(null)
+    setSearch('')
+  }
+
   return (
     <div className="py-8">
       <div className="section-container">
@@ -91,10 +98,15 @@ export const Catalog: React.FC = () => {
           {/* Sidebar Filters - Desktop */}
           <aside className="hidden lg:block w-64 shrink-0">
             <div className="card-panel sticky top-24">
-              <h3 className="font-bold text-foreground flex items-center mb-4">
-                <SlidersHorizontal className="w-4 h-4 mr-2" />
-                {t('catalog.filters')}
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-foreground flex items-center">
+                  <SlidersHorizontal className="w-4 h-4 mr-2" />
+                  {t('catalog.filters')}
+                </h3>
+                <button onClick={clearFilters} className="text-xs text-muted-foreground hover:text-primary underline">
+                  {t('catalog.clearFilters')}
+                </button>
+              </div>
               {/* Collections */}
               <div className="mb-6">
                 <h4 className="text-sm font-medium text-muted-foreground mb-2">Collections</h4>
@@ -167,7 +179,12 @@ export const Catalog: React.FC = () => {
             {/* Mobile Filters */}
             {showFilters && (
               <div className="card-panel mb-6 lg:hidden">
-                <h3 className="font-bold mb-3">{t('catalog.filters')}</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-bold">{t('catalog.filters')}</h3>
+                  <button onClick={clearFilters} className="text-xs text-muted-foreground hover:text-primary underline">
+                    {t('catalog.clearFilters')}
+                  </button>
+                </div>
                 <div className="mb-4">
                   <h4 className="text-sm font-medium text-muted-foreground mb-2">Collections</h4>
                   <div className="grid grid-cols-2 gap-2">
