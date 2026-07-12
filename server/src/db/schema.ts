@@ -9,6 +9,7 @@ export const Users = sqliteTable("Users", {
   birth_date: text("birth_date"),
   gender: text("gender"),
   role: text("role"),
+  status: text("status", { enum: ["active", "inactive"] }).default("active"),
   cdate: text("cdate").default(sql`CURRENT_TIMESTAMP`),
   udate: text("udate"),
 });
@@ -186,6 +187,7 @@ export const Areas = sqliteTable("Areas", {
   name_en: text("name_en").notNull(),
   name_jp: text("name_jp"),
   map_location: text("map_location"),
+  status: text("status", { enum: ["active", "inactive"] }).default("active"),
 });
 
 export const Shops = sqliteTable("Shops", {
@@ -195,6 +197,7 @@ export const Shops = sqliteTable("Shops", {
   name_en: text("name_en").notNull(),
   name_jp: text("name_jp"),
   map_location: text("map_location"),
+  status: text("status", { enum: ["active", "inactive"] }).default("active"),
 });
 
 export const Product_Locations = sqliteTable("Product_Locations", {

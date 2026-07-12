@@ -25,19 +25,18 @@ export const TripSchedule: React.FC = () => {
     }
   })
   return (
-    <section className="py-16 bg-background">
-      <div className="container mx-auto px-4">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <h2 className="text-3xl font-bold text-foreground tracking-tight mb-4">{t('home.schedule.title')}</h2>
-          <p className="text-muted-foreground">{t('home.schedule.subtitle')}</p>
+    <section className="pt-6 pb-6 bg-background">
+      <div className="section-container">
+        <div className="text-center max-w-2xl mx-auto mb-4">
+          <h2 className="section-title mb-2">{t('home.schedule.title')}</h2>
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-12">
+          <div className="loading-center">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : error ? (
-          <div className="flex items-center text-destructive bg-destructive/10 p-4 rounded-xl">
+          <div className="error-alert">
             <AlertCircle className="w-5 h-5 mr-2" />
             {t('home.schedule.errorLoading')}
           </div>
@@ -50,60 +49,64 @@ export const TripSchedule: React.FC = () => {
               const percentFilled = capacity > 0 ? Math.min(100, Math.round((currentOrders / capacity) * 100)) : 0
 
               return (
-                <div 
-                  key={trip.id} 
+                <div
+                  key={trip.id}
                   className={`bg-card border rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${isFull ? 'border-border/50 opacity-75' : 'border-border'}`}
                 >
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-xl font-bold text-foreground flex items-center">
+                  <div className="p-4">
+                    <div className="flex justify-between items-start gap-3 mb-3">
+                      <div className="min-w-0">
+                        <h3 className="text-xl font-bold text-foreground flex items-center gap-2 mb-1">
                           {trip.type === 'sea' ? (
                             <>
-                              <ShipIcon className="w-5 h-5 mr-2 text-primary" />
-                              {t('home.schedule.seaFreight')}
+                              <ShipIcon className="w-5 h-5 text-primary shrink-0" />
+                              <span className="truncate">{t('home.schedule.seaFreight')}</span>
                             </>
                           ) : (
                             <>
-                              <PlaneTakeoff className="w-5 h-5 mr-2 text-primary" />
-                              {trip.type.charAt(0).toUpperCase() + trip.type.slice(1)} {t('home.schedule.flight')}
+                              <PlaneTakeoff className="w-5 h-5 text-primary shrink-0" />
+                              <span className="truncate">
+                                {trip.type.charAt(0).toUpperCase() + trip.type.slice(1)} {t('home.schedule.flight')}
+                              </span>
                             </>
                           )}
                         </h3>
-                        {trip.close_date && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {t('home.schedule.closesOn', { date: new Date(trip.close_date).toLocaleDateString() })}
-                          </p>
-                        )}
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${isFull ? 'bg-secondary text-muted-foreground' : 'bg-primary/10 text-primary'}`}>
+                      <span
+                        className={`badge shrink-0 whitespace-nowrap ${isFull ? 'bg-muted text-muted-foreground' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}
+                      >
                         {isFull ? t('home.schedule.statusClosed') : t('home.schedule.statusOpen')}
                       </span>
                     </div>
 
-                    <div className="space-y-3 mb-6">
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <MapPin className="w-4 h-4 mr-2" />
-                        {t('home.schedule.destination')}
+                    <div className="flex flex-wrap justify-between items-center gap-y-2 mb-4 ml-1">
+                      <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <MapPin className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                          Japan
+                        </div>
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <Calendar className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                          {new Date(trip.ship_date).toLocaleDateString()}
+                        </div>
                       </div>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        {new Date(trip.ship_date).toLocaleDateString()}
-                      </div>
+                      {trip.close_date && (
+                        <div className="text-sm text-muted-foreground whitespace-nowrap">{t('home.schedule.closesOn', { date: new Date(trip.close_date).toLocaleDateString() })}</div>
+                      )}
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-foreground font-medium flex items-center">
-                          <Package className="w-4 h-4 mr-1.5" />
+                    <div className="space-y-1.5 pt-3 border-t border-border/60">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-foreground font-semibold flex items-center">
+                          <Package className="w-3.5 h-3.5 mr-1.5" />
                           {t('home.schedule.capacity')}
                         </span>
-                        <span className="text-muted-foreground">{t('home.schedule.capacityItems', { current: currentOrders, max: capacity })}</span>
+                        <span className="text-muted-foreground text-sm">{t('home.schedule.capacityItems', { current: currentOrders, max: capacity })}</span>
                       </div>
                       <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
-                        <div 
-                          className={`h-full rounded-full ${isFull ? 'bg-muted-foreground' : 'bg-primary'}`} 
-                          style={{ width: `${percentFilled}%` }} 
+                        <div
+                          className={`h-full rounded-full transition-all ${isFull ? 'bg-muted-foreground' : 'bg-primary'}`}
+                          style={{ width: `${Math.max(percentFilled, capacity > 0 ? 2 : 0)}%` }}
                         />
                       </div>
                     </div>
@@ -113,9 +116,7 @@ export const TripSchedule: React.FC = () => {
             })}
           </div>
         ) : (
-          <div className="text-center py-12 bg-card rounded-xl border border-border text-muted-foreground">
-            {t('home.schedule.stayTuned')}
-          </div>
+          <div className="empty-state">{t('home.schedule.stayTuned')}</div>
         )}
       </div>
     </section>

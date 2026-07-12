@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api'
-import { MapPin, Loader2, AlertCircle } from 'lucide-react'
+import { MapPin, Loader2 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../../services/api'
 import { useTranslation } from 'react-i18next'
@@ -26,122 +26,50 @@ const mapOptions = {
   zoomControl: true,
   // Custom minimalist map style (silver/light theme)
   styles: [
-    // {
-    //   "elementType": "geometry",
-    //   "stylers": [{"color": "#f5f5f5"}]
-    // },
-    // {
-    //   "elementType": "labels.icon",
-    //   "stylers": [{"visibility": "off"}]
-    // },
-    // {
-    //   "elementType": "labels.text.fill",
-    //   "stylers": [{"color": "#616161"}]
-    // },
-    // {
-    //   "elementType": "labels.text.stroke",
-    //   "stylers": [{"color": "#f5f5f5"}]
-    // },
-    // {
-    //   "featureType": "administrative.land_parcel",
-    //   "elementType": "labels.text.fill",
-    //   "stylers": [{"color": "#bdbdbd"}]
-    // },
-    // {
-    //   "featureType": "poi",
-    //   "elementType": "geometry",
-    //   "stylers": [{"color": "#eeeeee"}]
-    // },
-    // {
-    //   "featureType": "poi",
-    //   "elementType": "labels.text.fill",
-    //   "stylers": [{"color": "#757575"}]
-    // },
-    // {
-    //   "featureType": "road",
-    //   "elementType": "geometry",
-    //   "stylers": [{"color": "#ffffff"}]
-    // },
-    // {
-    //   "featureType": "road.arterial",
-    //   "elementType": "labels.text.fill",
-    //   "stylers": [{"color": "#757575"}]
-    // },
-    // {
-    //   "featureType": "road.highway",
-    //   "elementType": "geometry",
-    //   "stylers": [{"color": "#dadada"}]
-    // },
-    // {
-    //   "featureType": "water",
-    //   "elementType": "geometry",
-    //   "stylers": [{"color": "#e9e9e9"}]
-    // }
     {
-        "featureType": "landscape",
-        "elementType": "geometry",
-        "stylers": [
-            { "color": "#f9f7f1" }
-        ]
+      featureType: 'landscape',
+      elementType: 'geometry',
+      stylers: [{ color: '#f9f7f1' }]
     },
     {
-        "featureType": "water",
-        "elementType": "geometry",
-        "stylers": [
-            { "color": "#dbe2e6" }
-        ]
+      featureType: 'water',
+      elementType: 'geometry',
+      stylers: [{ color: '#dbe2e6' }]
     },
     {
-        "featureType": "poi",
-        "elementType": "geometry",
-        "stylers": [
-            { "color": "#f4f1ea" }
-        ]
+      featureType: 'poi',
+      elementType: 'geometry',
+      stylers: [{ color: '#f4f1ea' }]
     },
     {
-        "featureType": "poi",
-        "elementType": "labels.icon",
-        "stylers": [
-            { "saturation": -30 }, 
-            { "lightness": 15 } 
-        ]
+      featureType: 'poi',
+      elementType: 'labels.icon',
+      stylers: [{ saturation: -30 }, { lightness: 15 }]
     },
     {
-        "featureType": "road",
-        "elementType": "geometry.fill",
-        "stylers": [
-            { "color": "#ffffff" }
-        ]
+      featureType: 'road',
+      elementType: 'geometry.fill',
+      stylers: [{ color: '#ffffff' }]
     },
     {
-        "featureType": "road",
-        "elementType": "geometry.stroke",
-        "stylers": [
-            { "color": "#e5e3df" },
-            { "weight": 1.5 }
-        ]
+      featureType: 'road',
+      elementType: 'geometry.stroke',
+      stylers: [{ color: '#e5e3df' }, { weight: 1.5 }]
     },
     {
-        "featureType": "transit.line",
-        "elementType": "geometry",
-        "stylers": [
-            { "color": "#d5d5d5" }
-        ]
+      featureType: 'transit.line',
+      elementType: 'geometry',
+      stylers: [{ color: '#d5d5d5' }]
     },
     {
-        "featureType": "all",
-        "elementType": "labels.text.fill",
-        "stylers": [
-            { "color": "#7a7874" }
-        ]
+      featureType: 'all',
+      elementType: 'labels.text.fill',
+      stylers: [{ color: '#7a7874' }]
     },
     {
-        "featureType": "all",
-        "elementType": "labels.text.stroke",
-        "stylers": [
-            { "color": "#ffffff" },
-            { "weight": 3 }
-        ]
+      featureType: 'all',
+      elementType: 'labels.text.stroke',
+      stylers: [{ color: '#ffffff' }, { weight: 3 }]
     }
   ]
 }
@@ -166,45 +94,59 @@ export const ShoppingAreasMap: React.FC = () => {
     }
   })
 
-  const fallbackShibuya = [{ 
-    id: 1, 
-    name: t('home.areas.shibuyaName'), 
-    type: t('home.areas.shibuyaType'), 
-    lat: 35.6595, 
-    lng: 139.7004, 
-    description: t('home.areas.shibuyaDesc')
-  }]
+  const fallbackShibuya = [
+    {
+      id: 1,
+      name: t('home.areas.shibuyaName'),
+      type: t('home.areas.shibuyaType'),
+      lat: 35.6595,
+      lng: 139.7004,
+      description: t('home.areas.shibuyaDesc')
+    }
+  ]
 
   // Map API areas to map markers
-  const shoppingAreas = areas && areas.length > 0 ? areas.map((area) => {
-    // Default coordinates (Tokyo center)
-    let lat = 35.6895
-    let lng = 139.6917
-    
-    // Fallbacks for known areas if map_location is null
-    if (area.name_en.toLowerCase().includes('akihabara')) { lat = 35.69836; lng = 139.77313 }
-    else if (area.name_en.toLowerCase().includes('shibuya')) { lat = 35.6595; lng = 139.7004 }
-    else if (area.name_en.toLowerCase().includes('shinjuku')) { lat = 35.6938; lng = 139.7034 }
-    else if (area.name_en.toLowerCase().includes('harajuku')) { lat = 35.6700; lng = 139.7027 }
-    
-    // Attempt to parse map_location "lat,lng" if exists
-    if (area.map_location && area.map_location.includes(',')) {
-      const parts = area.map_location.split(',')
-      if (parts.length >= 2) {
-        lat = parseFloat(parts[0].trim()) || lat
-        lng = parseFloat(parts[1].trim()) || lng
-      }
-    }
+  const shoppingAreas =
+    areas && areas.length > 0
+      ? areas.map((area) => {
+          // Default coordinates (Tokyo center)
+          let lat = 35.6895
+          let lng = 139.6917
 
-    return {
-      id: area.id,
-      name: getName(area),
-      type: area.name_jp || 'Shopping District',
-      lat,
-      lng,
-      description: area.name_th
-    }
-  }) : fallbackShibuya
+          // Fallbacks for known areas if map_location is null
+          if (area.name_en.toLowerCase().includes('akihabara')) {
+            lat = 35.69836
+            lng = 139.77313
+          } else if (area.name_en.toLowerCase().includes('shibuya')) {
+            lat = 35.6595
+            lng = 139.7004
+          } else if (area.name_en.toLowerCase().includes('shinjuku')) {
+            lat = 35.6938
+            lng = 139.7034
+          } else if (area.name_en.toLowerCase().includes('harajuku')) {
+            lat = 35.67
+            lng = 139.7027
+          }
+
+          // Attempt to parse map_location "lat,lng" if exists
+          if (area.map_location && area.map_location.includes(',')) {
+            const parts = area.map_location.split(',')
+            if (parts.length >= 2) {
+              lat = parseFloat(parts[0].trim()) || lat
+              lng = parseFloat(parts[1].trim()) || lng
+            }
+          }
+
+          return {
+            id: area.id,
+            name: getName(area),
+            type: area.name_jp || 'Shopping District',
+            lat,
+            lng,
+            description: area.name_th
+          }
+        })
+      : fallbackShibuya
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: GOOGLE_MAPS_API_KEY
@@ -217,22 +159,19 @@ export const ShoppingAreasMap: React.FC = () => {
     setMap(map)
   }, [])
 
-  const onUnmount = useCallback(function callback(map: google.maps.Map) {
+  const onUnmount = useCallback(function callback() {
     setMap(null)
   }, [])
 
   return (
     <section className="py-16 bg-background">
-      <div className="container mx-auto px-4">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <h2 className="text-3xl font-bold text-foreground tracking-tight mb-4">{t('home.areas.title')}</h2>
-          <p className="text-muted-foreground">
-            {t('home.areas.subtitle')}
-          </p>
+      <div className="section-container">
+        <div className="text-center max-w-2xl mx-auto mb-8">
+          <h2 className="section-title-lg mb-4">{t('home.areas.title')}</h2>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 bg-card rounded-xl border border-border overflow-hidden p-2 shadow-sm">
+          <div className="lg:col-span-2 card-panel-flush overflow-hidden p-2">
             {isLoaded ? (
               <GoogleMap
                 mapContainerStyle={containerStyle}
@@ -248,8 +187,12 @@ export const ShoppingAreasMap: React.FC = () => {
                     position={{ lat: area.lat, lng: area.lng }}
                     onClick={() => setActiveMarker(area.id)}
                     icon={{
-                      url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#AD1F35" width="32" height="32"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'),
-                      scaledSize: new window.google.maps.Size(32, 32),
+                      url:
+                        'data:image/svg+xml;charset=UTF-8,' +
+                        encodeURIComponent(
+                          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#AD1F35" width="32" height="32"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'
+                        ),
+                      scaledSize: new window.google.maps.Size(32, 32)
                     }}
                   >
                     {activeMarker === area.id && (
@@ -269,9 +212,7 @@ export const ShoppingAreasMap: React.FC = () => {
                 <div className="text-center p-6">
                   <MapPin className="w-12 h-12 text-primary mx-auto mb-4 animate-bounce" />
                   <p className="text-muted-foreground">{t('home.areas.loadingMap')}</p>
-                  {!GOOGLE_MAPS_API_KEY && (
-                    <p className="text-xs text-destructive mt-2">{t('home.areas.apiKeyMissing')}</p>
-                  )}
+                  {!GOOGLE_MAPS_API_KEY && <p className="text-xs text-destructive mt-2">{t('home.areas.apiKeyMissing')}</p>}
                 </div>
               </div>
             )}
@@ -285,12 +226,10 @@ export const ShoppingAreasMap: React.FC = () => {
               </div>
             ) : (
               shoppingAreas.map((area) => (
-                <div 
-                  key={area.id} 
+                <div
+                  key={area.id}
                   className={`p-4 rounded-lg border transition-all cursor-pointer ${
-                    activeMarker === area.id 
-                      ? 'border-primary bg-primary/5 shadow-md' 
-                      : 'border-border bg-card hover:border-primary/50'
+                    activeMarker === area.id ? 'border-primary bg-primary/5 shadow-md' : 'border-border bg-card hover:border-primary/50'
                   }`}
                   onClick={() => {
                     setActiveMarker(area.id)
@@ -302,9 +241,7 @@ export const ShoppingAreasMap: React.FC = () => {
                 >
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="font-bold text-foreground">{area.name}</h4>
-                    <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                      {area.type}
-                    </span>
+                    <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">{area.type}</span>
                   </div>
                   <p className="text-sm text-muted-foreground">{area.description}</p>
                 </div>

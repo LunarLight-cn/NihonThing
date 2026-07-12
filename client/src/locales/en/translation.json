@@ -7,7 +7,8 @@
     "signIn": "Sign In",
     "myOrders": "My Orders",
     "adminDashboard": "Admin Dashboard",
-    "logout": "Logout"
+    "logout": "Logout",
+    "support": "Support"
   },
   "footer": {
     "description": "Your premium gateway to exclusive Japanese goods, delivered straight to your door.",
@@ -33,7 +34,6 @@
   "home": {
     "schedule": {
       "title": "Upcoming Trips",
-      "subtitle": "We take orders in batches to ensure the freshest items and best shipping rates.",
       "flight": "Flight",
       "seaFreight": "Sea Freight",
       "closesOn": "Closes on {{date}}",
@@ -47,9 +47,12 @@
       "stayTuned": "Stay tuned for our upcoming trips!",
       "errorLoading": "Failed to load schedules"
     },
+    "newArrivals": {
+      "title": "New Arrivals",
+      "viewAll": "View All New Products"
+    },
     "trending": {
       "title": "Trending Items",
-      "subtitle": "Discover what others are buying from Japan right now.",
       "noBrand": "No brand",
       "addToCart": "Add to Cart",
       "viewAll": "View All Products",
@@ -58,7 +61,6 @@
     },
     "areas": {
       "title": "Explore Shopping Areas",
-      "subtitle": "We visit the best shopping districts in Japan to source your items. From the electronics of Akihabara to the luxury boutiques of Ginza.",
       "popular": "Popular Districts",
       "shibuyaName": "Shibuya",
       "shibuyaType": "Fashion & Youth",
@@ -67,9 +69,21 @@
       "apiKeyMissing": "API Key missing in environment"
     }
   },
+  "support": {
+    "title": "How can we help?",
+    "comingSoon": "Coming Soon",
+    "lineTitle": "Line Official",
+    "lineDesc": "Chat with our support team directly via Line OA.",
+    "openLine": "Open Line",
+    "botTitle": "AI Chatbot",
+    "botDesc": "Get instant answers from our intelligent shopping assistant.",
+    "startChat": "Start Chat",
+    "requestTitle": "Request Product",
+    "requestDesc": "Can't find what you're looking for? Submit a custom request.",
+    "submitRequest": "Submit Request"
+  },
   "catalog": {
     "title": "Products",
-    "subtitle": "Browse our curated selection of authentic Japanese products.",
     "searchPlaceholder": "Search products...",
     "filters": "Filters",
     "categories": "Categories",

@@ -11,6 +11,7 @@ import { Home } from './pages/customer/Home'
 import { Catalog } from './pages/customer/Catalog'
 import { ProductDetails } from './pages/customer/ProductDetails'
 import { CustomRequest } from './pages/customer/CustomRequest'
+import { Support } from './pages/customer/Support'
 import { AdminOrders } from './pages/admin/AdminOrders'
 import { AdminTrips } from './pages/admin/AdminTrips'
 import { AdminProducts } from './pages/admin/AdminProducts'
@@ -19,6 +20,8 @@ import { AdminEvents } from './pages/admin/AdminEvents'
 import { AdminSettings } from './pages/admin/AdminSettings'
 import { AdminUsers } from './pages/admin/AdminUsers'
 import { AdminTickets } from './pages/admin/AdminTickets'
+import { AdminAreas } from './pages/admin/AdminAreas'
+import { AdminShops } from './pages/admin/AdminShops'
 
 const queryClient = new QueryClient()
 
@@ -38,6 +41,7 @@ export default function App() {
               <Route path="catalog" element={<Catalog />} />
               <Route path="product/:id" element={<ProductDetails />} />
               <Route path="request" element={<CustomRequest />} />
+              <Route path="support" element={<Support />} />
               <Route path="areas" element={<div className="p-8"><h1 className="text-3xl font-bold text-primary">Shopping Areas</h1></div>} />
               <Route path="orders" element={
                 <ProtectedRoute>
@@ -58,6 +62,8 @@ export default function App() {
               <Route path="tickets" element={<AdminTickets />} />
               <Route path="products" element={<AdminProducts />} />
               <Route path="events" element={<AdminEvents />} />
+              <Route path="areas" element={<AdminAreas />} />
+              <Route path="shops" element={<AdminShops />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>

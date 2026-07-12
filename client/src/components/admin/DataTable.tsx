@@ -1,12 +1,5 @@
 import { useState } from 'react'
-import {
-  useReactTable,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  flexRender,
-} from '@tanstack/react-table'
+import { useReactTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, flexRender } from '@tanstack/react-table'
 import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 
@@ -17,12 +10,7 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string
 }
 
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-  searchKey,
-  searchPlaceholder = 'Search...'
-}: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, searchKey, searchPlaceholder = 'Search...' }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
 
@@ -36,9 +24,9 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
-      globalFilter,
+      globalFilter
     },
-    onGlobalFilterChange: setGlobalFilter,
+    onGlobalFilterChange: setGlobalFilter
   })
 
   return (
@@ -69,19 +57,14 @@ export function DataTable<TData, TValue>({
                         {header.isPlaceholder ? null : (
                           <div
                             {...{
-                              className: header.column.getCanSort()
-                                ? 'cursor-pointer select-none flex items-center gap-1 hover:text-primary transition-colors'
-                                : '',
-                              onClick: header.column.getToggleSortingHandler(),
+                              className: header.column.getCanSort() ? 'cursor-pointer select-none flex items-center gap-1 hover:text-primary transition-colors' : '',
+                              onClick: header.column.getToggleSortingHandler()
                             }}
                           >
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
+                            {flexRender(header.column.columnDef.header, header.getContext())}
                             {{
                               asc: <ChevronUp className="w-4 h-4" />,
-                              desc: <ChevronDown className="w-4 h-4" />,
+                              desc: <ChevronDown className="w-4 h-4" />
                             }[header.column.getIsSorted() as string] ?? null}
                           </div>
                         )}
@@ -94,10 +77,7 @@ export function DataTable<TData, TValue>({
             <tbody className="divide-y divide-border">
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="hover:bg-secondary/20 transition-colors"
-                  >
+                  <tr key={row.id} className="hover:bg-secondary/20 transition-colors">
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="px-4 py-3">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -122,36 +102,19 @@ export function DataTable<TData, TValue>({
           Showing {table.getRowModel().rows.length} of {table.getFilteredRowModel().rows.length} rows
         </div>
         <div className="flex items-center space-x-2">
-          <button
-            onClick={() => table.setPageIndex(0)}
-            disabled={!table.getCanPreviousPage()}
-            className="p-2 border border-border rounded-md hover:bg-secondary disabled:opacity-50 transition-colors"
-          >
+          <button onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()} className="btn-pagination">
             <ChevronsLeft className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            className="p-2 border border-border rounded-md hover:bg-secondary disabled:opacity-50 transition-colors"
-          >
+          <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} className="btn-pagination">
             <ChevronLeft className="w-4 h-4" />
           </button>
           <span className="text-sm font-medium px-2">
-            Page {table.getState().pagination.pageIndex + 1} of{' '}
-            {table.getPageCount()}
+            Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
           </span>
-          <button
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className="p-2 border border-border rounded-md hover:bg-secondary disabled:opacity-50 transition-colors"
-          >
+          <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="btn-pagination">
             <ChevronRight className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-            disabled={!table.getCanNextPage()}
-            className="p-2 border border-border rounded-md hover:bg-secondary disabled:opacity-50 transition-colors"
-          >
+          <button onClick={() => table.setPageIndex(table.getPageCount() - 1)} disabled={!table.getCanNextPage()} className="btn-pagination">
             <ChevronsRight className="w-4 h-4" />
           </button>
         </div>

@@ -1,15 +1,13 @@
 import React from 'react'
-import { Hero } from '../../components/home/Hero'
 import { TripSchedule } from '../../components/home/TripSchedule'
+import { NewArrivals } from '../../components/home/NewArrivals'
 import { TrendingItems } from '../../components/home/TrendingItems'
-import { ShoppingAreasMap } from '../../components/home/ShoppingAreasMap'
 
 export const Home: React.FC = () => {
   return (
-    <div className="flex flex-col min-h-screen">
-      <Hero />
+    <div className="flex flex-col min-h-screen bg-background">
       <TripSchedule />
-      <ShoppingAreasMap />
+      <NewArrivals />
       <TrendingItems />
     </div>
   )

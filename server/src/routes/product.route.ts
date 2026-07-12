@@ -1,6 +1,6 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { authGuard, adminGuard, AuthVariables } from '../middlewares/auth.middleware'
-import { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct } from '../models/product.model'
+import { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct, getNewArrivals, getTrendingProducts } from '../models/product.model'
 
 const productRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; EXCHANGE_RATE_JPY_THB: string }; Variables: AuthVariables }>()
 
@@ -51,6 +51,32 @@ productRoutes.openapi(getProductsRoute, async (c) => {
   const query = c.req.valid('query')
   const result = await getAllProducts(c.env.nihonthing_db, query)
   return c.json({ success: true, ...result })
+})
+
+// GET New Arrivals
+const getNewArrivalsRoute = createRoute({
+  method: 'get',
+  path: '/new-arrivals',
+  tags: ['Products'],
+  responses: { 200: { description: 'Retrieve new arrival products successfully' } }
+})
+
+productRoutes.openapi(getNewArrivalsRoute, async (c) => {
+  const result = await getNewArrivals(c.env.nihonthing_db, 6)
+  return c.json({ success: true, data: result })
+})
+
+// GET Trending Products
+const getTrendingRoute = createRoute({
+  method: 'get',
+  path: '/trending',
+  tags: ['Products'],
+  responses: { 200: { description: 'Retrieve trending products successfully' } }
+})
+
+productRoutes.openapi(getTrendingRoute, async (c) => {
+  const result = await getTrendingProducts(c.env.nihonthing_db, 4)
+  return c.json({ success: true, data: result })
 })
 
 // GET Products by ID

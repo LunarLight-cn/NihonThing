@@ -74,3 +74,11 @@ export const deleteUser = async (d1: D1Database, userId: number) => {
   const db = drizzle(d1, { schema })
   await db.delete(schema.Users).where(eq(schema.Users.id, userId))
 }
+
+export const updateUserStatus = async (d1: D1Database, userId: number, status: "active" | "inactive") => {
+  const db = drizzle(d1, { schema })
+  await db
+    .update(schema.Users)
+    .set({ status, udate: sql`CURRENT_TIMESTAMP` })
+    .where(eq(schema.Users.id, userId))
+}

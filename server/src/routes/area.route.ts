@@ -8,7 +8,8 @@ const CreateAreaSchema = z.object({
   name_th: z.string(),
   name_en: z.string(),
   name_jp: z.string().optional(),
-  map_location: z.string().optional()
+  map_location: z.string().optional(),
+  status: z.enum(["active", "inactive"]).optional()
 })
 
 const UpdateAreaSchema = CreateAreaSchema.partial()
@@ -81,23 +82,6 @@ areaRoutes.openapi(putAreaRoute, async (c) => {
   const data = c.req.valid('json')
   const updatedArea = await updateArea(c.env.nihonthing_db, parseInt(id), data)
   return c.json({ success: true, data: updatedArea })
-})
-
-// DELETE /api/areas/:id
-const deleteAreaRoute = createRoute({
-  method: 'delete',
-  path: '/{id}',
-  tags: ['Areas'],
-  middleware: [authGuard, adminGuard] as const,
-  security: [{ Bearer: [] }],
-  request: { params: AreaIdParamsSchema },
-  responses: { 200: { description: 'Area deleted successfully' } }
-})
-
-areaRoutes.openapi(deleteAreaRoute, async (c) => {
-  const { id } = c.req.valid('param')
-  const deletedArea = await deleteArea(c.env.nihonthing_db, parseInt(id))
-  return c.json({ success: true, data: deletedArea })
 })
 
 export default areaRoutes
