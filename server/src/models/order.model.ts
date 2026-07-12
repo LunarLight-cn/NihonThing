@@ -116,6 +116,15 @@ export const createOrder = async (
 
     await tx.insert(schema.Order_Items).values(orderItemsData)
 
+    // Increment total_sold for products
+    for (const item of items) {
+      if (item.type === 'product') {
+        await tx.update(schema.Products)
+          .set({ total_sold: sql`COALESCE(total_sold, 0) + ${item.quantity}` })
+          .where(eq(schema.Products.id, item.id))
+      }
+    }
+
     return newOrder
   })
 }

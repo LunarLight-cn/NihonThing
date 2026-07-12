@@ -7,6 +7,7 @@
     "signIn": "Sign In",
     "myOrders": "My Orders",
     "adminDashboard": "Admin Dashboard",
+    "chat": "Chat",
     "logout": "Logout",
     "support": "Support"
   },
@@ -51,7 +52,7 @@
       "viewAll": "View All New Products"
     },
     "trending": {
-      "title": "Trending Items",
+      "title": "Trending Products",
       "noBrand": "No brand",
       "addToCart": "Add to Cart",
       "viewAll": "View All Products",
@@ -65,7 +66,10 @@
       "shibuyaType": "Fashion & Youth",
       "shibuyaDesc": "Trendy boutiques, huge department stores, and the famous crossing.",
       "loadingMap": "Loading Map Data...",
-      "apiKeyMissing": "API Key missing in environment"
+      "apiKeyMissing": "API Key missing in environment",
+      "trendingIn": "Trending in {{area}}",
+      "shops": "Shops",
+      "products": "Products available"
     }
   },
   "support": {
@@ -83,6 +87,7 @@
   },
   "catalog": {
     "title": "Products",
+    "search": "Search products...",
     "searchPlaceholder": "Search products...",
     "filters": "Filters",
     "categories": "Categories",
@@ -92,6 +97,8 @@
     "noBrand": "No brand",
     "addToCart": "Add to Cart",
     "noProducts": "No products found.",
+    "noResults": "No products found.",
+    "itemsFound": "items found",
     "clearFilters": "Clear all filters",
     "sortBy": "Sort by:",
     "recommended": "Recommended",
@@ -103,11 +110,12 @@
     "category": "Category #{{id}}",
     "noReviews": "(No reviews yet)",
     "estRetail": "(Est. Retail)",
-    "noDesc": "No description available for this authentic Japanese item.",
-    "authentic": "100% Authentic, Hand-carried from Japan",
-    "delivery": "Delivery scheduled for next trip arrival",
+    "noDesc": "No description available.",
+    "authentic": "100% Authentic Japanese Goods",
+    "delivery": "Direct Delivery to Your Door",
     "addToCart": "Add to Cart",
     "outOfStock": "Out of Stock",
+    "tentativePrice": "* Tentative price, subject to change based on actual store price.",
     "notFound": "Product not found or failed to load."
   },
   "cart": {
@@ -182,5 +190,45 @@
     "submitting": "Submitting...",
     "success": "Request submitted successfully! We will review it shortly.",
     "error": "Failed to submit request. Please try again."
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "lastUpdated": "Last updated: {{date}}",
+    "sections": {
+      "intro": {
+        "title": "1. Introduction",
+        "content": "Welcome to NihonThing. By using our service, you agree to these terms."
+      },
+      "preorders": {
+        "title": "2. Pre-orders and Custom Requests",
+        "content": "All pre-orders and custom requests are subject to availability. Prices are tentative and may change based on the actual store price in Japan."
+      },
+      "shipping": {
+        "title": "3. Shipping and Delivery",
+        "content": "We hand-carry items from Japan and dispatch them upon arrival in your home country. Delivery times are estimates and may vary."
+      },
+      "returns": {
+        "title": "4. Returns and Refunds",
+        "content": "Due to the nature of our proxy shopping service, returns and refunds are generally not accepted unless the item is defective or incorrect."
+      }
+    }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: {{date}}",
+    "sections": {
+      "collect": {
+        "title": "1. Information We Collect",
+        "content": "We collect information you provide directly to us, such as when you create an account, submit a custom request, or contact support."
+      },
+      "use": {
+        "title": "2. How We Use Information",
+        "content": "We use the information we collect to provide, maintain, and improve our services, process transactions, and communicate with you."
+      },
+      "share": {
+        "title": "3. Information Sharing",
+        "content": "We do not share your personal information with third parties except as necessary to provide our services (e.g., shipping partners)."
+      }
+    }
   }
 }

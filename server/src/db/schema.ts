@@ -100,6 +100,7 @@ export const Products = sqliteTable("Products", {
   amount: integer("amount"),
   remain: integer("remain"),
   status: text("status", { enum: ["active", "inactive", "out_of_stock"] }),
+  total_sold: integer("total_sold").default(0),
   cdate: text("cdate").default(sql`CURRENT_TIMESTAMP`),
   udate: text("udate"),
 });

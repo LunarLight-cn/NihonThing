@@ -71,15 +71,29 @@ export const getNewArrivals = async (d1: D1Database, limit: number = 6) => {
   })
 }
 
-export const getTrendingProducts = async (d1: D1Database, limit: number = 4) => {
+export const getTrendingProducts = async (d1: D1Database, limit: number = 4, areaId?: number) => {
   const db = drizzle(d1, { schema })
   
+  let validProductIds: number[] | null = null
+  if (areaId) {
+    const locations = await db.select({ product_id: schema.Product_Locations.product_id })
+      .from(schema.Product_Locations)
+      .where(eq(schema.Product_Locations.area_id, areaId))
+    validProductIds = locations.map(l => l.product_id)
+    if (validProductIds.length === 0) return []
+  }
+
   // 1. Get products tagged as 'trending'
+  const taggedConditions = [
+    eq(schema.Products.status, 'active'),
+    eq(schema.Products.tag, 'trending')
+  ]
+  if (validProductIds) {
+    taggedConditions.push(inArray(schema.Products.id, validProductIds))
+  }
+
   const taggedProducts = await db.query.Products.findMany({
-    where: and(
-      eq(schema.Products.status, 'active'),
-      eq(schema.Products.tag, 'trending')
-    ),
+    where: and(...taggedConditions),
     limit,
     with: { category: true }
   })
@@ -90,53 +104,28 @@ export const getTrendingProducts = async (d1: D1Database, limit: number = 4) => 
     return result.slice(0, limit)
   }
   
-  // 2. Get top selling products
+  // 2. Get top selling products (using total_sold column)
   const remainingLimit = limit - result.length
   const excludedIds = result.map(p => p.id)
   
-  const bestSellersQuery = await db
-    .select({
-      product_id: schema.Order_Items.product_id,
-      total_qty: sql<number>`sum(${schema.Order_Items.quantity})`
-    })
-    .from(schema.Order_Items)
-    .where(sql`${schema.Order_Items.product_id} IS NOT NULL`)
-    .groupBy(schema.Order_Items.product_id)
-    .orderBy(desc(sql`sum(${schema.Order_Items.quantity})`))
-    .limit(limit * 2)
+  const bestSellersConditions = [eq(schema.Products.status, 'active')]
+  if (excludedIds.length > 0) {
+    bestSellersConditions.push(notInArray(schema.Products.id, excludedIds))
+  }
+  if (validProductIds) {
+    bestSellersConditions.push(inArray(schema.Products.id, validProductIds))
+  }
 
-  const bestSellerIds = bestSellersQuery
-    .filter(row => row.product_id !== null && !excludedIds.includes(row.product_id))
-    .map(row => row.product_id as number)
-    
-  if (bestSellerIds.length > 0) {
-    const bestSellerProducts = await db.query.Products.findMany({
-      where: and(
-        inArray(schema.Products.id, bestSellerIds),
-        eq(schema.Products.status, 'active')
-      ),
-      with: { category: true }
-    })
-    
-    // Sort by bestSellerIds order to maintain top sellers first
-    bestSellerProducts.sort((a, b) => bestSellerIds.indexOf(a.id) - bestSellerIds.indexOf(b.id))
-    
-    result = [...result, ...bestSellerProducts.slice(0, remainingLimit)]
-  }
+  const bestSellerProducts = await db.query.Products.findMany({
+    where: and(...bestSellersConditions),
+    orderBy: [desc(schema.Products.total_sold), desc(schema.Products.cdate)],
+    limit: remainingLimit,
+    with: { category: true }
+  })
   
-  // 3. Fallback: If still not enough, fill with newest active products
-  if (result.length < limit) {
-    const finalExcludedIds = result.map(p => p.id)
-    const fallbackProducts = await db.query.Products.findMany({
-      where: finalExcludedIds.length > 0 
-        ? and(eq(schema.Products.status, 'active'), notInArray(schema.Products.id, finalExcludedIds))
-        : eq(schema.Products.status, 'active'),
-      orderBy: [desc(schema.Products.cdate)],
-      limit: limit - result.length,
-      with: { category: true }
-    })
-    result = [...result, ...fallbackProducts]
-  }
+  result = [...result, ...bestSellerProducts]
+  
+
 
   return result
 }

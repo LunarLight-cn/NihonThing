@@ -71,11 +71,14 @@ const getTrendingRoute = createRoute({
   method: 'get',
   path: '/trending',
   tags: ['Products'],
+  request: { query: z.object({ area_id: z.coerce.number().optional() }) },
   responses: { 200: { description: 'Retrieve trending products successfully' } }
 })
 
 productRoutes.openapi(getTrendingRoute, async (c) => {
-  const result = await getTrendingProducts(c.env.nihonthing_db, 4)
+  const query = c.req.valid('query')
+  const result = await getTrendingProducts(c.env.nihonthing_db, 4, query.area_id)
+  c.header('Cache-Control', 'public, max-age=3600')
   return c.json({ success: true, data: result })
 })
 

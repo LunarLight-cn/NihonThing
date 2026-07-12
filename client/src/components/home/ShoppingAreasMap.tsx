@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '../../services/api'
 import { useTranslation } from 'react-i18next'
 import { useLocalizedName } from '../../utils/localization'
+import { TrendingItems } from './TrendingItems'
 
 // You should put your actual API key in .env
 // For this demo, we'll gracefully handle missing keys or use a placeholder map
@@ -80,6 +81,8 @@ interface Area {
   name_en: string
   name_jp: string | null
   map_location: string | null
+  shopCount?: number
+  productCount?: number
 }
 
 export const ShoppingAreasMap: React.FC = () => {
@@ -98,10 +101,10 @@ export const ShoppingAreasMap: React.FC = () => {
     {
       id: 1,
       name: t('home.areas.shibuyaName'),
-      type: t('home.areas.shibuyaType'),
+      type: `12 ${t('home.areas.shops')}`,
       lat: 35.6595,
       lng: 139.7004,
-      description: t('home.areas.shibuyaDesc')
+      description: `45 ${t('home.areas.products')}`
     }
   ]
 
@@ -140,10 +143,10 @@ export const ShoppingAreasMap: React.FC = () => {
           return {
             id: area.id,
             name: getName(area),
-            type: area.name_jp || 'Shopping District',
+            type: `${area.shopCount || 0} ${t('home.areas.shops')}`,
             lat,
             lng,
-            description: area.name_th
+            description: `${area.productCount || 0} ${t('home.areas.products')}`
           }
         })
       : fallbackShibuya
@@ -249,6 +252,16 @@ export const ShoppingAreasMap: React.FC = () => {
             )}
           </div>
         </div>
+
+        {activeMarker && (
+          <div className="mt-12">
+            <TrendingItems 
+              areaId={activeMarker} 
+              hideViewAll 
+              title={t('home.areas.trendingIn', { area: shoppingAreas.find(a => a.id === activeMarker)?.name || '' })} 
+            />
+          </div>
+        )}
       </div>
     </section>
   )

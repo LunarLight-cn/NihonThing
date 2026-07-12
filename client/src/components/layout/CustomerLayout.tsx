@@ -28,6 +28,9 @@ export const CustomerLayout: React.FC = () => {
             <Link to="/catalog" className="hover:text-foreground transition-colors">
               {t('nav.catalog')}
             </Link>
+            <span className="text-muted-foreground/50 cursor-not-allowed" title="Coming soon">
+              {t('nav.chat')}
+            </span>
             <Link to="/support" className="hover:text-foreground transition-colors">
               {t('nav.support')}
             </Link>
@@ -154,12 +157,12 @@ export const CustomerLayout: React.FC = () => {
             <h4 className="font-medium mb-4">{t('footer.support')}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link to="/faq" className="hover:text-primary">
+                <Link to="/support" className="hover:text-primary">
                   {t('footer.faq')}
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-primary">
+                <Link to="/support" className="hover:text-primary">
                   {t('footer.contact')}
                 </Link>
               </li>

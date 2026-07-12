@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Star, Loader2, AlertCircle } from 'lucide-react'
+import { ArrowRight, Loader2, AlertCircle } from 'lucide-react'
 import { useCart } from '../../contexts/CartContext'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
@@ -25,9 +25,11 @@ interface Product {
 
 interface Props {
   hideViewAll?: boolean
+  areaId?: number
+  title?: string
 }
 
-export const TrendingItems: React.FC<Props> = ({ hideViewAll }) => {
+export const TrendingItems: React.FC<Props> = ({ hideViewAll, areaId, title }) => {
   const { addItem } = useCart()
   const { t } = useTranslation()
   const getName = useLocalizedName()
@@ -37,9 +39,10 @@ export const TrendingItems: React.FC<Props> = ({ hideViewAll }) => {
     isLoading,
     error
   } = useQuery({
-    queryKey: ['products', 'trending'],
+    queryKey: ['products', 'trending', areaId],
     queryFn: async () => {
-      const res = await api.get('/products/trending')
+      const url = areaId ? `/products/trending?area_id=${areaId}` : `/products/trending`
+      const res = await api.get(url)
       return res.data.data as Product[]
     }
   })
@@ -49,7 +52,7 @@ export const TrendingItems: React.FC<Props> = ({ hideViewAll }) => {
       <div className="section-container">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8">
           <div className="max-w-2xl mb-6 md:mb-0">
-            <h2 className="section-title mb-4">{t('home.trending.title')}</h2>
+            <h2 className="section-title mb-4">{title || t('home.trending.title')}</h2>
           </div>
           {!hideViewAll && (
             <Link to="/catalog?show=trending" className="link-view-all">
@@ -78,10 +81,6 @@ export const TrendingItems: React.FC<Props> = ({ hideViewAll }) => {
                     alt={item.name}
                     className="product-card-img"
                   />
-                  <div className="absolute top-2 right-2 bg-background/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-medium flex items-center space-x-1">
-                    <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                    <span>4.9</span>
-                  </div>
                 </Link>
                 <div className="p-4 flex flex-col flex-1">
                   {item.brand && <p className="text-xs text-muted-foreground font-medium mb-1">{item.brand}</p>}

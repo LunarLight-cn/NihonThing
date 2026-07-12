@@ -1,6 +1,6 @@
 import React from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Star, ShieldCheck, ArrowLeft, Truck, Loader2, AlertCircle, MapPin } from 'lucide-react'
+import { ShieldCheck, ArrowLeft, Truck, Loader2, AlertCircle, MapPin } from 'lucide-react'
 import { useCart } from '../../contexts/CartContext'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../../services/api'
@@ -95,27 +95,15 @@ export const ProductDetails: React.FC = () => {
             {/* Product Info */}
             <div className="flex flex-col">
               <div className="mb-6">
-                <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">{product.brand || t('product.noBrand')}</p>
+                {product.brand && <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">{product.brand}</p>}
                 <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight">{getName(product)}</h1>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-1 text-yellow-500">
-                    <Star className="w-5 h-5 fill-current" />
-                    <Star className="w-5 h-5 fill-current" />
-                    <Star className="w-5 h-5 fill-current" />
-                    <Star className="w-5 h-5 fill-current" />
-                    <Star className="w-5 h-5 fill-current" />
-                  </div>
-                  <span className="text-sm text-muted-foreground">{t('product.noReviews')}</span>
-                </div>
               </div>
 
               <div className="mb-8">
                 <p className="text-4xl font-bold text-primary mb-1">฿{(product.price_tentative_thb || product.price_thb || 0).toLocaleString()}</p>
-                {product.price_tentative_jpy && (
-                  <p className="text-sm text-muted-foreground line-through">
-                    ¥{product.price_tentative_jpy.toLocaleString()} {t('product.estRetail')}
-                  </p>
-                )}
+                <p className="text-sm text-muted-foreground mt-2">
+                  {t('product.tentativePrice')}
+                </p>
               </div>
 
               <p className="text-foreground leading-relaxed mb-8">{getDesc(product) || t('product.noDesc')}</p>
