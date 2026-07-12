@@ -12,11 +12,11 @@ export const CartSidebar: React.FC = () => {
   return (
     <>
       {/* Overlay */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 z-[60] backdrop-blur-sm transition-opacity"
         onClick={() => setIsCartOpen(false)}
       />
-      
+
       {/* Sidebar */}
       <div className="fixed inset-y-0 right-0 w-full md:w-[400px] bg-card border-l border-border z-[70] shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out">
         <div className="flex items-center justify-between p-4 border-b border-border">
@@ -24,7 +24,7 @@ export const CartSidebar: React.FC = () => {
             <ShoppingBag className="w-5 h-5 mr-2" />
             {t('cart.title')}
           </h2>
-          <button 
+          <button
             onClick={() => setIsCartOpen(false)}
             className="p-2 hover:bg-secondary rounded-full transition-colors"
           >
@@ -40,7 +40,7 @@ export const CartSidebar: React.FC = () => {
                 <p className="font-medium text-foreground">{t('cart.empty')}</p>
                 <p className="text-sm mt-1">{t('cart.emptyDesc')}</p>
               </div>
-              <button 
+              <button
                 onClick={() => setIsCartOpen(false)}
                 className="px-6 py-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-full text-sm font-medium transition-colors"
               >
@@ -48,9 +48,16 @@ export const CartSidebar: React.FC = () => {
               </button>
             </div>
           ) : (
-            items.map(item => (
-              <div key={item.id} className="flex space-x-4 border border-border p-3 rounded-lg bg-background">
-                <img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded-md" />
+            items.map((item) => (
+              <div
+                key={item.id}
+                className="flex space-x-4 border border-border p-3 rounded-lg bg-background"
+              >
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-20 h-20 object-cover rounded-md"
+                />
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     <h3 className="font-semibold text-sm line-clamp-2">{item.name}</h3>
@@ -58,14 +65,14 @@ export const CartSidebar: React.FC = () => {
                   </div>
                   <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center space-x-2 bg-secondary rounded-md">
-                      <button 
+                      <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
                         className="p-1 hover:text-primary transition-colors"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
                       <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
-                      <button 
+                      <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         className="p-1 hover:text-primary transition-colors"
                       >
@@ -96,11 +103,11 @@ export const CartSidebar: React.FC = () => {
                 <span className="font-bold text-primary text-lg">฿{totalPrice.toLocaleString()}</span>
               </div>
             </div>
-            
-            <Link 
+
+            <Link
               to="/checkout"
               onClick={() => setIsCartOpen(false)}
-              className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-all flex justify-center items-center"
+              className="btn-primary-lg flex justify-center items-center"
             >
               {t('cart.checkout')}
             </Link>

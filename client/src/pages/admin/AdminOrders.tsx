@@ -17,7 +17,7 @@ interface Order {
 
 export const AdminOrders: React.FC = () => {
   const queryClient = useQueryClient()
-  
+
   const { data: orders, isLoading } = useQuery({
     queryKey: ['admin-orders'],
     queryFn: async () => {
@@ -27,14 +27,14 @@ export const AdminOrders: React.FC = () => {
   })
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: number, status: string }) => api.put(`/orders/${id}`, { status }),
+    mutationFn: ({ id, status }: { id: number; status: string }) => api.put(`/orders/${id}`, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] })
     }
   })
 
   const updatePaymentStatusMutation = useMutation({
-    mutationFn: ({ id, payment_status }: { id: number, payment_status: string }) => api.put(`/orders/${id}`, { payment_status }),
+    mutationFn: ({ id, payment_status }: { id: number; payment_status: string }) => api.put(`/orders/${id}`, { payment_status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] })
     }
@@ -43,7 +43,7 @@ export const AdminOrders: React.FC = () => {
   const columns: ColumnDef<Order>[] = [
     {
       accessorKey: 'id',
-      header: 'Order ID',
+      header: 'Order ID'
     },
     {
       accessorKey: 'cdate',
@@ -61,10 +61,10 @@ export const AdminOrders: React.FC = () => {
       cell: ({ row }) => {
         const status = row.original.status
         return (
-          <select 
+          <select
             value={status}
             onChange={(e) => updateStatusMutation.mutate({ id: row.original.id, status: e.target.value })}
-            className="text-xs px-2 py-1 rounded border border-border bg-background cursor-pointer"
+            className="input-inline-select"
           >
             <option value="pending">Pending</option>
             <option value="purchasing">Purchasing</option>
@@ -82,10 +82,10 @@ export const AdminOrders: React.FC = () => {
       cell: ({ row }) => {
         const pStatus = row.original.payment_status
         return (
-          <select 
+          <select
             value={pStatus}
             onChange={(e) => updatePaymentStatusMutation.mutate({ id: row.original.id, payment_status: e.target.value })}
-            className="text-xs px-2 py-1 rounded border border-border bg-background cursor-pointer"
+            className="input-inline-select"
           >
             <option value="pending_deposit">Pending Deposit</option>
             <option value="deposit_paid">Deposit Paid</option>
@@ -98,16 +98,16 @@ export const AdminOrders: React.FC = () => {
   ]
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-6">
+    <div className="admin-page">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-primary flex items-center">
+        <h1 className="admin-page-title">
           <ShoppingCart className="w-8 h-8 mr-3" />
           Order Management
         </h1>
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center p-12">
+        <div className="loading-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : (

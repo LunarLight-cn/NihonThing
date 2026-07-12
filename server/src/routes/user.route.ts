@@ -1,7 +1,7 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { fetchUsersList } from '../services/user.service'
 import { authGuard, AuthVariables } from '../middlewares/auth.middleware'
-import { updateUserProfile, getUserById, updateUserPassword, getUserPasswordHash, updateUserRole, deleteUser } from '../models/user.model'
+import { updateUserProfile, getUserById, updateUserPassword, getUserPasswordHash, updateUserRole, deleteUser, updateUserStatus } from '../models/user.model'
 import { hashPassword } from '../utils/hash'
 import { adminGuard } from '../middlewares/auth.middleware'
 import addressRoutes from './address.route'
@@ -170,6 +170,34 @@ userRoutes.openapi(putRoleRoute, async (c) => {
   try {
     await updateUserRole(c.env.nihonthing_db, parseInt(id), role)
     return c.json({ success: true, message: 'Role Updated' })
+  } catch (error) {
+    return c.json({ success: false, message: 'Update Failed' }, 500)
+  }
+})
+
+const UpdateStatusSchema = z.object({
+  status: z.enum(['active', 'inactive'])
+})
+
+const putStatusRoute = createRoute({
+  method: 'put',
+  path: '/{id}/status',
+  tags: ['Users (Admin)'],
+  middleware: [authGuard, adminGuard] as const,
+  security: [{ Bearer: [] }],
+  request: {
+    params: UserIdParamsSchema,
+    body: { content: { 'application/json': { schema: UpdateStatusSchema } } }
+  },
+  responses: { 200: { description: 'Status Updated' } }
+})
+
+userRoutes.openapi(putStatusRoute, async (c) => {
+  const { id } = c.req.valid('param')
+  const { status } = c.req.valid('json')
+  try {
+    await updateUserStatus(c.env.nihonthing_db, parseInt(id), status)
+    return c.json({ success: true, message: 'Status Updated' })
   } catch (error) {
     return c.json({ success: false, message: 'Update Failed' }, 500)
   }

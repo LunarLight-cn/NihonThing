@@ -75,3 +75,256 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ============================================================
+   COMPONENT CLASSES — Extracted from repeated Tailwind patterns
+   ============================================================ */
+
+@layer components {
+
+  /* ── Layout ─────────────────────────────────────────────── */
+
+  .section-container {
+    @apply container mx-auto px-4;
+  }
+
+  /* ── Typography ─────────────────────────────────────────── */
+
+  .section-title {
+    @apply text-2xl font-bold text-foreground tracking-tight;
+  }
+
+  .section-title-lg {
+    @apply text-3xl font-bold text-foreground tracking-tight;
+  }
+
+  .admin-page-title {
+    @apply text-3xl font-bold text-primary flex items-center;
+  }
+
+  /* ── Buttons ────────────────────────────────────────────── */
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground px-4 py-2 rounded-lg flex items-center hover:bg-primary/90 transition-colors;
+  }
+
+  .btn-primary-lg {
+    @apply w-full py-4 bg-primary text-primary-foreground text-lg font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50;
+  }
+
+  .btn-submit {
+    @apply w-full py-2.5 bg-primary text-primary-foreground font-medium rounded-md hover:bg-primary/90 transition-colors flex items-center justify-center disabled:opacity-50;
+  }
+
+  .btn-icon {
+    @apply p-2 text-muted-foreground hover:text-primary hover:bg-secondary rounded-lg transition-colors;
+  }
+
+  .btn-icon-destructive {
+    @apply p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors;
+  }
+
+  .btn-add-to-cart {
+    @apply px-3 py-1.5 text-sm bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground font-medium rounded-md transition-colors shrink-0;
+  }
+
+  .btn-pagination {
+    @apply p-2 border border-border rounded-md hover:bg-secondary disabled:opacity-50 transition-colors;
+  }
+
+  /* ── Cards & Panels ─────────────────────────────────────── */
+
+  .card-panel {
+    @apply bg-card border border-border p-6 rounded-xl shadow-sm;
+  }
+
+  .card-panel-flush {
+    @apply bg-card border border-border rounded-xl shadow-sm;
+  }
+
+  .stat-card {
+    @apply bg-card border border-border p-6 rounded-xl shadow-sm flex items-center space-x-4;
+  }
+
+  .product-card {
+    @apply bg-card rounded-xl overflow-hidden border border-border transition-all duration-300 hover:shadow-xl hover:border-primary/20 flex flex-col;
+  }
+
+  .product-card-img-container {
+    @apply block aspect-[4/3] overflow-hidden bg-muted relative shrink-0;
+  }
+
+  .product-card-img {
+    @apply w-full h-full object-cover transition-transform duration-500 group-hover:scale-105;
+  }
+
+  /* ── Form Elements ──────────────────────────────────────── */
+
+  .input-admin {
+    @apply w-full p-2 border border-border rounded bg-background;
+  }
+
+  .input-modal {
+    @apply w-full px-3 py-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50;
+  }
+
+  .input-customer {
+    @apply w-full p-3 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all;
+  }
+
+  .input-auth {
+    @apply w-full px-4 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors;
+  }
+
+  .input-inline-select {
+    @apply text-xs px-2 py-1 rounded border border-border bg-background cursor-pointer;
+  }
+
+  .label-admin {
+    @apply block text-sm font-medium mb-1;
+  }
+
+  .label-modal {
+    @apply block text-sm font-medium text-foreground mb-1;
+  }
+
+  .label-customer {
+    @apply text-sm font-bold text-foreground flex items-center;
+  }
+
+  .file-upload {
+    @apply block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20;
+  }
+
+  .form-section-divider {
+    @apply col-span-3 font-semibold text-primary border-b pb-2 mt-2;
+  }
+
+  /* ── Badges & Pills ─────────────────────────────────────── */
+
+  .badge {
+    @apply px-2 py-1 rounded-full text-xs font-medium uppercase;
+  }
+
+  .badge-pill {
+    @apply inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  /* ── Feedback States ────────────────────────────────────── */
+
+  .loading-center {
+    @apply flex justify-center py-12;
+  }
+
+  .error-alert {
+    @apply flex items-center text-destructive bg-destructive/10 p-4 rounded-xl;
+  }
+
+  .server-error {
+    @apply mb-6 p-3 bg-destructive/10 border border-destructive/20 rounded-md flex items-start space-x-2 text-destructive;
+  }
+
+  .empty-state {
+    @apply text-center py-12 bg-card rounded-xl border border-border text-muted-foreground;
+  }
+
+  /* ── Navigation ─────────────────────────────────────────── */
+
+  .link-view-all {
+    @apply inline-flex items-center space-x-2 text-primary font-medium hover:text-primary/80 transition-colors;
+  }
+
+  .tab-btn {
+    @apply py-2 px-4 border-b-2 font-medium transition-colors;
+  }
+
+  .tab-btn.is-active {
+    @apply border-primary text-primary;
+  }
+
+  .tab-btn:not(.is-active) {
+    @apply border-transparent text-muted-foreground hover:text-foreground;
+  }
+
+  .filter-btn {
+    @apply text-sm w-full text-left px-2 py-1.5 rounded-md transition-colors;
+  }
+
+  .filter-btn.is-active {
+    @apply bg-primary/10 text-primary font-medium;
+  }
+
+  .filter-btn:not(.is-active) {
+    @apply text-muted-foreground hover:bg-secondary;
+  }
+
+  .sidebar-filter-btn {
+    @apply w-full text-left px-4 py-2 font-medium rounded-lg transition-colors;
+  }
+
+  .sidebar-filter-btn.is-active {
+    @apply bg-primary/10 text-primary;
+  }
+
+  .sidebar-filter-btn:not(.is-active) {
+    @apply text-muted-foreground hover:bg-secondary;
+  }
+
+  /* ── Admin Layout ───────────────────────────────────────── */
+
+  .admin-page {
+    @apply p-8 max-w-6xl mx-auto space-y-6;
+  }
+
+  .admin-nav-link {
+    @apply flex items-center space-x-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors;
+  }
+
+  .admin-nav-link.is-active {
+    @apply bg-primary/10 text-primary;
+  }
+
+  .admin-nav-link:not(.is-active) {
+    @apply text-foreground hover:bg-secondary;
+  }
+
+  /* ── Modal ──────────────────────────────────────────────── */
+
+  .modal-overlay {
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm;
+  }
+
+  .modal-container {
+    @apply bg-card w-full max-w-md rounded-xl border border-border shadow-xl overflow-hidden flex flex-col max-h-[90vh];
+  }
+
+  .modal-header {
+    @apply p-6 border-b border-border flex justify-between items-center shrink-0;
+  }
+
+  .modal-footer {
+    @apply p-6 border-t border-border flex justify-end space-x-3 shrink-0 bg-secondary/20;
+  }
+
+  /* ── Table ──────────────────────────────────────────────── */
+
+  .table-container {
+    @apply bg-card border border-border rounded-xl overflow-hidden;
+  }
+
+  .table-head {
+    @apply bg-secondary/50 text-muted-foreground uppercase text-xs;
+  }
+
+  .table-th {
+    @apply px-6 py-4 font-medium;
+  }
+
+  .table-row {
+    @apply hover:bg-secondary/20 transition-colors;
+  }
+
+  .table-td {
+    @apply px-6 py-4;
+  }
+}

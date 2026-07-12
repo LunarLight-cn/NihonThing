@@ -9,7 +9,8 @@ const CreateShopSchema = z.object({
   name_th: z.string(),
   name_en: z.string(),
   name_jp: z.string().optional(),
-  map_location: z.string().optional()
+  map_location: z.string().optional(),
+  status: z.enum(["active", "inactive"]).optional()
 })
 
 const UpdateShopSchema = CreateShopSchema.partial()
@@ -82,23 +83,6 @@ shopRoutes.openapi(putShopRoute, async (c) => {
   const data = c.req.valid('json')
   const updatedShop = await updateShop(c.env.nihonthing_db, parseInt(id), data)
   return c.json({ success: true, data: updatedShop })
-})
-
-// DELETE /api/shops/:id
-const deleteShopRoute = createRoute({
-  method: 'delete',
-  path: '/{id}',
-  tags: ['Shops'],
-  middleware: [authGuard, adminGuard] as const,
-  security: [{ Bearer: [] }],
-  request: { params: ShopIdParamsSchema },
-  responses: { 200: { description: 'Shop deleted successfully' } }
-})
-
-shopRoutes.openapi(deleteShopRoute, async (c) => {
-  const { id } = c.req.valid('param')
-  const deletedShop = await deleteShop(c.env.nihonthing_db, parseInt(id))
-  return c.json({ success: true, data: deletedShop })
 })
 
 export default shopRoutes

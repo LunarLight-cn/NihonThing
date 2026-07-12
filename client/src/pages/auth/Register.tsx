@@ -5,18 +5,20 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { api } from '../../services/api'
 import { useAuth } from '../../contexts/AuthContext'
-import { ArrowRight, Loader2, AlertCircle, ArrowLeft } from 'lucide-react'
+import { ArrowRight, Loader2, ArrowLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-const registerSchema = z.object({
-  username: z.string().min(3, 'Username must be at least 3 characters'),
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-})
+const registerSchema = z
+  .object({
+    username: z.string().min(3, 'Username must be at least 3 characters'),
+    email: z.string().email('Please enter a valid email address'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string()
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword']
+  })
 
 type RegisterFormInputs = z.infer<typeof registerSchema>
 
@@ -26,7 +28,11 @@ export const Register: React.FC = () => {
   const [serverError, setServerError] = useState<string | null>(null)
   const { t } = useTranslation()
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterFormInputs>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting }
+  } = useForm<RegisterFormInputs>({
     resolver: zodResolver(registerSchema),
     mode: 'onChange'
   })
@@ -57,82 +63,84 @@ export const Register: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
-      <div className="w-full max-w-md bg-card border border-border rounded-xl shadow-lg p-8 relative">
-        <Link to="/" className="absolute top-6 left-6 text-muted-foreground hover:text-primary transition-colors flex items-center text-sm font-medium">
+    <div className="auth-container">
+      <div className="auth-card">
+        <Link
+          to="/"
+          className="absolute top-6 left-6 text-muted-foreground hover:text-primary transition-colors flex items-center text-sm font-medium"
+        >
           <ArrowLeft className="w-4 h-4 mr-1" />
           {t('auth.back')}
         </Link>
         <div className="text-center mb-8 mt-6">
-          <Link to="/" className="text-2xl font-bold text-primary inline-block mb-2">NihonThing</Link>
+          <Link
+            to="/"
+            className="text-2xl font-bold text-primary inline-block mb-2"
+          >
+            NihonThing
+          </Link>
           <h1 className="text-xl font-medium text-foreground">{t('auth.register.title')}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t('auth.register.subtitle')}</p>
         </div>
 
         {serverError && (
-          <div className="mb-6 p-3 bg-destructive/10 border border-destructive/20 rounded-md flex items-start space-x-2 text-destructive">
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+          <div className="error-alert mb-6">
             <span className="text-sm">{serverError}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4"
+        >
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
-              {t('auth.register.username')}
-            </label>
-            <input 
-              type="text" 
+            <label className="label-customer">{t('auth.register.username')}</label>
+            <input
+              type="text"
               {...register('username')}
               placeholder={t('auth.register.usernamePlaceholder')}
-              className={`w-full px-4 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors ${errors.username ? 'border-destructive' : 'border-border'}`}
+              className={`input-customer py-2 px-4 rounded-md ${errors.username ? 'border-destructive' : ''}`}
             />
             {errors.username && <p className="text-destructive text-sm mt-1">{errors.username.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
-              {t('auth.register.email')}
-            </label>
-            <input 
-              type="email" 
+            <label className="label-customer">{t('auth.register.email')}</label>
+            <input
+              type="email"
               {...register('email')}
               placeholder={t('auth.register.emailPlaceholder')}
-              className={`w-full px-4 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors ${errors.email ? 'border-destructive' : 'border-border'}`}
+              className={`input-customer py-2 px-4 rounded-md ${errors.email ? 'border-destructive' : ''}`}
             />
             {errors.email && <p className="text-destructive text-sm mt-1">{errors.email.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
-              {t('auth.register.password')}
-            </label>
-            <input 
-              type="password" 
+            <label className="label-customer">{t('auth.register.password')}</label>
+            <input
+              type="password"
               {...register('password')}
               placeholder={t('auth.register.passwordPlaceholder')}
-              className={`w-full px-4 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors ${errors.password ? 'border-destructive' : 'border-border'}`}
+              className={`input-customer py-2 px-4 rounded-md ${errors.password ? 'border-destructive' : ''}`}
             />
             {errors.password && <p className="text-destructive text-sm mt-1">{errors.password.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
-              {t('auth.register.confirmPassword')}
-            </label>
-            <input 
-              type="password" 
+            <label className="label-customer">{t('auth.register.confirmPassword')}</label>
+            <input
+              type="password"
               {...register('confirmPassword')}
               placeholder={t('auth.register.passwordPlaceholder')}
-              className={`w-full px-4 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors ${errors.confirmPassword ? 'border-destructive' : 'border-border'}`}
+              className={`input-customer py-2 px-4 rounded-md ${errors.confirmPassword ? 'border-destructive' : ''}`}
             />
             {errors.confirmPassword && <p className="text-destructive text-sm mt-1">{errors.confirmPassword.message}</p>}
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={isSubmitting}
-            className="w-full py-2.5 bg-primary text-primary-foreground font-medium rounded-md hover:bg-primary/90 transition-colors flex items-center justify-center disabled:opacity-50"
+            className="btn-primary w-full py-2.5 flex items-center justify-center rounded-md"
           >
             {isSubmitting ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -147,7 +155,10 @@ export const Register: React.FC = () => {
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {t('auth.register.hasAccount')}{' '}
-          <Link to="/login" className="text-primary hover:underline font-medium">
+          <Link
+            to="/login"
+            className="text-primary hover:underline font-medium"
+          >
             {t('auth.register.signIn')}
           </Link>
         </p>

@@ -1,18 +1,11 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Filter, Search, ChevronDown, Loader2, AlertCircle } from 'lucide-react'
-import { useCart } from '../../contexts/CartContext'
+import { Loader2, AlertCircle, ShoppingBag, Filter, SlidersHorizontal, Search, X } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../../services/api'
+import { useCart } from '../../contexts/CartContext'
 import { useTranslation } from 'react-i18next'
 import { useLocalizedName } from '../../utils/localization'
-
-interface Category {
-  id: number
-  name_th: string
-  name_en: string
-  name_jp: string | null
-}
 
 interface Product {
   id: number
@@ -27,20 +20,34 @@ interface Product {
   img: string | null
   tag: string | null
   category_id: number | null
-  category: Category | null
   status: string
-  origin_country: string | null
+  category?: { id: number; name_en: string; name_th: string; name_jp: string | null }
+}
+
+interface Category {
+  id: number
+  name_en: string
+  name_th: string
+  name_jp: string | null
 }
 
 export const Catalog: React.FC = () => {
+  const { addItem } = useCart()
   const { t } = useTranslation()
   const getName = useLocalizedName()
-  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null)
-  const [activeBrand, setActiveBrand] = useState<string>('')
-  const [searchQuery, setSearchQuery] = useState('')
-  const { addItem } = useCart()
+  const [search, setSearch] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(null)
+  const [showFilters, setShowFilters] = useState(false)
 
-  // Fetch categories from API
+  const { data: products, isLoading, error } = useQuery({
+    queryKey: ['products', 'catalog'],
+    queryFn: async () => {
+      const res = await api.get('/products')
+      return res.data.data as Product[]
+    }
+  })
+
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
@@ -49,176 +56,166 @@ export const Catalog: React.FC = () => {
     }
   })
 
-  // Fetch products from API
-  const { data: products, isLoading, error } = useQuery({
-    queryKey: ['products', activeCategoryId],
-    queryFn: async () => {
-      const params: Record<string, any> = { limit: 50 }
-      if (activeCategoryId) params.category_id = activeCategoryId
-      const res = await api.get('/products', { params })
-      return res.data.data as Product[]
+  // Unique brands
+  const brands = [...new Set(products?.map((p) => p.brand).filter(Boolean) || [])]
+
+  const filteredProducts = products?.filter((p) => {
+    if (selectedCategory && p.category_id !== selectedCategory) return false
+    if (selectedBrand && p.brand !== selectedBrand) return false
+    if (search) {
+      const q = search.toLowerCase()
+      return (p.name?.toLowerCase().includes(q) || p.name_th?.toLowerCase().includes(q) || p.brand?.toLowerCase().includes(q))
     }
-  })
-
-  // Extract unique brands from products data
-  const brands = useMemo(() => {
-    if (!products) return []
-    const uniqueBrands = [...new Set(products.map(p => p.brand).filter(Boolean))] as string[]
-    return uniqueBrands.sort()
-  }, [products])
-
-  const filteredProducts = (products || []).filter(p => {
-    if (activeBrand && p.brand !== activeBrand) return false
-    if (searchQuery && !p.name.toLowerCase().includes(searchQuery.toLowerCase())) return false
     return true
   })
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      {/* Header */}
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold text-foreground mb-4">{t('catalog.title')}</h1>
-        <p className="text-muted-foreground">{t('catalog.subtitle')}</p>
-      </div>
-
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Sidebar Filters */}
-        <aside className="w-full lg:w-64 shrink-0 space-y-8">
-          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-            <div className="flex items-center space-x-2 font-bold text-lg mb-6 text-foreground">
-              <Filter className="w-5 h-5" />
-              <span>{t('catalog.filters')}</span>
-            </div>
-
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t('catalog.categories')}</h3>
-                <ul className="space-y-2">
-                  <li>
-                    <button 
-                      onClick={() => setActiveCategoryId(null)}
-                      className={`text-sm w-full text-left px-2 py-1.5 rounded-md transition-colors ${activeCategoryId === null ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-secondary'}`}
-                    >
-                      {t('catalog.allCategories')}
+    <div className="py-8">
+      <div className="section-container">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar Filters - Desktop */}
+          <aside className="hidden lg:block w-64 shrink-0">
+            <div className="card-panel sticky top-24">
+              <h3 className="font-bold text-foreground flex items-center mb-4">
+                <SlidersHorizontal className="w-4 h-4 mr-2" />
+                {t('catalog.filters')}
+              </h3>
+              {/* Categories */}
+              <div className="mb-6">
+                <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('catalog.categories')}</h4>
+                <div className="space-y-1">
+                  <button onClick={() => setSelectedCategory(null)} className={`filter-btn ${!selectedCategory ? 'is-active' : ''}`}>
+                    {t('catalog.allCategories')}
+                  </button>
+                  {categories?.map((cat) => (
+                    <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} className={`filter-btn ${selectedCategory === cat.id ? 'is-active' : ''}`}>
+                      {getName(cat)}
                     </button>
-                  </li>
-                  {(categories || []).map(cat => (
-                    <li key={cat.id}>
-                      <button 
-                        onClick={() => setActiveCategoryId(cat.id)}
-                        className={`text-sm w-full text-left px-2 py-1.5 rounded-md transition-colors ${activeCategoryId === cat.id ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-secondary'}`}
-                      >
-                        {getName(cat)}
-                      </button>
-                    </li>
                   ))}
-                </ul>
+                </div>
               </div>
-
+              {/* Brands */}
               <div>
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t('catalog.brands')}</h3>
-                <ul className="space-y-2">
-                  <li>
-                    <button 
-                      onClick={() => setActiveBrand('')}
-                      className={`text-sm w-full text-left px-2 py-1.5 rounded-md transition-colors ${activeBrand === '' ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-secondary'}`}
-                    >
-                      {t('catalog.allBrands')}
+                <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('catalog.brands')}</h4>
+                <div className="space-y-1">
+                  <button onClick={() => setSelectedBrand(null)} className={`filter-btn ${!selectedBrand ? 'is-active' : ''}`}>
+                    {t('catalog.allBrands')}
+                  </button>
+                  {brands.map((brand) => (
+                    <button key={brand} onClick={() => setSelectedBrand(brand!)} className={`filter-btn ${selectedBrand === brand ? 'is-active' : ''}`}>
+                      {brand}
                     </button>
-                  </li>
-                  {brands.map(brand => (
-                    <li key={brand}>
-                      <button 
-                        onClick={() => setActiveBrand(brand)}
-                        className={`text-sm w-full text-left px-2 py-1.5 rounded-md transition-colors ${activeBrand === brand ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-secondary'}`}
-                      >
-                        {brand}
-                      </button>
-                    </li>
                   ))}
-                </ul>
+                </div>
               </div>
             </div>
-          </div>
-        </aside>
+          </aside>
 
-        {/* Main Content */}
-        <main className="flex-1">
-          {/* Top Bar */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 space-y-4 md:space-y-0">
-            <h1 className="text-3xl font-bold text-foreground">{t('catalog.title')}</h1>
-            <div className="flex items-center space-x-4">
-              <div className="relative w-full md:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input 
-                  type="text" 
-                  placeholder={t('catalog.searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-foreground"
-                />
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+              <div>
+                <h1 className="section-title-lg">{t('catalog.title')}</h1>
+                <p className="text-muted-foreground text-sm mt-1">{filteredProducts?.length || 0} {t('catalog.itemsFound')}</p>
               </div>
-              <div className="hidden sm:flex items-center space-x-2 text-sm text-muted-foreground">
-                <span>{t('catalog.sortBy')}</span>
-                <button className="flex items-center space-x-1 font-medium text-foreground hover:text-primary transition-colors">
-                  <span>{t('catalog.recommended')}</span>
-                  <ChevronDown className="w-4 h-4" />
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('catalog.search')} className="pl-9 pr-4 py-2 border border-border rounded-lg bg-card text-sm w-48 sm:w-64 focus:outline-none focus:ring-2 focus:ring-primary" />
+                  {search && (
+                    <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                <button onClick={() => setShowFilters(!showFilters)} className="lg:hidden p-2 border border-border rounded-lg hover:bg-secondary transition-colors">
+                  <Filter className="w-5 h-5" />
                 </button>
               </div>
             </div>
-          </div>
 
-          {/* Product Grid */}
-          {isLoading ? (
-            <div className="flex justify-center py-20">
-              <Loader2 className="w-10 h-10 animate-spin text-primary" />
-            </div>
-          ) : error ? (
-            <div className="flex items-center text-destructive bg-destructive/10 p-4 rounded-xl">
-              <AlertCircle className="w-5 h-5 mr-2" />
-              {t('catalog.errorLoading')}
-            </div>
-          ) : filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredProducts.map(product => (
-                <div key={product.id} className="group bg-card rounded-xl overflow-hidden border border-border transition-all duration-300 hover:shadow-xl hover:border-primary/20 flex flex-col">
-                  <Link to={`/product/${product.id}`} className="block aspect-square overflow-hidden bg-muted relative shrink-0">
-                    <img 
-                      src={product.img || 'https://images.unsplash.com/photo-1582793988951-9aed5509eb97?q=80&w=2942&auto=format&fit=crop'} 
-                      alt={product.name} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </Link>
-                  <div className="p-4 flex flex-col flex-1">
-                    <p className="text-xs text-muted-foreground font-medium mb-1">{product.brand || t('catalog.noBrand')}</p>
-                    <Link to={`/product/${product.id}`}>
-                      <h3 className="font-semibold text-foreground line-clamp-2 mb-2 hover:text-primary transition-colors">{getName(product)}</h3>
-                    </Link>
-                    <div className="mt-auto pt-4 flex items-end justify-between">
-                      <p className="text-lg font-bold text-primary">฿{(product.price_tentative_thb || product.price_thb) ? (product.price_tentative_thb || product.price_thb || 0).toLocaleString() : 'N/A'}</p>
-                      <button 
-                        onClick={() => addItem({ id: product.id, name: getName(product), brand: product.brand || t('catalog.noBrand'), price_thb: product.price_tentative_thb || product.price_thb || 0, image: product.img || '' })}
-                        className="px-3 py-1.5 text-sm bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground font-medium rounded-md transition-colors shrink-0"
-                      >
-                        {t('catalog.addToCart')}
+            {/* Mobile Filters */}
+            {showFilters && (
+              <div className="card-panel mb-6 lg:hidden">
+                <h3 className="font-bold mb-3">{t('catalog.filters')}</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('catalog.categories')}</h4>
+                    <div className="space-y-1">
+                      <button onClick={() => setSelectedCategory(null)} className={`filter-btn ${!selectedCategory ? 'is-active' : ''}`}>
+                        {t('catalog.allCategories')}
                       </button>
+                      {categories?.map((cat) => (
+                        <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} className={`filter-btn ${selectedCategory === cat.id ? 'is-active' : ''}`}>
+                          {getName(cat)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('catalog.brands')}</h4>
+                    <div className="space-y-1">
+                      <button onClick={() => setSelectedBrand(null)} className={`filter-btn ${!selectedBrand ? 'is-active' : ''}`}>
+                        {t('catalog.allBrands')}
+                      </button>
+                      {brands.map((brand) => (
+                        <button key={brand} onClick={() => setSelectedBrand(brand!)} className={`filter-btn ${selectedBrand === brand ? 'is-active' : ''}`}>
+                          {brand}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20 bg-card border border-border rounded-xl">
-              <p className="text-muted-foreground">{t('catalog.noProducts')}</p>
-              <button 
-                onClick={() => { setActiveBrand(''); setActiveCategoryId(null); setSearchQuery('') }}
-                className="text-primary font-medium hover:underline mt-2"
-              >
-                {t('catalog.clearFilters')}
-              </button>
-            </div>
-          )}
-        </main>
+              </div>
+            )}
+
+            {isLoading ? (
+              <div className="loading-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : error ? (
+              <div className="error-alert">
+                <AlertCircle className="w-5 h-5 mr-2" />
+                {t('catalog.errorLoading')}
+              </div>
+            ) : filteredProducts && filteredProducts.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+                {filteredProducts.map((item) => (
+                  <div key={item.id} className="product-card group">
+                    <Link to={`/product/${item.id}`} className="product-card-img-container">
+                      <img
+                        src={item.img || 'https://images.unsplash.com/photo-1582793988951-9aed5509eb97?q=80&w=2942&auto=format&fit=crop'}
+                        alt={item.name}
+                        className="product-card-img"
+                      />
+                    </Link>
+                    <div className="p-3 flex flex-col flex-1">
+                      {item.brand && <p className="text-xs text-muted-foreground font-medium mb-1">{item.brand}</p>}
+                      <Link to={`/product/${item.id}`}>
+                        <h3 className="font-medium text-sm text-foreground line-clamp-2 mb-2 hover:text-primary transition-colors">{getName(item)}</h3>
+                      </Link>
+                      <div className="mt-auto pt-2 flex items-center justify-between">
+                        <p className="text-base font-bold text-primary">
+                          ฿{item.price_tentative_thb || item.price_thb ? (item.price_tentative_thb || item.price_thb || 0).toLocaleString() : 'N/A'}
+                        </p>
+                        <button
+                          onClick={() => addItem({ id: item.id, name: getName(item), brand: item.brand || '', price_thb: item.price_tentative_thb || item.price_thb || 0, image: item.img || '' })}
+                          className="btn-add-to-cart"
+                        >
+                          <ShoppingBag className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state">
+                <p className="text-lg font-medium">{t('catalog.noResults')}</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )

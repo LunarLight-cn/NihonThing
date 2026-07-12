@@ -32,8 +32,12 @@ export const ProductDetails: React.FC = () => {
   const { t } = useTranslation()
   const getName = useLocalizedName()
   const getDesc = useLocalizedDesc()
-  
-  const { data: product, isLoading, error } = useQuery({
+
+  const {
+    data: product,
+    isLoading,
+    error
+  } = useQuery({
     queryKey: ['product', id],
     queryFn: async () => {
       const res = await api.get(`/products/${id}`)
@@ -43,9 +47,9 @@ export const ProductDetails: React.FC = () => {
   })
 
   return (
-    <div className="container mx-auto px-4">
-      <Link 
-        to="/catalog" 
+    <div className="section-container">
+      <Link
+        to="/catalog"
         className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors mb-8"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
@@ -62,7 +66,10 @@ export const ProductDetails: React.FC = () => {
             <div className="bg-card border border-border rounded-xl p-12 max-w-lg mx-auto shadow-sm">
               <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-2">{t('product.notFound')}</h2>
-              <Link to="/catalog" className="text-primary hover:underline font-medium inline-flex items-center mt-4">
+              <Link
+                to="/catalog"
+                className="text-primary hover:underline font-medium inline-flex items-center mt-4"
+              >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 {t('product.back')}
               </Link>
@@ -78,9 +85,9 @@ export const ProductDetails: React.FC = () => {
                   <span>{product.origin_country}</span>
                 </div>
               )}
-              <img 
-                src={product.img || 'https://images.unsplash.com/photo-1582793988951-9aed5509eb97?q=80&w=2942&auto=format&fit=crop'} 
-                alt={getName(product)} 
+              <img
+                src={product.img || 'https://images.unsplash.com/photo-1582793988951-9aed5509eb97?q=80&w=2942&auto=format&fit=crop'}
+                alt={getName(product)}
                 className="w-full h-full object-cover aspect-square hover:scale-105 transition-transform duration-500"
               />
             </div>
@@ -88,12 +95,8 @@ export const ProductDetails: React.FC = () => {
             {/* Product Info */}
             <div className="flex flex-col">
               <div className="mb-6">
-                <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">
-                  {product.brand || t('product.noBrand')}
-                </p>
-                <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight">
-                  {getName(product)}
-                </h1>
+                <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">{product.brand || t('product.noBrand')}</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight">{getName(product)}</h1>
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-1 text-yellow-500">
                     <Star className="w-5 h-5 fill-current" />
@@ -109,13 +112,13 @@ export const ProductDetails: React.FC = () => {
               <div className="mb-8">
                 <p className="text-4xl font-bold text-primary mb-1">฿{(product.price_tentative_thb || product.price_thb || 0).toLocaleString()}</p>
                 {product.price_tentative_jpy && (
-                  <p className="text-sm text-muted-foreground line-through">¥{product.price_tentative_jpy.toLocaleString()} {t('product.estRetail')}</p>
+                  <p className="text-sm text-muted-foreground line-through">
+                    ¥{product.price_tentative_jpy.toLocaleString()} {t('product.estRetail')}
+                  </p>
                 )}
               </div>
 
-              <p className="text-foreground leading-relaxed mb-8">
-                {getDesc(product) || t('product.noDesc')}
-              </p>
+              <p className="text-foreground leading-relaxed mb-8">{getDesc(product) || t('product.noDesc')}</p>
 
               <div className="space-y-4 mb-8">
                 <div className="flex items-center text-sm text-muted-foreground">
@@ -128,9 +131,17 @@ export const ProductDetails: React.FC = () => {
                 </div>
               </div>
 
-              <button 
-                onClick={() => addItem({ id: product.id, name: getName(product), brand: product.brand || t('product.noBrand'), price_thb: product.price_tentative_thb || product.price_thb || 0, image: product.img || '' })}
-                className="w-full py-4 bg-primary text-primary-foreground text-lg font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
+              <button
+                onClick={() =>
+                  addItem({
+                    id: product.id,
+                    name: getName(product),
+                    brand: product.brand || t('product.noBrand'),
+                    price_thb: product.price_tentative_thb || product.price_thb || 0,
+                    image: product.img || ''
+                  })
+                }
+                className="btn-primary-lg"
                 disabled={product.status === 'out_of_stock'}
               >
                 {product.status === 'out_of_stock' ? t('product.outOfStock') : t('product.addToCart')}

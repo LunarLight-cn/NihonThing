@@ -19,7 +19,7 @@ export const getLocalizedName = (item: LocalizedItem, locale: string): string =>
   const nameMap: Record<string, string | null | undefined> = {
     en: item.name_en,
     th: item.name_th,
-    jp: item.name_jp,
+    jp: item.name_jp
   }
 
   // Try requested locale first, then English, then the default `name` field
@@ -41,7 +41,7 @@ export const getLocalizedDesc = (item: LocalizedItem, locale: string): string =>
   const descMap: Record<string, string | null | undefined> = {
     en: item.desc_en,
     th: item.desc_th,
-    jp: item.desc_jp,
+    jp: item.desc_jp
   }
 
   return descMap[locale] || item.desc_en || item.desc || item.desc_th || item.desc_jp || ''
