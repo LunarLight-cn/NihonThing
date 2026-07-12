@@ -33,8 +33,7 @@
   },
   "home": {
     "schedule": {
-      "title": "รอบบินเร็วๆ นี้",
-      "flight": "รอบบิน",
+      "flight": "ส่งทางเครื่องบิน",
       "seaFreight": "ส่งทางเรือ",
       "closesOn": "ปิดรับ {{date}}",
       "statusOpen": "เปิดรับออเดอร์",

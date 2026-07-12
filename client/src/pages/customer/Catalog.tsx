@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Loader2, AlertCircle, ShoppingBag, Filter, SlidersHorizontal, Search, X } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../../services/api'
@@ -32,18 +32,24 @@ interface Category {
 }
 
 export const Catalog: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const showParam = searchParams.get('show')
   const { addItem } = useCart()
   const { t } = useTranslation()
   const getName = useLocalizedName()
   const [search, setSearch] = useState('')
+  const [selectedCollection, setSelectedCollection] = useState<string | null>(showParam || null)
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null)
   const [showFilters, setShowFilters] = useState(false)
 
   const { data: products, isLoading, error } = useQuery({
-    queryKey: ['products', 'catalog'],
+    queryKey: ['products', 'catalog', selectedCollection],
     queryFn: async () => {
-      const res = await api.get('/products')
+      let endpoint = '/products'
+      if (selectedCollection === 'new-arrivals') endpoint = '/products/new-arrivals'
+      else if (selectedCollection === 'trending') endpoint = '/products/trending'
+      const res = await api.get(endpoint)
       return res.data.data as Product[]
     }
   })
@@ -69,6 +75,15 @@ export const Catalog: React.FC = () => {
     return true
   })
 
+  const handleCollectionChange = (collection: string | null) => {
+    setSelectedCollection(collection)
+    if (collection) {
+      setSearchParams({ show: collection })
+    } else {
+      setSearchParams({})
+    }
+  }
+
   return (
     <div className="py-8">
       <div className="section-container">
@@ -80,6 +95,21 @@ export const Catalog: React.FC = () => {
                 <SlidersHorizontal className="w-4 h-4 mr-2" />
                 {t('catalog.filters')}
               </h3>
+              {/* Collections */}
+              <div className="mb-6">
+                <h4 className="text-sm font-medium text-muted-foreground mb-2">Collections</h4>
+                <div className="space-y-1">
+                  <button onClick={() => handleCollectionChange(null)} className={`filter-btn ${!selectedCollection ? 'is-active' : ''}`}>
+                    All Products
+                  </button>
+                  <button onClick={() => handleCollectionChange('new-arrivals')} className={`filter-btn ${selectedCollection === 'new-arrivals' ? 'is-active' : ''}`}>
+                    {t('home.newArrivals.title')}
+                  </button>
+                  <button onClick={() => handleCollectionChange('trending')} className={`filter-btn ${selectedCollection === 'trending' ? 'is-active' : ''}`}>
+                    {t('home.trending.title')}
+                  </button>
+                </div>
+              </div>
               {/* Categories */}
               <div className="mb-6">
                 <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('catalog.categories')}</h4>
@@ -138,6 +168,20 @@ export const Catalog: React.FC = () => {
             {showFilters && (
               <div className="card-panel mb-6 lg:hidden">
                 <h3 className="font-bold mb-3">{t('catalog.filters')}</h3>
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Collections</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => handleCollectionChange(null)} className={`filter-btn ${!selectedCollection ? 'is-active' : ''}`}>
+                      All Products
+                    </button>
+                    <button onClick={() => handleCollectionChange('new-arrivals')} className={`filter-btn ${selectedCollection === 'new-arrivals' ? 'is-active' : ''}`}>
+                      {t('home.newArrivals.title')}
+                    </button>
+                    <button onClick={() => handleCollectionChange('trending')} className={`filter-btn ${selectedCollection === 'trending' ? 'is-active' : ''}`}>
+                      {t('home.trending.title')}
+                    </button>
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('catalog.categories')}</h4>

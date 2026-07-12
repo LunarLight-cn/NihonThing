@@ -33,7 +33,6 @@
   },
   "home": {
     "schedule": {
-      "title": "Upcoming Trips",
       "flight": "Flight",
       "seaFreight": "Sea Freight",
       "closesOn": "Closes on {{date}}",

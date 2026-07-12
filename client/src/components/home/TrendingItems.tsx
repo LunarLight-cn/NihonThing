@@ -23,7 +23,11 @@ interface Product {
   status: string
 }
 
-export const TrendingItems: React.FC = () => {
+interface Props {
+  hideViewAll?: boolean
+}
+
+export const TrendingItems: React.FC<Props> = ({ hideViewAll }) => {
   const { addItem } = useCart()
   const { t } = useTranslation()
   const getName = useLocalizedName()
@@ -47,10 +51,12 @@ export const TrendingItems: React.FC = () => {
           <div className="max-w-2xl mb-6 md:mb-0">
             <h2 className="section-title mb-4">{t('home.trending.title')}</h2>
           </div>
-          <Link to="/catalog" className="link-view-all">
-            <span>{t('home.trending.viewAll')}</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          {!hideViewAll && (
+            <Link to="/catalog?show=trending" className="link-view-all">
+              <span>{t('home.trending.viewAll')}</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          )}
         </div>
 
         {isLoading ? (
@@ -101,14 +107,16 @@ export const TrendingItems: React.FC = () => {
           <div className="empty-state">{t('home.trending.noItems')}</div>
         )}
 
-        <div className="mt-8 text-center md:hidden">
-          <Link
-            to="/catalog"
-            className="inline-flex items-center text-primary font-medium hover:underline"
-          >
-            {t('home.trending.viewAll')} <ArrowRight className="w-4 h-4 ml-1" />
-          </Link>
-        </div>
+        {!hideViewAll && (
+          <div className="mt-8 text-center md:hidden">
+            <Link
+              to="/catalog?show=trending"
+              className="inline-flex items-center text-primary font-medium hover:underline"
+            >
+              {t('home.trending.viewAll')} <ArrowRight className="w-4 h-4 ml-1" />
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   )

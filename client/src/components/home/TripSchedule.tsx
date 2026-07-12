@@ -27,10 +27,6 @@ export const TripSchedule: React.FC = () => {
   return (
     <section className="pt-6 pb-6 bg-background">
       <div className="section-container">
-        <div className="text-center max-w-2xl mx-auto mb-4">
-          <h2 className="section-title mb-2">{t('home.schedule.title')}</h2>
-        </div>
-
         {isLoading ? (
           <div className="loading-center">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
