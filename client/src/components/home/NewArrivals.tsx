@@ -23,7 +23,11 @@ interface Product {
   status: string
 }
 
-export const NewArrivals: React.FC = () => {
+interface Props {
+  hideViewAll?: boolean
+}
+
+export const NewArrivals: React.FC<Props> = ({ hideViewAll }) => {
   const { addItem } = useCart()
   const { t } = useTranslation()
   const getName = useLocalizedName()
@@ -53,10 +57,12 @@ export const NewArrivals: React.FC = () => {
               {t('home.newArrivals.title')}
             </h2>
           </div>
-          <Link to="/catalog" className="link-view-all">
-            <span>{t('home.newArrivals.viewAll')}</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          {!hideViewAll && (
+            <Link to="/catalog?show=new-arrivals" className="link-view-all">
+              <span>{t('home.newArrivals.viewAll')}</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          )}
         </div>
 
         {isLoading ? (
