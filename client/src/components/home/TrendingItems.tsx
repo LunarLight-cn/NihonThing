@@ -77,7 +77,7 @@ export const TrendingItems: React.FC<Props> = ({ hideViewAll, areaId, title }) =
               <div key={item.id} className="product-card group">
                 <Link to={`/product/${item.id}`} className="product-card-img-container">
                   <img
-                    src={item.img || 'https://images.unsplash.com/photo-1582793988951-9aed5509eb97?q=80&w=2942&auto=format&fit=crop'}
+                    src={(item.img && item.img.length > 0) ? item.img[0] : 'https://images.unsplash.com/photo-1582793988951-9aed5509eb97?q=80&w=2942&auto=format&fit=crop'}
                     alt={item.name}
                     className="product-card-img"
                   />
@@ -92,7 +92,7 @@ export const TrendingItems: React.FC<Props> = ({ hideViewAll, areaId, title }) =
                       <p className="text-lg font-bold text-primary">฿{item.price_tentative_thb || item.price_thb ? (item.price_tentative_thb || item.price_thb || 0).toLocaleString() : 'N/A'}</p>
                     </div>
                     <button
-                      onClick={() => addItem({ id: item.id, name: getName(item), brand: item.brand || '', price_thb: item.price_tentative_thb || item.price_thb || 0, image: item.img || '' })}
+                      onClick={() => addItem({ id: item.id, name: getName(item), brand: item.brand || '', price_thb: item.price_tentative_thb || item.price_thb || 0, image: (item.img && item.img.length > 0) ? item.img[0] : '' })}
                       className="btn-add-to-cart"
                     >
                       {t('home.trending.addToCart')}

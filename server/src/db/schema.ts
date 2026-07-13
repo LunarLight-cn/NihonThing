@@ -104,7 +104,7 @@ export const Products = sqliteTable("Products", {
   origin_country_id: integer("origin_country_id").references(() => Countries.id),
   price_tentative_jpy: real("price_tentative_jpy"),
   price_tentative_thb: real("price_tentative_thb"),
-  img: text("img"),
+  img: text("img", { mode: 'json' }).$type<string[]>(),
   tag: text("tag"),
   amount: integer("amount"),
   weight: real("weight").default(0),

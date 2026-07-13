@@ -23,7 +23,7 @@ interface Product {
   price_tentative_jpy: number
   amount: number
   status: 'active' | 'inactive' | 'out_of_stock'
-  img: string
+  img: string[]
   tag?: string
 }
 
@@ -236,9 +236,9 @@ export const AdminProducts: React.FC = () => {
       header: 'Image',
       cell: ({ row }) => (
         <div className="w-10 h-10 rounded-md overflow-hidden bg-secondary">
-          {row.original.img ? (
+          {row.original.img && row.original.img.length > 0 ? (
             <img
-              src={row.original.img.startsWith('http') ? row.original.img : `${(import.meta.env.VITE_API_BASE_URL || '').replace('/api', '')}${row.original.img}`}
+              src={row.original.img[0].startsWith('http') || row.original.img[0].startsWith('blob:') ? row.original.img[0] : `${(import.meta.env.VITE_API_BASE_URL || '').replace('/api', '')}${row.original.img[0]}`}
               alt="Product"
               className="w-full h-full object-cover"
             />
@@ -301,7 +301,7 @@ export const AdminProducts: React.FC = () => {
               price_tentative_thb: row.original.price_tentative_thb?.toString() || '',
               amount: row.original.amount?.toString() || '0',
               weight: (row.original as any).weight?.toString() || '0',
-              img: row.original.img || '',
+              img: row.original.img || [],
               category_id: (row.original as any).category_id || 1,
               status: row.original.status || 'active',
               tag: row.original.tag || '',
@@ -309,6 +309,7 @@ export const AdminProducts: React.FC = () => {
               shopIds: []
             })
             setEditingProductId(row.original.id)
+            setSelectedFiles([])
             setIsAddingProduct(true)
 
             try {
@@ -429,7 +430,7 @@ export const AdminProducts: React.FC = () => {
     price_tentative_thb: '',
     amount: '10',
     weight: '0',
-    img: '',
+    img: [] as string[],
     category_id: 1,
     status: 'active',
     tag: '',
@@ -452,34 +453,14 @@ export const AdminProducts: React.FC = () => {
 
   // -- Image Upload Handler --
   const [isUploading, setIsUploading] = useState(false)
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setIsUploading(true)
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      
-      const token = localStorage.getItem('token')
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
-      const res = await fetch(`${baseUrl}/uploads`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData
-      })
-      
-      const data = await res.json()
-      if (data.success) {
-        setProductForm((prev) => ({ ...prev, img: data.url }))
-      } else {
-        alert(data.message || 'Upload failed')
-      }
-    } catch (error) {
-      console.error('Upload failed', error)
-      alert('Upload failed')
-    } finally {
-      setIsUploading(false)
-    }
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+    setSelectedFiles(prev => [...prev, ...files])
+    const newPreviews = files.map(f => URL.createObjectURL(f))
+    setProductForm((prev) => ({ ...prev, img: [...(prev.img || []), ...newPreviews] }))
   }
 
   return (
@@ -523,10 +504,11 @@ export const AdminProducts: React.FC = () => {
                 if (isAddingProduct) {
                   setIsAddingProduct(false)
                   setEditingProductId(null)
+                  setSelectedFiles([])
                   setProductForm({
                     name_en: '', name_th: '', name_jp: '', desc_en: '', desc_th: '', desc_jp: '',
                     brand_id: '', origin_country_id: '',
-                    price_tentative_jpy: '', price_tentative_thb: '', amount: '10', weight: '0', img: '', category_id: 1, status: 'active', tag: '', shopIds: []
+                    price_tentative_jpy: '', price_tentative_thb: '', amount: '10', weight: '0', img: [], category_id: 1, status: 'active', tag: '', shopIds: []
                   })
                 } else {
                   setIsAddingProduct(true)
@@ -540,10 +522,43 @@ export const AdminProducts: React.FC = () => {
 
           {isAddingProduct && (
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault()
+                let uploadedImgUrls = [...(productForm.img || []).filter(url => !url.startsWith('blob:'))]
+                
+                if (selectedFiles.length > 0) {
+                  setIsUploading(true)
+                  try {
+                    const token = localStorage.getItem('token')
+                    const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
+                    
+                    const uploadPromises = selectedFiles.map(async (file) => {
+                      const formData = new FormData()
+                      formData.append('file', file)
+                      const res = await fetch(`${baseUrl}/uploads`, {
+                        method: 'POST',
+                        headers: token ? { Authorization: `Bearer ${token}` } : {},
+                        body: formData
+                      })
+                      const data = await res.json()
+                      if (!data.success) throw new Error(data.message)
+                      return data.url as string
+                    })
+                    
+                    const newUrls = await Promise.all(uploadPromises)
+                    uploadedImgUrls = [...uploadedImgUrls, ...newUrls]
+                  } catch (error) {
+                    console.error('Upload failed', error)
+                    alert('Upload failed: ' + (error as Error).message)
+                    setIsUploading(false)
+                    return
+                  }
+                  setIsUploading(false)
+                }
+
                 const basePayload = {
                   ...productForm,
+                  img: uploadedImgUrls,
                   price_tentative_jpy: productForm.price_tentative_jpy ? Number(productForm.price_tentative_jpy) : undefined,
                   price_tentative_thb: productForm.price_tentative_thb ? Number(productForm.price_tentative_thb) : undefined,
                   amount: Number(productForm.amount),
@@ -558,6 +573,7 @@ export const AdminProducts: React.FC = () => {
                 } else {
                   addProductMutation.mutate(payload)
                 }
+                setSelectedFiles([])
               }}
               className="card-panel space-y-4"
             >
@@ -720,22 +736,48 @@ export const AdminProducts: React.FC = () => {
 
                 <div className="form-section-divider">Media</div>
                 <div className="col-span-3">
-                  <label className="label-admin">Product Image</label>
+                  <label className="label-admin">Product Images</label>
                   <div className="flex items-center space-x-4">
                     <input
+                      id="product-image-upload"
                       type="file"
+                      multiple
                       accept="image/*"
                       onChange={handleFileUpload}
                       className="file-upload"
                     />
                     {isUploading && <Loader2 className="w-5 h-5 animate-spin text-primary" />}
                   </div>
-                  {productForm.img && (
-                    <img
-                      src={productForm.img.startsWith('http') ? productForm.img : `${(import.meta.env.VITE_API_BASE_URL || '').replace('/api', '')}${productForm.img}`}
-                      alt="Preview"
-                      className="mt-2 h-20 rounded-md border border-border"
-                    />
+                  {productForm.img && productForm.img.length > 0 && (
+                    <div className="flex flex-wrap gap-4 mt-4">
+                      {productForm.img.map((imgUrl, index) => (
+                        <div key={index} className="relative inline-block mt-2">
+                          <img
+                            src={imgUrl.startsWith('http') || imgUrl.startsWith('blob:') ? imgUrl : `${(import.meta.env.VITE_API_BASE_URL || '').replace('/api', '')}${imgUrl}`}
+                            alt={`Preview ${index}`}
+                            className="h-24 rounded-md border border-border object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (imgUrl.startsWith('blob:')) {
+                                const localPreviewUrls = productForm.img.filter(u => u.startsWith('blob:'))
+                                const blobIndex = localPreviewUrls.indexOf(imgUrl)
+                                if (blobIndex > -1) {
+                                  setSelectedFiles(prev => prev.filter((_, i) => i !== blobIndex))
+                                }
+                              }
+                              setProductForm((prev) => ({ ...prev, img: prev.img.filter((_, i) => i !== index) }))
+                              const fileInput = document.getElementById('product-image-upload') as HTMLInputElement
+                              if (fileInput) fileInput.value = ''
+                            }}
+                            className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 shadow-md hover:bg-destructive/90 transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>

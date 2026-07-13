@@ -15,6 +15,13 @@
       "when": 1783930314172,
       "tag": "0001_flimsy_dorian_gray",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1783933122389,
+      "tag": "0002_product_img_to_json",
+      "breakpoints": true
     }
   ]
 }
