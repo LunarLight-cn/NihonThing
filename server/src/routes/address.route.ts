@@ -46,7 +46,7 @@ addressRoutes.openapi(postAddressRoute, async (c) => {
   const user = c.get('user')
   const data = c.req.valid('json')
   const newAddress = await createAddress(c.env.nihonthing_db, user.id, data)
-  return c.json({ success: true, data: [0] })
+  return c.json({ success: true, data: newAddress[0] })
 })
 
 const DeleteAddressParamsSchema = z.object({
@@ -108,7 +108,7 @@ addressRoutes.openapi(putAddressRoute, async (c) => {
 
   const updatedAddress = await updateAddress(c.env.nihonthing_db, user.id, parseInt(id), data)
 
-  return c.json({ success: true, data: [0] })
+  return c.json({ success: true, data: updatedAddress[0] })
 })
 
 export default addressRoutes

@@ -61,7 +61,7 @@ const postShopRoute = createRoute({
 shopRoutes.openapi(postShopRoute, async (c) => {
   const data = c.req.valid('json')
   const newShop = await createShop(c.env.nihonthing_db, data)
-  return c.json({ success: true, data: [0] })
+  return c.json({ success: true, data: newShop[0] })
 })
 
 // PUT /api/shops/:id
@@ -82,7 +82,7 @@ shopRoutes.openapi(putShopRoute, async (c) => {
   const { id } = c.req.valid('param')
   const data = c.req.valid('json')
   const updatedShop = await updateShop(c.env.nihonthing_db, parseInt(id), data)
-  return c.json({ success: true, data: [0] })
+  return c.json({ success: true, data: updatedShop[0] })
 })
 
 export default shopRoutes

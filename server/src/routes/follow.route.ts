@@ -46,7 +46,7 @@ followRoutes.openapi(postFollowRoute, async (c) => {
   const user = c.get('user')
   const data = c.req.valid('json')
   const newFollow = await createFollow(c.env.nihonthing_db, user.id, data)
-  return c.json({ success: true, data: [0] })
+  return c.json({ success: true, data: newFollow[0] })
 })
 
 // DELETE /api/follows/:id
@@ -64,7 +64,7 @@ followRoutes.openapi(deleteFollowRoute, async (c) => {
   const user = c.get('user')
   const { id } = c.req.valid('param')
   const deletedFollow = await deleteFollow(c.env.nihonthing_db, user.id, parseInt(id))
-  return c.json({ success: true, data: [0] })
+  return c.json({ success: true, data: deletedFollow[0] })
 })
 
 export default followRoutes

@@ -534,6 +534,7 @@ export const AdminProducts: React.FC = () => {
                     
                     const uploadPromises = selectedFiles.map(async (file) => {
                       const formData = new FormData()
+                      formData.append('folder', 'products/' + (productForm.name_en || 'unnamed').toLowerCase().replace(/\s+/g, '-'))
                       formData.append('file', file)
                       const res = await fetch(`${baseUrl}/uploads`, {
                         method: 'POST',
@@ -561,7 +562,6 @@ export const AdminProducts: React.FC = () => {
                   img: uploadedImgUrls,
                   price_tentative_jpy: productForm.price_tentative_jpy ? Number(productForm.price_tentative_jpy) : undefined,
                   price_tentative_thb: productForm.price_tentative_thb ? Number(productForm.price_tentative_thb) : undefined,
-                  amount: Number(productForm.amount),
                   weight: Number(productForm.weight),
                   status: productForm.status as 'active' | 'inactive' | 'out_of_stock'
                 }
@@ -702,16 +702,7 @@ export const AdminProducts: React.FC = () => {
                     placeholder="Auto calculated if empty"
                   />
                 </div>
-                <div>
-                  <label className="label-admin">Stock Amount</label>
-                  <input
-                    required
-                    type="number"
-                    value={productForm.amount}
-                    onChange={(e) => setProductForm({ ...productForm, amount: e.target.value })}
-                    className="input-admin"
-                  />
-                </div>
+
                 <div>
                   <label className="label-admin">Weight (kg)</label>
                   <input

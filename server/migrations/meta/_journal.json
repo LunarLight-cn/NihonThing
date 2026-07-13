@@ -22,6 +22,13 @@
       "when": 1783933122389,
       "tag": "0002_product_img_to_json",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1783936974802,
+      "tag": "0003_amazing_white_tiger",
+      "breakpoints": true
     }
   ]
 }

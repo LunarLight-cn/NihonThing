@@ -1,7 +1,7 @@
 import React from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { LayoutDashboard, Package, Plane, Ticket, Users, Settings, LogOut, Store, Menu, Calendar, Home, MapPin, Globe } from 'lucide-react'
+import { LayoutDashboard, Package, Plane, Ticket, Users, Settings, LogOut, Store, Menu, Calendar, Home, MapPin, Globe, ShoppingCart } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 export const AdminLayout: React.FC = () => {
@@ -14,6 +14,7 @@ export const AdminLayout: React.FC = () => {
     { name: t('admin.orders'), path: '/admin/orders', icon: Package },
     { name: t('admin.trips'), path: '/admin/trips', icon: Plane },
     { name: t('admin.tickets'), path: '/admin/tickets', icon: Ticket },
+    { name: 'Purchases', path: '/admin/purchases', icon: ShoppingCart },
     { name: t('admin.catalog'), path: '/admin/products', icon: Store },
     { name: 'Locations', path: '/admin/locations', icon: MapPin },
     { name: 'Events', path: '/admin/events', icon: Calendar },

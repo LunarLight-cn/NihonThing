@@ -49,7 +49,7 @@ orderRoutes.openapi(postOrderRoute, async (c) => {
   
   try {
     const newOrder = await createOrder(c.env.nihonthing_db, user.id, data.trip_id, data.address_id, data.items, defaultCutoff)
-    return c.json({ success: true, data: [0] })
+    return c.json({ success: true, data: newOrder[0] })
   } catch (error: any) {
     return c.json({ success: false, message: error.message }, 400)
   }
@@ -104,7 +104,7 @@ orderRoutes.openapi(putOrderRoute, async (c) => {
   const { id } = c.req.valid('param')
   const data = c.req.valid('json')
   const updatedOrder = await updateOrder(c.env.nihonthing_db, id, data)
-  return c.json({ success: true, data: [0] })
+  return c.json({ success: true, data: updatedOrder[0] })
 })
 
 export default orderRoutes

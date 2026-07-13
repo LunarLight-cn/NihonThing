@@ -25,6 +25,7 @@ import { AdminSettings } from './pages/admin/AdminSettings'
 import { AdminUsers } from './pages/admin/AdminUsers'
 import { AdminTickets } from './pages/admin/AdminTickets'
 import { AdminLocations } from './pages/admin/AdminLocations'
+import { AdminPurchases } from './pages/admin/AdminPurchases'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -78,6 +79,7 @@ export default function App() {
               <Route path="orders" element={<AdminOrders />} />
               <Route path="trips" element={<AdminTrips />} />
               <Route path="tickets" element={<AdminTickets />} />
+              <Route path="purchases" element={<AdminPurchases />} />
               <Route path="products" element={<AdminProducts />} />
               <Route path="events" element={<AdminEvents />} />
               <Route path="locations" element={<AdminLocations />} />

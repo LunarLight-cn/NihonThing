@@ -60,7 +60,7 @@ const postAreaRoute = createRoute({
 areaRoutes.openapi(postAreaRoute, async (c) => {
   const data = c.req.valid('json')
   const newArea = await createArea(c.env.nihonthing_db, data)
-  return c.json({ success: true, data: [0] })
+  return c.json({ success: true, data: newArea[0] })
 })
 
 // PUT /api/areas/:id
@@ -81,7 +81,7 @@ areaRoutes.openapi(putAreaRoute, async (c) => {
   const { id } = c.req.valid('param')
   const data = c.req.valid('json')
   const updatedArea = await updateArea(c.env.nihonthing_db, parseInt(id), data)
-  return c.json({ success: true, data: [0] })
+  return c.json({ success: true, data: updatedArea[0] })
 })
 
 export default areaRoutes

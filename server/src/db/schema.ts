@@ -99,16 +99,15 @@ export const Products = sqliteTable("Products", {
   desc_en: text("desc_en"),
   desc_th: text("desc_th"),
   desc_jp: text("desc_jp"),
-  brand: text("brand"),
   brand_id: integer("brand_id").references(() => Brands.id),
   origin_country_id: integer("origin_country_id").references(() => Countries.id),
   price_tentative_jpy: real("price_tentative_jpy"),
   price_tentative_thb: real("price_tentative_thb"),
   img: text("img", { mode: 'json' }).$type<string[]>(),
   tag: text("tag"),
-  amount: integer("amount"),
+  amount: integer("amount").default(0),
   weight: real("weight").default(0),
-  remain: integer("remain"),
+  remain: integer("remain").default(0),
   status: text("status", { enum: ["active", "inactive", "out_of_stock"] }),
   total_sold: integer("total_sold").default(0),
   cdate: text("cdate").default(sql`CURRENT_TIMESTAMP`),
@@ -148,13 +147,14 @@ export const Order_Items = sqliteTable("Order_Items", {
 
 export const Purchases = sqliteTable("Purchases", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  order_item_id: integer("order_item_id").notNull().references(() => Order_Items.id),
+  order_item_id: integer("order_item_id").references(() => Order_Items.id),
+  product_id: integer("product_id").references(() => Products.id),
   agent_id: integer("agent_id").notNull().references(() => Users.id),
   quantity: integer("quantity").notNull(),
   actual_cost_jpy: real("actual_cost_jpy").notNull(),
   actual_cost_thb: real("actual_cost_thb").notNull(),
   shop_name: text("shop_name"),
-  receipt_img: text("receipt_img"),
+  receipt_img: text("receipt_img", { mode: 'json' }).$type<string[]>(),
   cdate: text("cdate").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -379,3 +379,11 @@ export const eventProductsRelations = relations(Event_Products, ({ one }) => ({
 export const followsRelations = relations(Follows, ({ one }) => ({
   user: one(Users, { fields: [Follows.user_id], references: [Users.id] }),
 }));
+
+export const Product_Name_History = sqliteTable("Product_Name_History", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  product_id: integer("product_id").notNull().references(() => Products.id),
+  old_name: text("old_name").notNull(),
+  new_name: text("new_name").notNull(),
+  cdate: text("cdate").default(sql`CURRENT_TIMESTAMP`),
+});

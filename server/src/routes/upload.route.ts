@@ -57,19 +57,50 @@ uploadRoutes.openapi(postUploadRoute, async (c) => {
     return c.json({ success: false, message: `Invalid file extension ".${ext}". Allowed: ${ALLOWED_EXTENSIONS.join(', ')}` }, 400)
   }
 
-  const fileName = `${crypto.randomUUID()}.${ext}`
+  // Handle dynamic folders
+  let prefix = ''
+  const folder = body['folder'] as string
+  if (folder) {
+    if (folder.startsWith('products/')) {
+      prefix = `${folder}/`
+    } else if (folder.startsWith('slips/purchase')) {
+      const now = new Date()
+      const y = now.getFullYear()
+      const m = String(now.getMonth() + 1).padStart(2, '0')
+      prefix = `slips/purchase/${y}/${m}/`
+    } else if (folder.startsWith('slips/customer')) {
+      const now = new Date()
+      const y = now.getFullYear()
+      const m = String(now.getMonth() + 1).padStart(2, '0')
+      prefix = `slips/customer/${y}/${m}/`
+    } else {
+      prefix = `${folder}/`
+    }
+  }
+
+  // Build filename with DDMMYYYY if requested for specific folders
+  let finalFileName = `${crypto.randomUUID()}.${ext}`
+  if (prefix.startsWith('products/') || prefix.startsWith('slips/')) {
+    const now = new Date()
+    const d = String(now.getDate()).padStart(2, '0')
+    const m = String(now.getMonth() + 1).padStart(2, '0')
+    const y = now.getFullYear()
+    finalFileName = `${d}${m}${y}_${finalFileName}`
+  }
+
+  const objectKey = `${prefix}${finalFileName}`
   
   const arrayBuffer = await file.arrayBuffer()
   if (!verifyMagicBytes(arrayBuffer)) {
     return c.json({ success: false, message: 'Invalid file content. The file appears to be corrupted or disguised.' }, 400)
   }
   
-  await c.env.nihonthing_bucket.put(fileName, arrayBuffer, {
+  await c.env.nihonthing_bucket.put(objectKey, arrayBuffer, {
     httpMetadata: { contentType: file.type }
   })
   
   // Return the URL that can be used to access this file via the worker itself
-  const fileUrl = `/api/uploads/${fileName}`
+  const fileUrl = `/api/uploads/${encodeURIComponent(objectKey)}`
   
   return c.json({ success: true, url: fileUrl }, 201)
 })
@@ -89,7 +120,8 @@ const getUploadRoute = createRoute({
 
 uploadRoutes.openapi(getUploadRoute, async (c) => {
   const { filename } = c.req.valid('param')
-  const object = await c.env.nihonthing_bucket.get(filename)
+  const objectKey = decodeURIComponent(filename)
+  const object = await c.env.nihonthing_bucket.get(objectKey)
   
   if (!object) {
     return c.text('Not Found', 404)

@@ -126,11 +126,14 @@ export const createOrder = async (
 
     await tx.insert(schema.Order_Items).values(orderItemsData)
 
-    // Increment total_sold for products
+    // Increment total_sold and decrement remain for products
     for (const item of items) {
       if (item.type === 'product') {
         await tx.update(schema.Products)
-          .set({ total_sold: sql`COALESCE(total_sold, 0) + ${item.quantity}` })
+          .set({ 
+            total_sold: sql`COALESCE(total_sold, 0) + ${item.quantity}`,
+            remain: sql`COALESCE(remain, 0) - ${item.quantity}`
+          })
           .where(eq(schema.Products.id, item.id))
       }
     }

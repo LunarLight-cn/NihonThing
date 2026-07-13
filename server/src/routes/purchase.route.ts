@@ -5,11 +5,12 @@ import { getPurchases, createPurchase, updatePurchase } from '../models/purchase
 const purchaseRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; EXCHANGE_RATE_JPY_THB: string }; Variables: AuthVariables }>()
 
 const CreatePurchaseSchema = z.object({
-  order_item_id: z.number(),
+  order_item_id: z.number().optional(),
+  product_id: z.number().optional(),
   quantity: z.number(),
   actual_cost_jpy: z.number(),
   shop_name: z.string().optional(),
-  receipt_img: z.string().url().optional()
+  receipt_img: z.array(z.string().url()).optional()
 })
 
 const UpdatePurchaseSchema = CreatePurchaseSchema.partial()
@@ -55,7 +56,7 @@ purchaseRoutes.openapi(postPurchaseRoute, async (c) => {
   }
   
   const newPurchase = await createPurchase(c.env.nihonthing_db, user.id, payload)
-  return c.json({ success: true, data: [0] })
+  return c.json({ success: true, data: newPurchase[0] })
 })
 
 // PUT /api/purchases/:id
@@ -83,7 +84,7 @@ purchaseRoutes.openapi(putPurchaseRoute, async (c) => {
   }
   
   const updatedPurchase = await updatePurchase(c.env.nihonthing_db, parseInt(id), data)
-  return c.json({ success: true, data: [0] })
+  return c.json({ success: true, data: updatedPurchase[0] })
 })
 
 export default purchaseRoutes
