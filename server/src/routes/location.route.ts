@@ -7,6 +7,8 @@ const QuerySchema = z.object({
   parent_id: z.string().optional().openapi({ description: 'Filter by parent ID' })
 })
 
+import { authGuard, adminGuard } from '../middlewares/auth.middleware'
+
 // GET /api/locations/countries
 const getCountriesRoute = createRoute({
   method: 'get',
@@ -31,6 +33,8 @@ const postCountriesRoute = createRoute({
   method: 'post',
   path: '/countries',
   tags: ['Locations'],
+  middleware: [authGuard, adminGuard] as const,
+  security: [{ Bearer: [] }],
   request: {
     body: { content: { 'application/json': { schema: CreateCountrySchema } } }
   },

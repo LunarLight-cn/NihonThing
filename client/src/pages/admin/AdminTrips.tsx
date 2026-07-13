@@ -12,8 +12,8 @@ interface Trip {
   ship_date: string
   close_date: string
   status: 'open' | 'closed' | 'in_transit' | 'arrived'
-  max_cap: string
-  current_cap: string
+  max_cap: number
+  current_cap: number
 }
 
 export const AdminTrips: React.FC = () => {
@@ -94,8 +94,8 @@ export const AdminTrips: React.FC = () => {
     },
     {
       accessorKey: 'max_cap',
-      header: 'Capacity',
-      cell: ({ row }) => `${row.original.current_cap || 0} / ${row.original.max_cap || '-'}`
+      header: 'Capacity (kg)',
+      cell: ({ row }) => `${row.original.current_cap || 0} / ${row.original.max_cap || '-'} kg`
     },
     {
       id: 'actions',
@@ -107,7 +107,7 @@ export const AdminTrips: React.FC = () => {
               type: row.original.type || 'flight',
               ship_date: row.original.ship_date ? new Date(row.original.ship_date).toISOString().split('T')[0] : '',
               close_date: row.original.close_date ? new Date(row.original.close_date).toISOString().split('T')[0] : '',
-              max_cap: row.original.max_cap || '',
+              max_cap: row.original.max_cap || 0,
               origin_id: (row.original as any).origin_id || 2,
               destination_id: (row.original as any).destination_id || 1
             })
@@ -126,7 +126,7 @@ export const AdminTrips: React.FC = () => {
     type: 'flight',
     ship_date: '',
     close_date: '',
-    max_cap: '30kg',
+    max_cap: 30,
     origin_id: 2, // JP
     destination_id: 1 // TH
   })
@@ -179,8 +179,8 @@ export const AdminTrips: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="label-admin">Max Capacity (e.g. 30kg)</label>
-              <input type="text" value={newTripForm.max_cap} onChange={(e) => setNewTripForm({ ...newTripForm, max_cap: e.target.value })} className="input-admin" />
+              <label className="label-admin">Max Capacity (kg)</label>
+              <input type="number" step="0.1" value={newTripForm.max_cap} onChange={(e) => setNewTripForm({ ...newTripForm, max_cap: Number(e.target.value) })} className="input-admin" />
             </div>
             <div>
               <label className="label-admin">Ship Date</label>

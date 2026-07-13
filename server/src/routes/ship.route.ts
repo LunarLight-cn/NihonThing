@@ -12,13 +12,13 @@ const CreateShipSchema = z.object({
   courier_name: z.string().optional(),
   origin_id: z.number(),
   destination_id: z.number(),
-  max_cap: z.string().optional(),
+  max_cap: z.number().optional(),
   close_date: z.string().optional()
 })
 
 const UpdateShipSchema = CreateShipSchema.partial().extend({
   status: z.enum(['open', 'closed', 'in_transit', 'arrived']).optional(),
-  current_cap: z.string().optional()
+  current_cap: z.number().optional()
 })
 
 const ShipIdParamsSchema = z.object({
