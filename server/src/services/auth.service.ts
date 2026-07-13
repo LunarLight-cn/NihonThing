@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/d1'
-import { eq } from 'drizzle-orm'
+import { eq, or } from 'drizzle-orm'
 import { sign } from 'hono/jwt'
 import * as schema from '../db/schema'
 import { generateSaltAndHash, verifyPassword } from '../utils/hash'
@@ -26,11 +26,11 @@ export const registerUser = async (d1: D1Database, username: string, email: stri
   })
 }
 
-export const loginUser = async (d1: D1Database, email: string, pass: string, jwtSecret: string, salt: string) => {
+export const loginUser = async (d1: D1Database, identifier: string, pass: string, jwtSecret: string, salt: string) => {
   const db = drizzle(d1, { schema })
 
   const user = await db.query.Users.findFirst({
-    where: eq(schema.Users.email, email)
+    where: or(eq(schema.Users.email, identifier), eq(schema.Users.username, identifier))
   })
 
   if (!user) {
