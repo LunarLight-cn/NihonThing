@@ -28,7 +28,7 @@ const UpdateOrderSchema = z.object({
 })
 
 const OrderIdParamsSchema = z.object({
-  id: z.string().openapi({ description: 'Order ID' })
+  id: z.coerce.number().int().openapi({ description: 'Order ID' })
 })
 
 // 1. POST /api/orders (Client creates order)
@@ -103,7 +103,7 @@ const putOrderRoute = createRoute({
 orderRoutes.openapi(putOrderRoute, async (c) => {
   const { id } = c.req.valid('param')
   const data = c.req.valid('json')
-  const updatedOrder = await updateOrder(c.env.nihonthing_db, parseInt(id), data)
+  const updatedOrder = await updateOrder(c.env.nihonthing_db, id, data)
   return c.json({ success: true, data: updatedOrder })
 })
 

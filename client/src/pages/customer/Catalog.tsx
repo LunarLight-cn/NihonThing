@@ -109,10 +109,10 @@ export const Catalog: React.FC = () => {
               </div>
               {/* Collections */}
               <div className="mb-6">
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">Collections</h4>
+                <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('catalog.collections')}</h4>
                 <div className="space-y-1">
                   <button onClick={() => handleCollectionChange(null)} className={`filter-btn ${!selectedCollection ? 'is-active' : ''}`}>
-                    All Products
+                    {t('catalog.allProducts')}
                   </button>
                   <button onClick={() => handleCollectionChange('new-arrivals')} className={`filter-btn ${selectedCollection === 'new-arrivals' ? 'is-active' : ''}`}>
                     {t('home.newArrivals.title')}
@@ -186,10 +186,10 @@ export const Catalog: React.FC = () => {
                   </button>
                 </div>
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Collections</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('catalog.collections')}</h4>
                   <div className="grid grid-cols-2 gap-2">
                     <button onClick={() => handleCollectionChange(null)} className={`filter-btn ${!selectedCollection ? 'is-active' : ''}`}>
-                      All Products
+                      {t('catalog.allProducts')}
                     </button>
                     <button onClick={() => handleCollectionChange('new-arrivals')} className={`filter-btn ${selectedCollection === 'new-arrivals' ? 'is-active' : ''}`}>
                       {t('home.newArrivals.title')}

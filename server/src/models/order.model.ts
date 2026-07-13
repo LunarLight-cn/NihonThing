@@ -34,6 +34,12 @@ export const createOrder = async (
     throw new Error('This trip is closed for new orders.')
   }
 
+  // Validate Address Ownership
+  const address = await db.query.Addresses.findFirst({ where: eq(schema.Addresses.id, addressId) })
+  if (!address || address.user_id !== userId) {
+    throw new Error('Invalid address or unauthorized.')
+  }
+
   // Calculate Total Price
   let itemPriceTotal = 0
   
@@ -45,6 +51,7 @@ export const createOrder = async (
     } else if (item.type === 'ticket') {
       const ticket = await db.query.Tickets.findFirst({ where: eq(schema.Tickets.id, item.id) })
       if (!ticket) throw new Error(`Ticket ${item.id} not found`)
+      if (ticket.client_id !== userId) throw new Error(`Unauthorized access to ticket ${item.id}`)
       itemPriceTotal += (ticket.proposed_price_thb || ticket.expected_price || 0) * item.quantity
     }
   }
@@ -141,11 +148,30 @@ export const getAllOrders = async (d1: D1Database) => {
   return await db.query.Orders.findMany()
 }
 
-export const updateOrder = async (d1: D1Database, id: number, data: Partial<typeof schema.Orders.$inferInsert>) => {
+export const getOrderById = async (d1: D1Database, id: number) => {
   const db = drizzle(d1, { schema })
-  return await db
+  const order = await db.query.Orders.findFirst({
+    where: eq(schema.Orders.id, id)
+  })
+  if (!order) throw new Error('Order not found')
+  return order
+}
+
+export const updateOrder = async (d1: D1Database, id: number, data: Partial<typeof schema.Orders.$inferInsert>, userId?: number) => {
+  const db = drizzle(d1, { schema })
+  
+  if (userId) {
+    const order = await db.query.Orders.findFirst({ where: eq(schema.Orders.id, id) })
+    if (!order || order.user_id !== userId) {
+      throw new Error('Unauthorized to update this order')
+    }
+  }
+
+  const updatedOrders = await db
     .update(schema.Orders)
     .set({ ...data, udate: sql`CURRENT_TIMESTAMP` })
     .where(eq(schema.Orders.id, id))
     .returning()
+    
+  return updatedOrders[0]
 }

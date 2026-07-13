@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '../../services/api'
-import { Loader2, PackageSearch, Image as ImageIcon, Link as LinkIcon, DollarSign, Store, Tag, RefreshCcw } from 'lucide-react'
+import { Loader2, PackageSearch, Image as ImageIcon, Link as LinkIcon, JapaneseYen, Store, Tag, RefreshCcw, Upload, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -12,17 +12,67 @@ export const CustomRequest: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     item_name: '',
     brand: '',
     shop_name: '',
     spec: '',
-    img: '',
+    img: [] as string[],
     external_link: '',
     expected_price: '',
     replacement: ''
   })
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (formData.img.length >= 3) {
+      setUploadError('Maximum 3 images allowed')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('File size must be less than 5MB')
+      return
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError('Only jpeg, png, webp, and gif are allowed')
+      return
+    }
+
+    setIsUploading(true)
+    setUploadError(null)
+
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      
+      const res = await api.post('/uploads', form, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      
+      setFormData(prev => ({ ...prev, img: [...prev.img, res.data.url] }))
+    } catch (err: any) {
+      setUploadError(err.response?.data?.message || 'Failed to upload image')
+    } finally {
+      setIsUploading(false)
+      e.target.value = ''
+    }
+  }
+
+  const removeImage = (index: number) => {
+    setFormData(prev => {
+      const newImg = [...prev.img]
+      newImg.splice(index, 1)
+      return { ...prev, img: newImg }
+    })
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -54,7 +104,7 @@ export const CustomRequest: React.FC = () => {
         brand: '',
         shop_name: '',
         spec: '',
-        img: '',
+        img: [],
         external_link: '',
         expected_price: '',
         replacement: ''
@@ -77,7 +127,7 @@ export const CustomRequest: React.FC = () => {
           onClick={() => navigate('/orders')}
           className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium transition-colors"
         >
-          View My Requests
+          {t('request.viewMyRequests')}
         </button>
       </div>
     )
@@ -101,6 +151,7 @@ export const CustomRequest: React.FC = () => {
             <label className="label-customer">
               <PackageSearch className="w-4 h-4 mr-2" />
               {t('request.itemName')}
+              <span className="text-red-500 ml-1">*</span>
             </label>
             <input
               type="text"
@@ -160,26 +211,50 @@ export const CustomRequest: React.FC = () => {
             <label className="label-customer">
               <ImageIcon className="w-4 h-4 mr-2" />
               {t('request.img')}
+              <span className="text-red-500 ml-1">*</span>
             </label>
-            <input
-              type="url"
-              name="img"
-              value={formData.img}
-              onChange={handleChange}
-              placeholder={t('request.imgPlaceholder')}
-              required
-              className="input-customer"
-            />
-            {formData.img && (
-              <div className="mt-2 relative w-full h-40 bg-secondary rounded-lg overflow-hidden border border-border">
-                <img
-                  src={formData.img}
-                  alt="Preview"
-                  className="w-full h-full object-contain"
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://placehold.co/600x400?text=Invalid+Image+URL'
-                  }}
-                />
+            
+            {formData.img.length < 3 && (
+              <div className="flex items-center gap-4">
+                <label className="cursor-pointer px-4 py-2 bg-secondary text-secondary-foreground rounded-lg border border-border hover:bg-secondary/80 transition-colors flex items-center justify-center font-medium">
+                  {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                  {isUploading ? 'Uploading...' : 'Upload Image'}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    disabled={isUploading}
+                  />
+                </label>
+                {uploadError && <span className="text-destructive text-sm font-medium">{uploadError}</span>}
+              </div>
+            )}
+            
+            {/* hidden required field hack for native form validation */}
+            <input type="text" className="hidden" required={formData.img.length === 0} />
+
+            {formData.img.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
+                {formData.img.map((imgUrl, index) => (
+                  <div key={index} className="relative aspect-square w-full bg-secondary rounded-lg overflow-hidden border border-border group shadow-sm">
+                    <img
+                      src={imgUrl.startsWith('http') ? imgUrl : import.meta.env.VITE_API_BASE_URL.replace('/api', '') + imgUrl}
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://placehold.co/600x600?text=Invalid+Image'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-2 right-2 bg-black/60 text-white p-1.5 rounded-full opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-black/80 shadow-md"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -201,7 +276,7 @@ export const CustomRequest: React.FC = () => {
             </div>
             <div className="space-y-2">
               <label className="label-customer">
-                <DollarSign className="w-4 h-4 mr-2" />
+                <JapaneseYen className="w-4 h-4 mr-2" />
                 {t('request.expectedPrice')}
               </label>
               <input

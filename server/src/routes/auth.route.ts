@@ -1,4 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
+import { setCookie, deleteCookie } from 'hono/cookie'
 import { registerUser, loginUser } from '../services/auth.service'
 
 const authRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; JWT_SECRET: string; AUTH_SALT: string } }>()
@@ -34,10 +35,35 @@ authRoutes.openapi(loginRoute, async (c) => {
 
   try {
     const { token, user } = await loginUser(c.env.nihonthing_db, email, password, c.env.JWT_SECRET, c.env.AUTH_SALT)
+    
+    // Set HttpOnly cookie
+    setCookie(c, 'token', token, {
+      httpOnly: true,
+      secure: new URL(c.req.url).protocol === 'https:',
+      sameSite: 'Lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/'
+    })
+
     return c.json({ success: true, data: { token, user } })
   } catch (error: any) {
     return c.json({ success: false, message: error.message }, 401)
   }
+})
+
+// Logout Zone
+const logoutRoute = createRoute({
+  method: 'post',
+  path: '/logout',
+  tags: ['Auth'],
+  responses: {
+    200: { description: 'Logout Success' }
+  }
+})
+
+authRoutes.openapi(logoutRoute, async (c) => {
+  deleteCookie(c, 'token', { path: '/' })
+  return c.json({ success: true, message: 'Logged out successfully' })
 })
 
 // Register Zone
