@@ -35,9 +35,9 @@ const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
 
 uploadRoutes.openapi(postUploadRoute, async (c) => {
   const body = await c.req.parseBody()
-  const file = body['file']
+  const file = body['file'] as any
   
-  if (!(file instanceof File)) {
+  if (!file || typeof file === 'string' || !file.name || typeof file.arrayBuffer !== 'function') {
     return c.json({ success: false, message: 'Invalid file upload' }, 400)
   }
 
