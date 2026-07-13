@@ -7,13 +7,20 @@ import { useCart } from '../../contexts/CartContext'
 import { useTranslation } from 'react-i18next'
 import { useLocalizedName } from '../../utils/localization'
 
+interface LocalizedRef {
+  id: number
+  name_en: string
+  name_th: string | null
+  name_jp: string | null
+}
+
 interface Product {
   id: number
   name: string
   name_th: string | null
   name_jp: string | null
   desc: string | null
-  brand: string | null
+  brand: LocalizedRef | null
   price_tentative_jpy: number | null
   price_thb: number | null
   price_tentative_thb: number | null
@@ -62,15 +69,16 @@ export const Catalog: React.FC = () => {
     }
   })
 
-  // Unique brands
-  const brands = [...new Set(products?.map((p) => p.brand).filter(Boolean) || [])]
+  // Unique brands (localized display names)
+  const brands = [...new Set(products?.map((p) => (p.brand ? getName(p.brand) : null)).filter(Boolean) as string[] || [])]
 
   const filteredProducts = products?.filter((p) => {
+    const brandName = p.brand ? getName(p.brand) : ''
     if (selectedCategory && p.category_id !== selectedCategory) return false
-    if (selectedBrand && p.brand !== selectedBrand) return false
+    if (selectedBrand && brandName !== selectedBrand) return false
     if (search) {
       const q = search.toLowerCase()
-      return (p.name?.toLowerCase().includes(q) || p.name_th?.toLowerCase().includes(q) || p.brand?.toLowerCase().includes(q))
+      return (p.name?.toLowerCase().includes(q) || p.name_th?.toLowerCase().includes(q) || brandName.toLowerCase().includes(q))
     }
     return true
   })
@@ -251,7 +259,7 @@ export const Catalog: React.FC = () => {
                       />
                     </Link>
                     <div className="p-3 flex flex-col flex-1">
-                      {item.brand && <p className="text-xs text-muted-foreground font-medium mb-1">{(item.brand as any)?.name_en || (item.brand as string)}</p>}
+                      {item.brand && <p className="text-xs text-muted-foreground font-medium mb-1">{getName(item.brand)}</p>}
                       <Link to={`/product/${item.id}`}>
                         <h3 className="font-medium text-sm text-foreground line-clamp-2 mb-2 hover:text-primary transition-colors">{getName(item)}</h3>
                       </Link>
@@ -260,7 +268,7 @@ export const Catalog: React.FC = () => {
                           ฿{item.price_tentative_thb || item.price_thb ? (item.price_tentative_thb || item.price_thb || 0).toLocaleString() : 'N/A'}
                         </p>
                         <button
-                          onClick={() => addItem({ id: item.id, name: getName(item), brand: ((item.brand as any)?.name_en || (item.brand as string)) || '', price_thb: item.price_tentative_thb || item.price_thb || 0, image: (item.img && item.img.length > 0) ? item.img[0] : '' })}
+                          onClick={() => addItem({ id: item.id, name: getName(item), brand: (item.brand && getName(item.brand)) || '', price_thb: item.price_tentative_thb || item.price_thb || 0, image: (item.img && item.img.length > 0) ? item.img[0] : '' })}
                           className="btn-add-to-cart"
                         >
                           <ShoppingBag className="w-3.5 h-3.5" />

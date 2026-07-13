@@ -7,13 +7,20 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '../../services/api'
 import { useLocalizedName } from '../../utils/localization'
 
+interface LocalizedRef {
+  id: number
+  name_en: string
+  name_th: string | null
+  name_jp: string | null
+}
+
 interface Product {
   id: number
   name: string
   name_th: string | null
   name_jp: string | null
   desc: string | null
-  brand: string | null
+  brand: LocalizedRef | null
   price_tentative_jpy: number | null
   price_thb: number | null
   price_tentative_thb: number | null
@@ -83,7 +90,7 @@ export const TrendingItems: React.FC<Props> = ({ hideViewAll, areaId, title }) =
                   />
                 </Link>
                 <div className="p-4 flex flex-col flex-1">
-                  {item.brand && <p className="text-xs text-muted-foreground font-medium mb-1">{(item.brand as any)?.name_en || (item.brand as string)}</p>}
+                  {item.brand && <p className="text-xs text-muted-foreground font-medium mb-1">{getName(item.brand)}</p>}
                   <Link to={`/product/${item.id}`}>
                     <h3 className="font-semibold text-foreground line-clamp-2 mb-2 hover:text-primary transition-colors">{getName(item)}</h3>
                   </Link>
@@ -92,7 +99,7 @@ export const TrendingItems: React.FC<Props> = ({ hideViewAll, areaId, title }) =
                       <p className="text-lg font-bold text-primary">฿{item.price_tentative_thb || item.price_thb ? (item.price_tentative_thb || item.price_thb || 0).toLocaleString() : 'N/A'}</p>
                     </div>
                     <button
-                      onClick={() => addItem({ id: item.id, name: getName(item), brand: ((item.brand as any)?.name_en || (item.brand as string)) || '', price_thb: item.price_tentative_thb || item.price_thb || 0, image: (item.img && item.img.length > 0) ? item.img[0] : '' })}
+                      onClick={() => addItem({ id: item.id, name: getName(item), brand: (item.brand && getName(item.brand)) || '', price_thb: item.price_tentative_thb || item.price_thb || 0, image: (item.img && item.img.length > 0) ? item.img[0] : '' })}
                       className="btn-add-to-cart"
                     >
                       {t('home.trending.addToCart')}
