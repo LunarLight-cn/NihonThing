@@ -13,8 +13,8 @@ const CreateProductSchema = z.object({
   desc_en: z.string().optional(),
   desc_th: z.string().optional(),
   desc_jp: z.string().optional(),
-  brand: z.string().optional(),
-  origin_country: z.string().optional(),
+  brand_id: z.number().optional(),
+  origin_country_id: z.number().optional(),
   price_tentative_jpy: z.number().optional(),
   price_tentative_thb: z.number().optional(),
   img: z.string().url('Must be a valid image URL').optional(),
@@ -33,7 +33,7 @@ const ProductIdParamsSchema = z.object({
 
 const ProductQuerySchema = z.object({
   category_id: z.coerce.number().optional(),
-  brand: z.string().optional(),
+  brand_id: z.coerce.number().optional(),
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(20)
 })

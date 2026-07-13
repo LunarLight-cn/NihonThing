@@ -20,6 +20,32 @@ locationRoutes.openapi(getCountriesRoute, async (c) => {
   return c.json({ success: true, data: countries })
 })
 
+const CreateCountrySchema = z.object({
+  name_en: z.string(),
+  name_th: z.string(),
+  name_jp: z.string().optional()
+})
+
+// POST /api/locations/countries
+const postCountriesRoute = createRoute({
+  method: 'post',
+  path: '/countries',
+  tags: ['Locations'],
+  request: {
+    body: { content: { 'application/json': { schema: CreateCountrySchema } } }
+  },
+  responses: { 201: { description: 'Create country successfully' } }
+})
+
+locationRoutes.openapi(postCountriesRoute, async (c) => {
+  const data = c.req.valid('json')
+  const { drizzle } = await import('drizzle-orm/d1')
+  const schema = await import('../db/schema')
+  const db = drizzle(c.env.nihonthing_db, { schema })
+  const result = await db.insert(schema.Countries).values(data).returning()
+  return c.json({ success: true, data: result[0] }, 201)
+})
+
 // GET /api/locations/provinces
 const getProvincesRoute = createRoute({
   method: 'get',

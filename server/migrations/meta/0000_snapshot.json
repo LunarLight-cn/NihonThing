@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "4083c5b5-5aac-49c2-98d3-f44d42916d27",
+  "id": "b85d77db-5111-40ec-a720-764ff3b47161",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "Addresses": {
@@ -141,6 +141,60 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'active'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "Brands": {
+      "name": "Brands",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name_th": {
+          "name": "name_th",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name_en": {
+          "name": "name_en",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name_jp": {
+          "name": "name_jp",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'active'"
         }
       },
       "indexes": {},
@@ -352,15 +406,43 @@
           "notNull": true,
           "autoincrement": true
         },
-        "title": {
-          "name": "title",
+        "title_en": {
+          "name": "title_en",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "desc": {
-          "name": "desc",
+        "title_th": {
+          "name": "title_th",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "title_jp": {
+          "name": "title_jp",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "desc_en": {
+          "name": "desc_en",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "desc_th": {
+          "name": "desc_th",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "desc_jp": {
+          "name": "desc_jp",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -1021,15 +1103,43 @@
           "notNull": false,
           "autoincrement": false
         },
-        "name": {
-          "name": "name",
+        "name_en": {
+          "name": "name_en",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "desc": {
-          "name": "desc",
+        "name_th": {
+          "name": "name_th",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "name_jp": {
+          "name": "name_jp",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "desc_en": {
+          "name": "desc_en",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "desc_th": {
+          "name": "desc_th",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "desc_jp": {
+          "name": "desc_jp",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -1042,8 +1152,29 @@
           "notNull": false,
           "autoincrement": false
         },
-        "price_tentative": {
-          "name": "price_tentative",
+        "brand_id": {
+          "name": "brand_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "origin_country_id": {
+          "name": "origin_country_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "price_tentative_jpy": {
+          "name": "price_tentative_jpy",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "price_tentative_thb": {
+          "name": "price_tentative_thb",
           "type": "real",
           "primaryKey": false,
           "notNull": false,
@@ -1084,6 +1215,14 @@
           "notNull": false,
           "autoincrement": false
         },
+        "total_sold": {
+          "name": "total_sold",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 0
+        },
         "cdate": {
           "name": "cdate",
           "type": "text",
@@ -1108,6 +1247,32 @@
           "tableTo": "Categories",
           "columnsFrom": [
             "category_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "Products_brand_id_Brands_id_fk": {
+          "name": "Products_brand_id_Brands_id_fk",
+          "tableFrom": "Products",
+          "tableTo": "Brands",
+          "columnsFrom": [
+            "brand_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "Products_origin_country_id_Countries_id_fk": {
+          "name": "Products_origin_country_id_Countries_id_fk",
+          "tableFrom": "Products",
+          "tableTo": "Countries",
+          "columnsFrom": [
+            "origin_country_id"
           ],
           "columnsTo": [
             "id"
@@ -1210,8 +1375,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "actual_cost": {
-          "name": "actual_cost",
+        "actual_cost_jpy": {
+          "name": "actual_cost_jpy",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actual_cost_thb": {
+          "name": "actual_cost_thb",
           "type": "real",
           "primaryKey": false,
           "notNull": true,
@@ -1346,12 +1518,20 @@
           "notNull": false,
           "autoincrement": false
         },
+        "close_date": {
+          "name": "close_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "status": {
           "name": "status",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "'open'"
         },
         "cdate": {
           "name": "cdate",
@@ -1419,11 +1599,25 @@
           "notNull": true,
           "autoincrement": false
         },
-        "name": {
-          "name": "name",
+        "name_th": {
+          "name": "name_th",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "name_en": {
+          "name": "name_en",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name_jp": {
+          "name": "name_jp",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "map_location": {
@@ -1432,6 +1626,14 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'active'"
         }
       },
       "indexes": {},
@@ -1614,8 +1816,15 @@
           "notNull": false,
           "autoincrement": false
         },
-        "proposed_price": {
-          "name": "proposed_price",
+        "proposed_price_jpy": {
+          "name": "proposed_price_jpy",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "proposed_price_thb": {
+          "name": "proposed_price_thb",
           "type": "real",
           "primaryKey": false,
           "notNull": false,
@@ -1740,7 +1949,16 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "'client'"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'active'"
         },
         "cdate": {
           "name": "cdate",

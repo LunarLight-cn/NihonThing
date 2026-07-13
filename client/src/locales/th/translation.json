@@ -168,7 +168,19 @@
     "catalog": "แคตตาล็อก",
     "users": "ผู้ใช้งาน",
     "settings": "ตั้งค่า",
-    "logout": "ออกจากระบบ"
+    "logout": "ออกจากระบบ",
+    "manageBrands": "แบรนด์",
+    "addBrand": "เพิ่มแบรนด์",
+    "editBrand": "แก้ไขแบรนด์",
+    "nameEn": "ชื่อ (EN)",
+    "nameTh": "ชื่อ (TH)",
+    "nameJp": "ชื่อ (JP)",
+    "status": "สถานะ",
+    "actions": "จัดการ",
+    "confirmDelete": "คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?",
+    "save": "บันทึก",
+    "cancel": "ยกเลิก",
+    "searchBrands": "ค้นหาแบรนด์..."
   },
   "request": {
     "title": "ฝากหิ้วสินค้า",

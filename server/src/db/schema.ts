@@ -26,6 +26,14 @@ export const Addresses = sqliteTable("Addresses", {
   tag: text("tag"),
 });
 
+export const Brands = sqliteTable("Brands", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name_th: text("name_th").notNull(),
+  name_en: text("name_en").notNull(),
+  name_jp: text("name_jp"),
+  status: text("status", { enum: ["active", "inactive"] }).default("active"),
+});
+
 export const Countries = sqliteTable("Countries", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name_th: text("name_th").notNull(),
@@ -92,7 +100,8 @@ export const Products = sqliteTable("Products", {
   desc_th: text("desc_th"),
   desc_jp: text("desc_jp"),
   brand: text("brand"),
-  origin_country: text("origin_country"),
+  brand_id: integer("brand_id").references(() => Brands.id),
+  origin_country_id: integer("origin_country_id").references(() => Countries.id),
   price_tentative_jpy: real("price_tentative_jpy"),
   price_tentative_thb: real("price_tentative_thb"),
   img: text("img"),
@@ -289,6 +298,14 @@ export const categoriesRelations = relations(Categories, ({ many }) => ({
 
 export const productsRelations = relations(Products, ({ one, many }) => ({
   category: one(Categories, { fields: [Products.category_id], references: [Categories.id] }),
+  origin_country: one(Countries, {
+    fields: [Products.origin_country_id],
+    references: [Countries.id],
+  }),
+  brand: one(Brands, {
+    fields: [Products.brand_id],
+    references: [Brands.id],
+  }),
   orderItems: many(Order_Items),
   locations: many(Product_Locations),
   eventProducts: many(Event_Products),
