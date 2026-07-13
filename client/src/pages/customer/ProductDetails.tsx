@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ShieldCheck, ArrowLeft, Truck, Loader2, AlertCircle, MapPin } from 'lucide-react'
 import { useCart } from '../../contexts/CartContext'
@@ -19,7 +19,7 @@ interface Product {
   price_tentative_jpy: number | null
   price_tentative_thb: number | null
   price_thb: number | null
-  img: string | null
+  img: string[] | null
   tag: string | null
   category_id: number | null
   status: string
@@ -32,6 +32,7 @@ export const ProductDetails: React.FC = () => {
   const { t } = useTranslation()
   const getName = useLocalizedName()
   const getDesc = useLocalizedDesc()
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
 
   const {
     data: product,
@@ -86,11 +87,27 @@ export const ProductDetails: React.FC = () => {
                 </div>
               )}
               <img
-                src={product.img || 'https://images.unsplash.com/photo-1582793988951-9aed5509eb97?q=80&w=2942&auto=format&fit=crop'}
+                src={(product.img && product.img.length > 0) ? product.img[activeImageIndex] : 'https://images.unsplash.com/photo-1582793988951-9aed5509eb97?q=80&w=2942&auto=format&fit=crop'}
                 alt={getName(product)}
                 className="w-full h-full object-cover aspect-square hover:scale-105 transition-transform duration-500"
               />
             </div>
+            
+            {product.img && product.img.length > 1 && (
+              <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+                {product.img.map((url, idx) => (
+                  <button 
+                    key={idx} 
+                    onClick={() => setActiveImageIndex(idx)}
+                    className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-colors ${activeImageIndex === idx ? 'border-primary' : 'border-transparent hover:border-primary/50'}`}
+                  >
+                    <img src={url} alt={`Thumbnail ${idx}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            
 
             {/* Product Info */}
             <div className="flex flex-col">
@@ -126,7 +143,7 @@ export const ProductDetails: React.FC = () => {
                     name: getName(product),
                     brand: product.brand || t('product.noBrand'),
                     price_thb: product.price_tentative_thb || product.price_thb || 0,
-                    image: product.img || ''
+                    image: (product.img && product.img.length > 0) ? product.img[0] : ''
                   })
                 }
                 className="btn-primary-lg"
