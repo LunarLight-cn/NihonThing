@@ -251,7 +251,7 @@ export const Catalog: React.FC = () => {
                       />
                     </Link>
                     <div className="p-3 flex flex-col flex-1">
-                      {item.brand && <p className="text-xs text-muted-foreground font-medium mb-1">{item.brand}</p>}
+                      {item.brand && <p className="text-xs text-muted-foreground font-medium mb-1">{(item.brand as any)?.name_en || (item.brand as string)}</p>}
                       <Link to={`/product/${item.id}`}>
                         <h3 className="font-medium text-sm text-foreground line-clamp-2 mb-2 hover:text-primary transition-colors">{getName(item)}</h3>
                       </Link>
@@ -260,7 +260,7 @@ export const Catalog: React.FC = () => {
                           ฿{item.price_tentative_thb || item.price_thb ? (item.price_tentative_thb || item.price_thb || 0).toLocaleString() : 'N/A'}
                         </p>
                         <button
-                          onClick={() => addItem({ id: item.id, name: getName(item), brand: item.brand || '', price_thb: item.price_tentative_thb || item.price_thb || 0, image: (item.img && item.img.length > 0) ? item.img[0] : '' })}
+                          onClick={() => addItem({ id: item.id, name: getName(item), brand: ((item.brand as any)?.name_en || (item.brand as string)) || '', price_thb: item.price_tentative_thb || item.price_thb || 0, image: (item.img && item.img.length > 0) ? item.img[0] : '' })}
                           className="btn-add-to-cart"
                         >
                           <ShoppingBag className="w-3.5 h-3.5" />

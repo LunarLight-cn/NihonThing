@@ -61,7 +61,7 @@ export const CartSidebar: React.FC = () => {
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     <h3 className="font-semibold text-sm line-clamp-2">{item.name}</h3>
-                    <p className="text-xs text-muted-foreground">{item.brand}</p>
+                    <p className="text-xs text-muted-foreground">{(item.brand as any)?.name_en || (item.brand as string)}</p>
                   </div>
                   <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center space-x-2 bg-secondary rounded-md">

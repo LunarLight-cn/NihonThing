@@ -83,7 +83,7 @@ export const TrendingItems: React.FC<Props> = ({ hideViewAll, areaId, title }) =
                   />
                 </Link>
                 <div className="p-4 flex flex-col flex-1">
-                  {item.brand && <p className="text-xs text-muted-foreground font-medium mb-1">{item.brand}</p>}
+                  {item.brand && <p className="text-xs text-muted-foreground font-medium mb-1">{(item.brand as any)?.name_en || (item.brand as string)}</p>}
                   <Link to={`/product/${item.id}`}>
                     <h3 className="font-semibold text-foreground line-clamp-2 mb-2 hover:text-primary transition-colors">{getName(item)}</h3>
                   </Link>
@@ -92,7 +92,7 @@ export const TrendingItems: React.FC<Props> = ({ hideViewAll, areaId, title }) =
                       <p className="text-lg font-bold text-primary">฿{item.price_tentative_thb || item.price_thb ? (item.price_tentative_thb || item.price_thb || 0).toLocaleString() : 'N/A'}</p>
                     </div>
                     <button
-                      onClick={() => addItem({ id: item.id, name: getName(item), brand: item.brand || '', price_thb: item.price_tentative_thb || item.price_thb || 0, image: (item.img && item.img.length > 0) ? item.img[0] : '' })}
+                      onClick={() => addItem({ id: item.id, name: getName(item), brand: ((item.brand as any)?.name_en || (item.brand as string)) || '', price_thb: item.price_tentative_thb || item.price_thb || 0, image: (item.img && item.img.length > 0) ? item.img[0] : '' })}
                       className="btn-add-to-cart"
                     >
                       {t('home.trending.addToCart')}
