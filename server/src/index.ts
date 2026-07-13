@@ -21,11 +21,22 @@ import uploadRoutes from './routes/upload.route'
 
 const app = new OpenAPIHono()
 
-app.use('*', cors())
+app.use('*', (c, next) => {
+  const corsMiddleware = cors({
+    // @ts-ignore - Env might not be fully typed here
+    origin: c.env?.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true
+  })
+  return corsMiddleware(c, next)
+})
 
 app.onError((err, c) => {
-  console.error(err)
-  return c.json({ success: false, message: err.message || 'Internal Server Error' }, 500)
+  console.error('[Global Error]', err)
+  // Check if it's a validation error (Zod) which is safe to return
+  if (err.name === 'ZodError' || (err as any).status === 400) {
+    return c.json({ success: false, message: err.message }, 400)
+  }
+  return c.json({ success: false, message: 'Internal Server Error' }, 500)
 })
 app.openAPIRegistry.registerComponent('securitySchemes', 'Bearer', {
   type: 'http',

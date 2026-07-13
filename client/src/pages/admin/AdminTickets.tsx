@@ -93,8 +93,8 @@ export const AdminTickets: React.FC = () => {
       cell: ({ row }) => (
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded overflow-hidden bg-secondary flex items-center justify-center">
-            {row.original.img ? (
-              <img src={row.original.img} alt="" className="w-full h-full object-cover" />
+            {row.original.img && row.original.img.length > 0 ? (
+              <img src={Array.isArray(row.original.img) ? row.original.img[0] : row.original.img} alt="" className="w-full h-full object-cover" />
             ) : (
               <ImageIcon className="w-4 h-4" />
             )}
@@ -125,7 +125,7 @@ export const AdminTickets: React.FC = () => {
     {
       accessorKey: 'expected_price',
       header: 'Client Budget',
-      cell: ({ row }) => (row.original.expected_price ? `฿${row.original.expected_price.toLocaleString()}` : '-')
+      cell: ({ row }) => (row.original.expected_price ? `¥${row.original.expected_price.toLocaleString()}` : '-')
     },
     {
       accessorKey: 'proposed_price_thb',
@@ -165,12 +165,18 @@ export const AdminTickets: React.FC = () => {
             <div className="space-y-4">
               <h3 className="font-medium text-muted-foreground">Item Details</h3>
               <div className="flex space-x-4">
-                <img src={selectedTicket.img} alt="" className="w-24 h-24 rounded-lg object-cover border border-border" />
+                {selectedTicket.img && selectedTicket.img.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    {(Array.isArray(selectedTicket.img) ? selectedTicket.img : [selectedTicket.img]).map((imgSrc: string, idx: number) => (
+                      <img key={idx} src={imgSrc} alt="" className="w-24 h-24 rounded-lg object-cover border border-border" />
+                    ))}
+                  </div>
+                )}
                 <div>
                   <p className="font-bold text-lg">{selectedTicket.item_name}</p>
                   <p className="text-sm text-muted-foreground">Client: {selectedTicket.client?.username}</p>
                   <p className="text-sm text-muted-foreground">
-                    Client's Budget: <span className="font-medium text-foreground">{selectedTicket.expected_price ? `฿${selectedTicket.expected_price}` : 'Not specified'}</span>
+                    Client's Budget: <span className="font-medium text-foreground">{selectedTicket.expected_price ? `¥${selectedTicket.expected_price.toLocaleString()}` : 'Not specified'}</span>
                   </p>
                   {selectedTicket.external_link && (
                     <a href={selectedTicket.external_link} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline flex items-center mt-2">

@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/d1'
 import { eq } from 'drizzle-orm'
 import { sign } from 'hono/jwt'
 import * as schema from '../db/schema'
-import { hashPassword } from '../utils/hash'
+import { generateSaltAndHash, verifyPassword } from '../utils/hash'
 
 export const registerUser = async (d1: D1Database, username: string, email: string, pass: string, salt: string) => {
   const db = drizzle(d1, { schema })
@@ -16,7 +16,7 @@ export const registerUser = async (d1: D1Database, username: string, email: stri
     throw new Error('This email is already registered.')
   }
 
-  const hashedPassword = await hashPassword(pass, salt)
+  const hashedPassword = await generateSaltAndHash(pass)
 
   await db.insert(schema.Users).values({
     username: username,
@@ -28,14 +28,28 @@ export const registerUser = async (d1: D1Database, username: string, email: stri
 
 export const loginUser = async (d1: D1Database, email: string, pass: string, jwtSecret: string, salt: string) => {
   const db = drizzle(d1, { schema })
-  const hashedPassword = await hashPassword(pass, salt)
 
   const user = await db.query.Users.findFirst({
     where: eq(schema.Users.email, email)
   })
 
-  if (!user || user.password_hash !== hashedPassword) {
+  if (!user) {
     throw new Error('Invalid email or password')
+  }
+
+  const isValidPassword = await verifyPassword(pass, user.password_hash, salt)
+  if (!isValidPassword) {
+    throw new Error('Invalid email or password')
+  }
+  
+  if (user.status === 'inactive') {
+    throw new Error('Your account is currently inactive.')
+  }
+  
+  // Transparent hash upgrade
+  if (!user.password_hash.includes(':')) {
+    const newHash = await generateSaltAndHash(pass)
+    await db.update(schema.Users).set({ password_hash: newHash }).where(eq(schema.Users.id, user.id))
   }
 
   const token = await sign(

@@ -10,7 +10,7 @@ const CreateTicketSchema = z.object({
   shop_name: z.string().optional(),
   area_name: z.string().optional(),
   spec: z.string().optional(),
-  img: z.string().url('Must be a valid image URL'),
+  img: z.array(z.string().url('Must be a valid image URL')).min(1, 'At least 1 image is required').max(3, 'Maximum 3 images allowed'),
   external_link: z.string().url('Must be a valid URL').optional(),
   replacement: z.string().optional(),
   expected_price: z.number().optional()

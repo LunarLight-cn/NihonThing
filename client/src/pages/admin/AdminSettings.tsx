@@ -2,10 +2,11 @@ import React, { useState } from 'react'
 import { Settings, User, Shield, Loader2 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { api } from '../../services/api'
+import { AddressManager } from '../../components/profile/AddressManager'
 
 export const AdminSettings: React.FC = () => {
-  const { user, login } = useAuth()
-  const [activeTab, setActiveTab] = useState<'profile' | 'security'>('profile')
+  const { user, login, token } = useAuth()
+  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'addresses'>('profile')
 
   const [profileForm, setProfileForm] = useState({
     username: user?.username || ''
@@ -28,7 +29,7 @@ export const AdminSettings: React.FC = () => {
         alert('Profile updated successfully!')
         // Update local user state
         if (user) {
-          login(localStorage.getItem('token') || '', { ...user, username: profileForm.username })
+          login(token || '', { ...user, username: profileForm.username })
         }
       }
     } catch (error: any) {
@@ -85,6 +86,12 @@ export const AdminSettings: React.FC = () => {
             className={`sidebar-filter-btn ${activeTab === 'security' ? 'is-active' : ''}`}
           >
             Security
+          </button>
+          <button
+            onClick={() => setActiveTab('addresses')}
+            className={`sidebar-filter-btn ${activeTab === 'addresses' ? 'is-active' : ''}`}
+          >
+            Addresses
           </button>
         </div>
 
@@ -152,6 +159,12 @@ export const AdminSettings: React.FC = () => {
                 </button>
               </div>
             </form>
+          )}
+
+          {activeTab === 'addresses' && (
+            <div className="card-panel">
+              <AddressManager />
+            </div>
           )}
         </div>
       </div>

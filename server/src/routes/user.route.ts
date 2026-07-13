@@ -144,11 +144,11 @@ userRoutes.openapi(putPasswordRoute, async (c) => {
 userRoutes.route('/me/addresses', addressRoutes)
 
 const UpdateRoleSchema = z.object({
-  role: z.enum(['admin', 'customer', 'agent'])
+  role: z.enum(['admin', 'client', 'agent'])
 })
 
 const UserIdParamsSchema = z.object({
-  id: z.string().openapi({ description: 'User ID' })
+  id: z.coerce.number().int().openapi({ description: 'User ID' })
 })
 
 const putRoleRoute = createRoute({
@@ -167,9 +167,10 @@ const putRoleRoute = createRoute({
 userRoutes.openapi(putRoleRoute, async (c) => {
   const { id } = c.req.valid('param')
   const { role } = c.req.valid('json')
+  
   try {
-    await updateUserRole(c.env.nihonthing_db, parseInt(id), role)
-    return c.json({ success: true, message: 'Role Updated' })
+    await updateUserRole(c.env.nihonthing_db, id, role)
+    return c.json({ success: true, message: 'Role updated' })
   } catch (error) {
     return c.json({ success: false, message: 'Update Failed' }, 500)
   }
@@ -195,9 +196,10 @@ const putStatusRoute = createRoute({
 userRoutes.openapi(putStatusRoute, async (c) => {
   const { id } = c.req.valid('param')
   const { status } = c.req.valid('json')
+  
   try {
-    await updateUserStatus(c.env.nihonthing_db, parseInt(id), status)
-    return c.json({ success: true, message: 'Status Updated' })
+    await updateUserStatus(c.env.nihonthing_db, id, status)
+    return c.json({ success: true, message: 'Status updated' })
   } catch (error) {
     return c.json({ success: false, message: 'Update Failed' }, 500)
   }
@@ -215,9 +217,10 @@ const deleteUserRoute = createRoute({
 
 userRoutes.openapi(deleteUserRoute, async (c) => {
   const { id } = c.req.valid('param')
+  
   try {
-    await deleteUser(c.env.nihonthing_db, parseInt(id))
-    return c.json({ success: true, message: 'User Deleted' })
+    await deleteUser(c.env.nihonthing_db, id)
+    return c.json({ success: true, message: 'User deleted' })
   } catch (error) {
     return c.json({ success: false, message: 'Delete Failed (May have related data)' }, 400)
   }

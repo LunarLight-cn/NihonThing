@@ -23,3 +23,22 @@ export const hashPassword = async (password: string, salt: string) => {
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
 }
+
+export const generateSaltAndHash = async (password: string) => {
+  const saltBytes = crypto.getRandomValues(new Uint8Array(16))
+  const saltHex = Array.from(saltBytes).map(b => b.toString(16).padStart(2, '0')).join('')
+  const hash = await hashPassword(password, saltHex)
+  return `${saltHex}:${hash}`
+}
+
+export const verifyPassword = async (password: string, storedHash: string, globalSalt: string) => {
+  if (storedHash.includes(':')) {
+    const [salt, hash] = storedHash.split(':')
+    const calculatedHash = await hashPassword(password, salt)
+    return calculatedHash === hash
+  } else {
+    // Legacy global salt fallback
+    const calculatedHash = await hashPassword(password, globalSalt)
+    return calculatedHash === storedHash
+  }
+}

@@ -1,5 +1,6 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { authGuard, AuthVariables } from '../middlewares/auth.middleware'
+import { verifyMagicBytes } from '../utils/file'
 
 const uploadRoutes = new OpenAPIHono<{ Bindings: { nihonthing_bucket: R2Bucket }; Variables: AuthVariables }>()
 
@@ -58,7 +59,12 @@ uploadRoutes.openapi(postUploadRoute, async (c) => {
 
   const fileName = `${crypto.randomUUID()}.${ext}`
   
-  await c.env.nihonthing_bucket.put(fileName, await file.arrayBuffer(), {
+  const arrayBuffer = await file.arrayBuffer()
+  if (!verifyMagicBytes(arrayBuffer)) {
+    return c.json({ success: false, message: 'Invalid file content. The file appears to be corrupted or disguised.' }, 400)
+  }
+  
+  await c.env.nihonthing_bucket.put(fileName, arrayBuffer, {
     httpMetadata: { contentType: file.type }
   })
   

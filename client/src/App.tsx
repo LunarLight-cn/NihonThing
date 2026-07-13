@@ -11,6 +11,7 @@ import { Home } from './pages/customer/Home'
 import { Catalog } from './pages/customer/Catalog'
 import { ProductDetails } from './pages/customer/ProductDetails'
 import { CustomRequest } from './pages/customer/CustomRequest'
+import { Settings } from './pages/customer/Settings'
 import { Support } from './pages/customer/Support'
 import { Terms } from './pages/customer/Terms'
 import { Privacy } from './pages/customer/Privacy'
@@ -48,6 +49,11 @@ export default function App() {
               <Route path="terms" element={<Terms />} />
               <Route path="privacy" element={<Privacy />} />
               <Route path="areas" element={<div className="pb-12"><ShoppingAreasMap /></div>} />
+              <Route path="settings" element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              } />
               <Route path="orders" element={
                 <ProtectedRoute>
                   <div className="p-8"><h1 className="text-3xl font-bold text-primary">My Orders</h1></div>

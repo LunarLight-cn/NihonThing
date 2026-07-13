@@ -86,6 +86,9 @@ export const CustomerLayout: React.FC = () => {
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
                   <div className="p-2">
+                    <Link to="/settings" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md">
+                      {t('nav.settings')}
+                    </Link>
                     <Link to="/orders" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md">
                       {t('nav.myOrders')}
                     </Link>

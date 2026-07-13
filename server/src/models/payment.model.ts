@@ -4,13 +4,16 @@ import * as schema from '../db/schema'
 import generatePayload from 'promptpay-qr'
 import qrcode from 'qrcode'
 
-export const getOrderAmountForPayment = async (d1: D1Database, orderId: number, type: 'deposit' | 'remaining') => {
+export const getOrderAmountForPayment = async (d1: D1Database, orderId: number, type: 'deposit' | 'remaining', userId: number, userRole: string) => {
   const db = drizzle(d1, { schema })
   const order = await db.query.Orders.findFirst({
     where: eq(schema.Orders.id, orderId)
   })
   
   if (!order) throw new Error('Order not found')
+  if (userRole === 'client' && order.user_id !== userId) {
+    throw new Error('Unauthorized')
+  }
   
   if (type === 'deposit') {
     return (order.item_price_total || 0) * 0.5
@@ -33,17 +36,10 @@ export const submitPaymentSlip = async (d1: D1Database, data: any) => {
   return await db.insert(schema.Payments).values(data).returning()
 }
 
-export const verifySlip = async (apiUrl: string, apiKey: string, imageUrl: string, expectedAmount?: number) => {
-  // Fetch the image from URL as Blob
-  const imageResponse = await fetch(imageUrl)
-  if (!imageResponse.ok) {
-    throw new Error('Failed to download slip image for verification')
-  }
-  const imageBlob = await imageResponse.blob()
-  
-  // Prepare FormData
+export const verifySlip = async (apiUrl: string, apiKey: string, file: File, expectedAmount?: number) => {
+  // Prepare FormData directly from the uploaded file
   const formData = new FormData()
-  formData.append('image', imageBlob, 'slip.jpg')
+  formData.append('image', file, file.name)
   formData.append('checkDuplicate', 'true')
   if (expectedAmount) {
     formData.append('matchAmount', expectedAmount.toString())

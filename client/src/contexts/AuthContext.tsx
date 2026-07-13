@@ -14,16 +14,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'))
+  const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchMe = async () => {
-      if (!token) {
-        setIsLoading(false)
-        return
-      }
-
       try {
         const response = await api.get('/users/me')
         if (response.data.success) {
@@ -40,16 +35,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     fetchMe()
-  }, [token])
+  }, [])
 
   const login = (newToken: string, newUser: User) => {
-    localStorage.setItem('token', newToken)
     setToken(newToken)
     setUser(newUser)
   }
 
-  const logout = () => {
-    localStorage.removeItem('token')
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout')
+    } catch (e) {
+      // ignore
+    }
     setToken(null)
     setUser(null)
   }
