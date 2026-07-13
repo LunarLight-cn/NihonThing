@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/d1'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import * as schema from '../db/schema'
 
 export const getPurchases = async (d1: D1Database) => {
@@ -16,15 +16,27 @@ export const createPurchase = async (d1: D1Database, agentId: number, data: any)
     agent_id: agentId
   }).returning()
   
-  // Find the Order to update its status to 'purchasing'
-  const orderItem = await db.query.Order_Items.findFirst({
-    where: eq(schema.Order_Items.id, data.order_item_id)
-  })
-  
-  if (orderItem && orderItem.order_id) {
-    await db.update(schema.Orders)
-      .set({ status: 'purchasing' })
-      .where(eq(schema.Orders.id, orderItem.order_id))
+  if (data.order_item_id) {
+    // Find the Order to update its status to 'purchasing'
+    const orderItem = await db.query.Order_Items.findFirst({
+      where: eq(schema.Order_Items.id, data.order_item_id)
+    })
+    
+    if (orderItem && orderItem.order_id) {
+      await db.update(schema.Orders)
+        .set({ status: 'purchasing' })
+        .where(eq(schema.Orders.id, orderItem.order_id))
+    }
+  }
+
+  if (data.product_id) {
+    // Increment amount and remain for the restocked product
+    await db.update(schema.Products)
+      .set({ 
+        amount: sql`COALESCE(amount, 0) + ${data.quantity}`,
+        remain: sql`COALESCE(remain, 0) + ${data.quantity}`
+      })
+      .where(eq(schema.Products.id, data.product_id))
   }
   
   return newPurchase

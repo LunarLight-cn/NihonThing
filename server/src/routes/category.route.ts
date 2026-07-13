@@ -43,7 +43,7 @@ const postCategoryRoute = createRoute({
 categoryRoutes.openapi(postCategoryRoute, async (c) => {
   const data = c.req.valid('json')
   const newCategory = await createCategory(c.env.nihonthing_db, data)
-  return c.json({ success: true, data: [0] })
+  return c.json({ success: true, data: newCategory[0] })
 })
 
 // PUT /api/categories/:id
@@ -64,7 +64,7 @@ categoryRoutes.openapi(putCategoryRoute, async (c) => {
   const { id } = c.req.valid('param')
   const data = c.req.valid('json')
   const updatedCategory = await updateCategory(c.env.nihonthing_db, parseInt(id), data)
-  return c.json({ success: true, data: [0] })
+  return c.json({ success: true, data: updatedCategory[0] })
 })
 
 // DELETE /api/categories/:id
@@ -81,7 +81,7 @@ const deleteCategoryRoute = createRoute({
 categoryRoutes.openapi(deleteCategoryRoute, async (c) => {
   const { id } = c.req.valid('param')
   const deletedCategory = await deleteCategory(c.env.nihonthing_db, parseInt(id))
-  return c.json({ success: true, data: [0] })
+  return c.json({ success: true, data: deletedCategory[0] })
 })
 
 export default categoryRoutes

@@ -19,9 +19,7 @@ const CreateProductSchema = z.object({
   price_tentative_thb: z.number().optional(),
   img: z.array(z.string()).optional(),
   tag: z.string().optional(),
-  amount: z.number().optional(),
   weight: z.number().optional(),
-  remain: z.number().optional(),
   status: z.enum(['active', 'inactive', 'out_of_stock']).optional()
 })
 
@@ -153,7 +151,24 @@ productRoutes.openapi(putProductRoute, async (c) => {
     price_tentative_thb: data.price_tentative_thb !== undefined ? data.price_tentative_thb : (data.price_tentative_jpy ? data.price_tentative_jpy * exchangeRate : undefined)
   }
   
-  const updatedProduct = await updateProduct(c.env.nihonthing_db, parseInt(id), payload)
+  const productId = parseInt(id)
+  
+  // Check if name changed to log history
+  if (data.name_en) {
+    const oldProduct = await getProductById(c.env.nihonthing_db, productId)
+    if (oldProduct && oldProduct.name_en !== data.name_en) {
+      const { drizzle } = await import('drizzle-orm/d1')
+      const schema = await import('../db/schema')
+      const db = drizzle(c.env.nihonthing_db, { schema })
+      await db.insert(schema.Product_Name_History).values({
+        product_id: productId,
+        old_name: oldProduct.name_en,
+        new_name: data.name_en
+      })
+    }
+  }
+
+  const updatedProduct = await updateProduct(c.env.nihonthing_db, productId, payload)
   return c.json({ success: true, data: updatedProduct[0] })
 })
 
