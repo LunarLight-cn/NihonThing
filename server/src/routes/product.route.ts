@@ -17,7 +17,7 @@ const CreateProductSchema = z.object({
   origin_country_id: z.number().optional(),
   price_tentative_jpy: z.number().optional(),
   price_tentative_thb: z.number().optional(),
-  img: z.array(z.string().url('Must be a valid image URL')).optional(),
+  img: z.array(z.string()).optional(),
   tag: z.string().optional(),
   amount: z.number().optional(),
   weight: z.number().optional(),
