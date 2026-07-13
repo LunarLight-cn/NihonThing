@@ -1,5 +1,6 @@
 import React from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { api } from '../../services/api'
 import { DataTable } from '../../components/admin/DataTable'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -16,6 +17,7 @@ interface Order {
 }
 
 export const AdminOrders: React.FC = () => {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
 
   const { data: orders, isLoading } = useQuery({
@@ -43,21 +45,21 @@ export const AdminOrders: React.FC = () => {
   const columns: ColumnDef<Order>[] = [
     {
       accessorKey: 'id',
-      header: 'Order ID'
+      header: t('admin.order.order_id')
     },
     {
       accessorKey: 'cdate',
-      header: 'Date',
+      header: t('admin.order.date'),
       cell: ({ row }) => new Date(row.original.cdate).toLocaleDateString()
     },
     {
       accessorKey: 'grand_total',
-      header: 'Total',
+      header: t('admin.order.total'),
       cell: ({ row }) => `฿${row.original.grand_total?.toLocaleString() || 0}`
     },
     {
       accessorKey: 'status',
-      header: 'Fulfillment Status',
+      header: t('admin.order.fulfillment_status'),
       cell: ({ row }) => {
         const status = row.original.status
         return (
@@ -66,19 +68,19 @@ export const AdminOrders: React.FC = () => {
             onChange={(e) => updateStatusMutation.mutate({ id: row.original.id, status: e.target.value })}
             className="input-inline-select"
           >
-            <option value="pending">Pending</option>
-            <option value="purchasing">Purchasing</option>
-            <option value="arrived_th">Arrived TH</option>
-            <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
+            <option value="pending">{t('admin.order.status_pending')}</option>
+            <option value="purchasing">{t('admin.order.status_purchasing')}</option>
+            <option value="arrived_th">{t('admin.order.status_arrived_th')}</option>
+            <option value="shipped">{t('admin.order.status_shipped')}</option>
+            <option value="delivered">{t('admin.order.status_delivered')}</option>
+            <option value="cancelled">{t('admin.order.status_cancelled')}</option>
           </select>
         )
       }
     },
     {
       accessorKey: 'payment_status',
-      header: 'Payment Status',
+      header: t('admin.order.payment_status'),
       cell: ({ row }) => {
         const pStatus = row.original.payment_status
         return (
@@ -87,10 +89,10 @@ export const AdminOrders: React.FC = () => {
             onChange={(e) => updatePaymentStatusMutation.mutate({ id: row.original.id, payment_status: e.target.value })}
             className="input-inline-select"
           >
-            <option value="pending_deposit">Pending Deposit</option>
-            <option value="deposit_paid">Deposit Paid</option>
-            <option value="pending_remaining">Pending Remaining</option>
-            <option value="fully_paid">Fully Paid</option>
+            <option value="pending_deposit">{t('admin.order.payment_pending_deposit')}</option>
+            <option value="deposit_paid">{t('admin.order.payment_deposit_paid')}</option>
+            <option value="pending_remaining">{t('admin.order.payment_pending_remaining')}</option>
+            <option value="fully_paid">{t('admin.order.payment_fully_paid')}</option>
           </select>
         )
       }
@@ -102,7 +104,7 @@ export const AdminOrders: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="admin-page-title">
           <ShoppingCart className="w-8 h-8 mr-3" />
-          Order Management
+          {t('admin.order.orders_title')}
         </h1>
       </div>
 
@@ -111,7 +113,7 @@ export const AdminOrders: React.FC = () => {
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : (
-        <DataTable columns={columns} data={orders || []} searchKey="id" searchPlaceholder="Search order ID..." />
+        <DataTable columns={columns} data={orders || []} searchKey="id" searchPlaceholder={t('admin.order.search_order_id')} />
       )}
     </div>
   )

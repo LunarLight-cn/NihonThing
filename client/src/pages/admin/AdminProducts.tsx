@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { api } from '../../services/api'
 import { DataTable } from '../../components/admin/DataTable'
 import { SearchableSelect } from '../../components/admin/SearchableSelect'
@@ -43,6 +44,7 @@ interface Brand {
 }
 
 export const AdminProducts: React.FC = () => {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'brands'>('products')
   const [isAddingProduct, setIsAddingProduct] = useState(false)
@@ -230,10 +232,10 @@ export const AdminProducts: React.FC = () => {
 
   // -- Columns --
   const productColumns: ColumnDef<Product>[] = [
-    { accessorKey: 'id', header: 'ID' },
+    { accessorKey: 'id', header: t('admin.product.id') },
     {
       accessorKey: 'img',
-      header: 'Image',
+      header: t('admin.product.image'),
       cell: ({ row }) => (
         <div className="w-10 h-10 rounded-md overflow-hidden bg-secondary">
           {row.original.img && row.original.img.length > 0 ? (
@@ -248,44 +250,44 @@ export const AdminProducts: React.FC = () => {
         </div>
       )
     },
-    { accessorKey: 'name_en', header: 'Name (EN)' },
+    { accessorKey: 'name_en', header: t('admin.product.name_en') },
     {
       accessorKey: 'price_tentative_thb',
-      header: 'Price (THB)',
+      header: t('admin.product.price_thb'),
       cell: ({ row }) => `฿${row.original.price_tentative_thb?.toLocaleString() || 0}`
     },
-    { accessorKey: 'amount', header: 'Stock' },
+    { accessorKey: 'amount', header: t('admin.product.stock') },
     {
       accessorKey: 'status',
-      header: 'Status',
+      header: t('admin.product.status'),
       cell: ({ row }) => (
         <select
           value={row.original.status}
           onChange={(e) => updateProductStatusMutation.mutate({ id: row.original.id, status: e.target.value })}
           className="input-inline-select"
         >
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-          <option value="out_of_stock">Out of Stock</option>
+          <option value="active">{t('admin.product.status_active')}</option>
+          <option value="inactive">{t('admin.product.status_inactive')}</option>
+          <option value="out_of_stock">{t('admin.product.status_out_of_stock')}</option>
         </select>
       )
     },
     {
       accessorKey: 'tag',
-      header: 'Tag',
+      header: t('admin.product.product_tag'),
       cell: ({ row }) => (
         <span className={`px-2 py-1 text-xs rounded-full ${
           row.original.tag === 'trending' ? 'bg-orange-100 text-orange-600' :
           row.original.tag === 'new_arrival' ? 'bg-blue-100 text-blue-600' :
           'bg-gray-100 text-gray-500'
         }`}>
-          {row.original.tag === 'trending' ? 'Trending' : row.original.tag === 'new_arrival' ? 'New Arrival' : 'None'}
+          {row.original.tag === 'trending' ? t('admin.product.tag_trending') : row.original.tag === 'new_arrival' ? t('admin.product.tag_new_arrival') : t('admin.product.tag_none')}
         </span>
       )
     },
     {
       id: 'actions',
-      header: 'Actions',
+      header: t('admin.product.actions'),
       cell: ({ row }) => (
         <button
           onClick={async () => {
@@ -330,13 +332,13 @@ export const AdminProducts: React.FC = () => {
   ]
 
   const categoryColumns: ColumnDef<Category>[] = [
-    { accessorKey: 'id', header: 'ID' },
-    { accessorKey: 'name_en', header: 'Name (EN)' },
-    { accessorKey: 'name_th', header: 'Name (TH)' },
-    { accessorKey: 'name_jp', header: 'Name (JP)' },
+    { accessorKey: 'id', header: t('admin.product.id') },
+    { accessorKey: 'name_en', header: t('admin.product.name_en') },
+    { accessorKey: 'name_th', header: t('admin.product.name_th') },
+    { accessorKey: 'name_jp', header: t('admin.product.name_jp') },
     {
       id: 'actions',
-      header: 'Actions',
+      header: t('admin.product.actions'),
       cell: ({ row }) => (
         <div className="flex items-center space-x-2">
           <button
@@ -369,13 +371,13 @@ export const AdminProducts: React.FC = () => {
   ]
 
   const brandColumns: ColumnDef<Brand>[] = [
-    { accessorKey: 'id', header: 'ID' },
-    { accessorKey: 'name_en', header: 'Name (EN)' },
-    { accessorKey: 'name_th', header: 'Name (TH)' },
-    { accessorKey: 'name_jp', header: 'Name (JP)' },
+    { accessorKey: 'id', header: t('admin.product.id') },
+    { accessorKey: 'name_en', header: t('admin.product.name_en') },
+    { accessorKey: 'name_th', header: t('admin.product.name_th') },
+    { accessorKey: 'name_jp', header: t('admin.product.name_jp') },
     {
       accessorKey: 'status',
-      header: 'Status',
+      header: t('admin.product.status'),
       cell: ({ row }) => (
         <span className={`px-2 py-1 rounded-full text-xs ${row.original.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
           {row.original.status}
@@ -384,7 +386,7 @@ export const AdminProducts: React.FC = () => {
     },
     {
       id: 'actions',
-      header: 'Actions',
+      header: t('admin.product.actions'),
       cell: ({ row }) => (
         <div className="flex items-center space-x-2">
           <button
@@ -468,7 +470,7 @@ export const AdminProducts: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="admin-page-title">
           <Package className="w-8 h-8 mr-3" />
-          Catalog Management
+          {t('admin.product.catalog_title')}
         </h1>
       </div>
 
@@ -478,21 +480,21 @@ export const AdminProducts: React.FC = () => {
           className={`tab-btn ${activeTab === 'products' ? 'is-active' : ''}`}
         >
           <Package className="w-4 h-4 inline mr-2" />
-          Products
+          {t('admin.product.tab_products')}
         </button>
         <button
           onClick={() => setActiveTab('categories')}
           className={`tab-btn ${activeTab === 'categories' ? 'is-active' : ''}`}
         >
           <Tags className="w-4 h-4 inline mr-2" />
-          Categories
+          {t('admin.product.tab_categories')}
         </button>
         <button
           onClick={() => setActiveTab('brands')}
           className={`tab-btn ${activeTab === 'brands' ? 'is-active' : ''}`}
         >
           <Tags className="w-4 h-4 inline mr-2" />
-          Brands
+          {t('admin.product.tab_brands')}
         </button>
       </div>
 
@@ -516,7 +518,7 @@ export const AdminProducts: React.FC = () => {
               }}
               className="btn-primary"
             >
-              {isAddingProduct ? <X className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />} {isAddingProduct ? 'Cancel' : 'Add Product'}
+              {isAddingProduct ? <X className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />} {isAddingProduct ? t('admin.product.cancel') : t('admin.product.add_product')}
             </button>
           </div>
 
@@ -577,11 +579,11 @@ export const AdminProducts: React.FC = () => {
               }}
               className="card-panel space-y-4"
             >
-              <h2 className="text-xl font-bold">{editingProductId ? 'Edit Product' : 'New Product'}</h2>
+              <h2 className="text-xl font-bold">{editingProductId ? t('admin.product.edit_product') : t('admin.product.new_product')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="form-section-divider">Basic Info</div>
+                <div className="form-section-divider">{t('admin.product.basic_info')}</div>
                 <div>
-                  <label className="label-admin">Name (EN) *</label>
+                  <label className="label-admin">{t('admin.product.name_en')} *</label>
                   <input
                     required
                     type="text"
@@ -591,7 +593,7 @@ export const AdminProducts: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="label-admin">Name (TH)</label>
+                  <label className="label-admin">{t('admin.product.name_th')}</label>
                   <input
                     type="text"
                     value={productForm.name_th}
@@ -600,7 +602,7 @@ export const AdminProducts: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="label-admin">Name (JP)</label>
+                  <label className="label-admin">{t('admin.product.name_jp')}</label>
                   <input
                     type="text"
                     value={productForm.name_jp}
@@ -609,9 +611,9 @@ export const AdminProducts: React.FC = () => {
                   />
                 </div>
 
-                <div className="form-section-divider">Descriptions & Details</div>
+                <div className="form-section-divider">{t('admin.product.desc_details')}</div>
                 <div>
-                  <label className="label-admin">Description (EN)</label>
+                  <label className="label-admin">{t('admin.product.desc_en')}</label>
                   <textarea
                     value={productForm.desc_en}
                     onChange={(e) => setProductForm({ ...productForm, desc_en: e.target.value })}
@@ -620,7 +622,7 @@ export const AdminProducts: React.FC = () => {
                   ></textarea>
                 </div>
                 <div>
-                  <label className="label-admin">Description (TH)</label>
+                  <label className="label-admin">{t('admin.product.desc_th')}</label>
                   <textarea
                     value={productForm.desc_th}
                     onChange={(e) => setProductForm({ ...productForm, desc_th: e.target.value })}
@@ -629,7 +631,7 @@ export const AdminProducts: React.FC = () => {
                   ></textarea>
                 </div>
                 <div>
-                  <label className="label-admin">Description (JP)</label>
+                  <label className="label-admin">{t('admin.product.desc_jp')}</label>
                   <textarea
                     value={productForm.desc_jp}
                     onChange={(e) => setProductForm({ ...productForm, desc_jp: e.target.value })}
@@ -638,52 +640,52 @@ export const AdminProducts: React.FC = () => {
                   ></textarea>
                 </div>
                 <div>
-                  <label className="label-admin">Brand</label>
+                  <label className="label-admin">{t('admin.product.brand')}</label>
                   <SearchableSelect
                     options={brands?.map((b: any) => ({ id: b.id, label: b.name_en })) || []}
                     value={productForm.brand_id}
                     onChange={(val) => setProductForm({ ...productForm, brand_id: val })}
                     onAdd={(search) => addBrandMutation.mutate(search)}
-                    placeholder="Select or Search Brand"
-                    addLabel="Add Brand"
+                    placeholder={t('admin.product.select_brand')}
+                    addLabel={t('admin.product.add_brand')}
                   />
                 </div>
                 <div>
-                  <label className="label-admin">Origin Country</label>
+                  <label className="label-admin">{t('admin.product.origin_country')}</label>
                   <SearchableSelect
                     options={countries?.map((c: any) => ({ id: c.id, label: c.name_en })) || []}
                     value={productForm.origin_country_id}
                     onChange={(val) => setProductForm({ ...productForm, origin_country_id: val })}
                     onAdd={(search) => addCountryMutation.mutate(search)}
-                    placeholder="Select or Search Country"
+                    placeholder={t('admin.product.select_country')}
                     addLabel="Add Country"
                   />
                 </div>
                 <div>
-                  <label className="label-admin">Category</label>
+                  <label className="label-admin">{t('admin.product.category')}</label>
                   <SearchableSelect
                     options={categories?.map((c) => ({ id: c.id, label: c.name_en })) || []}
                     value={productForm.category_id}
                     onChange={(val) => setProductForm({ ...productForm, category_id: Number(val) })}
-                    placeholder="Search Category"
+                    placeholder={t('admin.product.search_category')}
                   />
                 </div>
                 <div>
-                  <label className="label-admin">Product Tag</label>
+                  <label className="label-admin">{t('admin.product.product_tag')}</label>
                   <select
                     value={productForm.tag}
                     onChange={(e) => setProductForm({ ...productForm, tag: e.target.value })}
                     className="input-admin"
                   >
-                    <option value="">None</option>
-                    <option value="new_arrival">New Arrival</option>
-                    <option value="trending">Trending</option>
+                    <option value="">{t('admin.product.tag_none')}</option>
+                    <option value="new_arrival">{t('admin.product.tag_new_arrival')}</option>
+                    <option value="trending">{t('admin.product.tag_trending')}</option>
                   </select>
                 </div>
 
-                <div className="form-section-divider">Pricing & Inventory</div>
+                <div className="form-section-divider">{t('admin.product.pricing_inventory')}</div>
                 <div>
-                  <label className="label-admin">Price (JPY)</label>
+                  <label className="label-admin">{t('admin.product.price_jpy')}</label>
                   <input
                     type="number"
                     required
@@ -693,18 +695,18 @@ export const AdminProducts: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="label-admin">Price Override (THB)</label>
+                  <label className="label-admin">{t('admin.product.price_override_thb')}</label>
                   <input
                     type="number"
                     value={productForm.price_tentative_thb}
                     onChange={(e) => setProductForm({ ...productForm, price_tentative_thb: e.target.value })}
                     className="input-admin"
-                    placeholder="Auto calculated if empty"
+                    placeholder={t('admin.product.auto_calculated')}
                   />
                 </div>
 
                 <div>
-                  <label className="label-admin">Weight (kg)</label>
+                  <label className="label-admin">{t('admin.product.weight')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -714,20 +716,20 @@ export const AdminProducts: React.FC = () => {
                   />
                 </div>
 
-                <div className="form-section-divider">Locations (Shops)</div>
+                <div className="form-section-divider">{t('admin.product.locations')}</div>
                 <div className="col-span-3">
-                  <label className="label-admin mb-2">Select Shops</label>
+                  <label className="label-admin mb-2">{t('admin.product.select_shops')}</label>
                   <SearchableMultiSelect
                     options={shops?.map((s: any) => ({ id: s.id, label: s.name_en })) || []}
                     values={productForm.shopIds}
                     onChange={(vals) => setProductForm({ ...productForm, shopIds: vals as number[] })}
-                    placeholder="Search and select shops..."
+                    placeholder={t('admin.product.search_shops')}
                   />
                 </div>
 
-                <div className="form-section-divider">Media</div>
+                <div className="form-section-divider">{t('admin.product.media')}</div>
                 <div className="col-span-3">
-                  <label className="label-admin">Product Images</label>
+                  <label className="label-admin">{t('admin.product.product_images')}</label>
                   <div className="flex items-center space-x-4">
                     <input
                       id="product-image-upload"
@@ -778,7 +780,7 @@ export const AdminProducts: React.FC = () => {
                   disabled={addProductMutation.isPending || isUploading}
                   className="btn-primary px-6"
                 >
-                  {addProductMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Save Product
+                  {addProductMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} {t('admin.product.save_product')}
                 </button>
               </div>
             </form>
@@ -793,7 +795,7 @@ export const AdminProducts: React.FC = () => {
               columns={productColumns}
               data={products || []}
               searchKey="name_en"
-              searchPlaceholder="Search products..."
+              searchPlaceholder={t('admin.product.search_products')}
             />
           )}
         </div>
@@ -806,7 +808,7 @@ export const AdminProducts: React.FC = () => {
               onClick={() => setIsAddingCategory(!isAddingCategory)}
               className="btn-primary"
             >
-              {isAddingCategory ? <X className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />} {isAddingCategory ? 'Cancel' : 'Add Category'}
+              {isAddingCategory ? <X className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />} {isAddingCategory ? t('admin.product.cancel') : t('admin.product.add_category')}
             </button>
           </div>
 
@@ -822,10 +824,10 @@ export const AdminProducts: React.FC = () => {
               }}
               className="card-panel space-y-4"
             >
-              <h2 className="text-xl font-bold">{editingCategoryId ? 'Edit Category' : 'New Category'}</h2>
+              <h2 className="text-xl font-bold">{editingCategoryId ? t('admin.product.edit_category') : t('admin.product.new_category')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="label-admin">Name (EN)</label>
+                  <label className="label-admin">{t('admin.product.name_en')}</label>
                   <input
                     required
                     type="text"
@@ -835,7 +837,7 @@ export const AdminProducts: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="label-admin">Name (TH)</label>
+                  <label className="label-admin">{t('admin.product.name_th')}</label>
                   <input
                     required
                     type="text"
@@ -845,7 +847,7 @@ export const AdminProducts: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="label-admin">Name (JP)</label>
+                  <label className="label-admin">{t('admin.product.name_jp')}</label>
                   <input
                     type="text"
                     value={categoryForm.name_jp}
@@ -860,7 +862,7 @@ export const AdminProducts: React.FC = () => {
                   disabled={addCategoryMutation.isPending}
                   className="btn-primary px-6"
                 >
-                  {addCategoryMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Save Category
+                  {addCategoryMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} {t('admin.product.save_category')}
                 </button>
               </div>
             </form>
@@ -875,7 +877,7 @@ export const AdminProducts: React.FC = () => {
               columns={categoryColumns}
               data={categories || []}
               searchKey="name_en"
-              searchPlaceholder="Search categories..."
+              searchPlaceholder={t('admin.product.search_categories')}
             />
           )}
         </div>
@@ -888,7 +890,7 @@ export const AdminProducts: React.FC = () => {
               onClick={() => setIsAddingBrand(!isAddingBrand)}
               className="btn-primary"
             >
-              {isAddingBrand ? <X className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />} {isAddingBrand ? 'Cancel' : 'Add Brand'}
+              {isAddingBrand ? <X className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />} {isAddingBrand ? t('admin.product.cancel') : t('admin.product.add_brand')}
             </button>
           </div>
 
@@ -904,10 +906,10 @@ export const AdminProducts: React.FC = () => {
               }}
               className="card-panel space-y-4"
             >
-              <h2 className="text-xl font-bold">{editingBrandId ? 'Edit Brand' : 'New Brand'}</h2>
+              <h2 className="text-xl font-bold">{editingBrandId ? t('admin.product.edit_brand') : t('admin.product.new_brand')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="label-admin">Name (EN) *</label>
+                  <label className="label-admin">{t('admin.product.name_en')} *</label>
                   <input
                     required
                     type="text"
@@ -917,7 +919,7 @@ export const AdminProducts: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="label-admin">Name (TH)</label>
+                  <label className="label-admin">{t('admin.product.name_th')}</label>
                   <input
                     type="text"
                     value={brandForm.name_th}
@@ -926,7 +928,7 @@ export const AdminProducts: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="label-admin">Name (JP)</label>
+                  <label className="label-admin">{t('admin.product.name_jp')}</label>
                   <input
                     type="text"
                     value={brandForm.name_jp}
@@ -935,14 +937,14 @@ export const AdminProducts: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="label-admin">Status</label>
+                  <label className="label-admin">{t('admin.product.status')}</label>
                   <select
                     value={brandForm.status}
                     onChange={(e) => setBrandForm({ ...brandForm, status: e.target.value as 'active' | 'inactive' })}
                     className="input-admin"
                   >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
+                    <option value="active">{t('admin.product.status_active')}</option>
+                    <option value="inactive">{t('admin.product.status_inactive')}</option>
                   </select>
                 </div>
               </div>
@@ -952,7 +954,7 @@ export const AdminProducts: React.FC = () => {
                   disabled={createBrandMutation.isPending || updateBrandMutation.isPending}
                   className="btn-primary px-6"
                 >
-                  {(createBrandMutation.isPending || updateBrandMutation.isPending) ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Save Brand
+                  {(createBrandMutation.isPending || updateBrandMutation.isPending) ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} {t('admin.product.save_brand')}
                 </button>
               </div>
             </form>
@@ -962,7 +964,7 @@ export const AdminProducts: React.FC = () => {
             columns={brandColumns}
             data={brands || []}
             searchKey="name_en"
-            searchPlaceholder="Search brands..."
+            searchPlaceholder={t('admin.product.search_brands')}
           />
         </div>
       )}

@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { api } from '../../services/api'
-import { Loader2, Plus, X } from 'lucide-react'
+import { Loader2, Plus, X, ShoppingCart } from 'lucide-react'
 import { SearchableSelect } from '../../components/admin/SearchableSelect'
 
 interface Product {
@@ -29,6 +30,7 @@ interface Purchase {
 }
 
 export const AdminPurchases: React.FC = () => {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [isAddingPurchase, setIsAddingPurchase] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
@@ -131,35 +133,35 @@ export const AdminPurchases: React.FC = () => {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Purchases / Restock</h1>
-          <p className="text-muted-foreground mt-2">Log inventory purchases to add to your stock.</p>
-        </div>
+    <div className="admin-page">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="admin-page-title">
+          <ShoppingCart className="w-8 h-8 mr-3" />
+          {t('admin.purchases.purchases_title')}
+        </h1>
         <button
           onClick={() => setIsAddingPurchase(!isAddingPurchase)}
           className="btn-primary"
         >
-          {isAddingPurchase ? <><X className="w-4 h-4 mr-2" /> Cancel</> : <><Plus className="w-4 h-4 mr-2" /> Add Purchase</>}
+          {isAddingPurchase ? <><X className="w-4 h-4 mr-2" /> {t('admin.purchases.cancel')}</> : <><Plus className="w-4 h-4 mr-2" /> {t('admin.purchases.add_purchase')}</>}
         </button>
       </div>
 
       {isAddingPurchase && (
         <form onSubmit={handleSubmit} className="card-panel space-y-4">
-          <h2 className="text-xl font-bold">New Purchase</h2>
+          <h2 className="text-xl font-bold">{t('admin.purchases.new_purchase')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="label-admin">Product</label>
+              <label className="label-admin">{t('admin.purchases.product')}</label>
               <SearchableSelect
                 options={products?.map(p => ({ id: p.id, label: p.name_en + (p.remain !== undefined ? ` (Stock: ${p.remain})` : '') })) || []}
                 value={purchaseForm.product_id}
                 onChange={(val: string | number) => setPurchaseForm({ ...purchaseForm, product_id: val.toString() })}
-                placeholder="Search Product to Restock..."
+                placeholder={t('admin.purchases.search_product_restock')}
               />
             </div>
             <div>
-              <label className="label-admin">Quantity</label>
+              <label className="label-admin">{t('admin.purchases.quantity')}</label>
               <input
                 required
                 type="number"
@@ -170,7 +172,7 @@ export const AdminPurchases: React.FC = () => {
               />
             </div>
             <div>
-              <label className="label-admin">Total Cost (JPY)</label>
+              <label className="label-admin">{t('admin.purchases.total_cost_jpy')}</label>
               <input
                 required
                 type="number"
@@ -181,17 +183,17 @@ export const AdminPurchases: React.FC = () => {
               />
             </div>
             <div>
-              <label className="label-admin">Shop Name</label>
+              <label className="label-admin">{t('admin.purchases.shop_name')}</label>
               <input
                 type="text"
                 value={purchaseForm.shop_name}
                 onChange={(e) => setPurchaseForm({ ...purchaseForm, shop_name: e.target.value })}
                 className="input-admin"
-                placeholder="e.g. Donki Shibuya"
+                placeholder={t('admin.purchases.shop_name_placeholder')}
               />
             </div>
             <div className="md:col-span-2">
-              <label className="label-admin">Receipt / Slip Images</label>
+              <label className="label-admin">{t('admin.purchases.receipt_images')}</label>
               <div className="flex items-center space-x-4">
                 <input
                   type="file"
@@ -210,14 +212,14 @@ export const AdminPurchases: React.FC = () => {
               onClick={() => setIsAddingPurchase(false)}
               className="btn-outline"
             >
-              Cancel
+              {t('admin.purchases.cancel')}
             </button>
             <button
               type="submit"
               disabled={isUploading || addPurchaseMutation.isPending}
               className="btn-primary"
             >
-              {addPurchaseMutation.isPending || isUploading ? 'Saving...' : 'Save Purchase'}
+              {addPurchaseMutation.isPending || isUploading ? t('admin.purchases.saving') : t('admin.purchases.save')}
             </button>
           </div>
         </form>
@@ -228,21 +230,21 @@ export const AdminPurchases: React.FC = () => {
           <table className="w-full text-sm text-left">
             <thead className="text-xs uppercase bg-muted/50 border-b border-border">
               <tr>
-                <th className="px-6 py-4 font-medium text-muted-foreground">ID</th>
-                <th className="px-6 py-4 font-medium text-muted-foreground">Product ID</th>
-                <th className="px-6 py-4 font-medium text-muted-foreground">Quantity</th>
-                <th className="px-6 py-4 font-medium text-muted-foreground">Cost (JPY)</th>
-                <th className="px-6 py-4 font-medium text-muted-foreground">Cost (THB)</th>
-                <th className="px-6 py-4 font-medium text-muted-foreground">Shop</th>
-                <th className="px-6 py-4 font-medium text-muted-foreground">Slips</th>
-                <th className="px-6 py-4 font-medium text-muted-foreground">Date</th>
+                <th className="px-6 py-4 font-medium text-muted-foreground">{t('admin.purchases.id')}</th>
+                <th className="px-6 py-4 font-medium text-muted-foreground">{t('admin.purchases.product_id')}</th>
+                <th className="px-6 py-4 font-medium text-muted-foreground">{t('admin.purchases.quantity')}</th>
+                <th className="px-6 py-4 font-medium text-muted-foreground">{t('admin.purchases.cost_jpy')}</th>
+                <th className="px-6 py-4 font-medium text-muted-foreground">{t('admin.purchases.cost_thb')}</th>
+                <th className="px-6 py-4 font-medium text-muted-foreground">{t('admin.purchases.shop')}</th>
+                <th className="px-6 py-4 font-medium text-muted-foreground">{t('admin.purchases.slips')}</th>
+                <th className="px-6 py-4 font-medium text-muted-foreground">{t('admin.purchases.date')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {isLoadingPurchases ? (
-                <tr><td colSpan={8} className="px-6 py-8 text-center text-muted-foreground">Loading purchases...</td></tr>
+                <tr><td colSpan={8} className="px-6 py-8 text-center text-muted-foreground">{t('admin.purchases.loading_purchases')}</td></tr>
               ) : purchases?.length === 0 ? (
-                <tr><td colSpan={8} className="px-6 py-8 text-center text-muted-foreground">No purchases found.</td></tr>
+                <tr><td colSpan={8} className="px-6 py-8 text-center text-muted-foreground">{t('admin.purchases.no_purchases')}</td></tr>
               ) : (
                 purchases?.map((purchase) => (
                   <tr key={purchase.id} className="hover:bg-muted/30 transition-colors">

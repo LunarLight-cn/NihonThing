@@ -4,6 +4,7 @@ import { api } from '../../services/api'
 import { DataTable } from '../../components/admin/DataTable'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Users, Loader2, ShieldAlert, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface UserData {
   id: number
@@ -15,6 +16,7 @@ interface UserData {
 }
 
 export const AdminUsers: React.FC = () => {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
 
   const { data: users, isLoading } = useQuery({
@@ -31,7 +33,7 @@ export const AdminUsers: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
     },
     onError: (error: any) => {
-      alert(error.response?.data?.message || 'Failed to update role')
+      alert(error.response?.data?.message || t('admin.users.alert_update_role_fail'))
     }
   })
 
@@ -41,7 +43,7 @@ export const AdminUsers: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
     },
     onError: (error: any) => {
-      alert(error.response?.data?.message || 'Failed to delete user. They might have related data.')
+      alert(error.response?.data?.message || t('admin.users.alert_delete_user_fail'))
     }
   })
 
@@ -51,17 +53,17 @@ export const AdminUsers: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
     },
     onError: (error: any) => {
-      alert(error.response?.data?.message || 'Failed to update status')
+      alert(error.response?.data?.message || t('admin.users.alert_update_status_fail'))
     }
   })
 
   const columns: ColumnDef<UserData>[] = [
-    { accessorKey: 'id', header: 'ID' },
-    { accessorKey: 'username', header: 'Username' },
-    { accessorKey: 'email', header: 'Email' },
+    { accessorKey: 'id', header: t('admin.users.id') },
+    { accessorKey: 'username', header: t('admin.users.username') },
+    { accessorKey: 'email', header: t('admin.users.email') },
     {
       accessorKey: 'role',
-      header: 'Role',
+      header: t('admin.users.role'),
       cell: ({ row }) => (
         <span
           className={`badge ${
@@ -74,26 +76,26 @@ export const AdminUsers: React.FC = () => {
     },
     {
       accessorKey: 'cdate',
-      header: 'Joined Date',
+      header: t('admin.users.joined_date'),
       cell: ({ row }) => new Date(row.original.cdate).toLocaleDateString()
     },
     {
       accessorKey: 'status',
-      header: 'Status',
+      header: t('admin.users.status'),
       cell: ({ row }) => (
         <select
           value={row.original.status || 'active'}
           onChange={(e) => updateStatusMutation.mutate({ id: row.original.id, status: e.target.value })}
           className="input-inline-select"
         >
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
+          <option value="active">{t('admin.users.status_active')}</option>
+          <option value="inactive">{t('admin.users.status_inactive')}</option>
         </select>
       )
     },
     {
       id: 'actions',
-      header: 'Actions',
+      header: t('admin.users.actions'),
       cell: ({ row }) => {
         const user = row.original
 
@@ -102,20 +104,20 @@ export const AdminUsers: React.FC = () => {
             <select
               value={user.role}
               onChange={(e) => {
-                if (window.confirm(`⚠️ WARNING: Are you sure you want to change ${user.username}'s role to ${e.target.value.toUpperCase()}?`)) {
+                if (window.confirm(t('admin.users.confirm_change_role', { username: user.username, role: e.target.value.toUpperCase() }))) {
                   updateRoleMutation.mutate({ id: user.id, role: e.target.value })
                 }
               }}
               className="text-xs border border-border rounded p-1 bg-background"
             >
-              <option value="customer">Customer</option>
-              <option value="agent">Agent</option>
-              <option value="admin">Admin</option>
+              <option value="customer">{t('admin.users.role_customer')}</option>
+              <option value="agent">{t('admin.users.role_agent')}</option>
+              <option value="admin">{t('admin.users.role_admin')}</option>
             </select>
 
             <button
               onClick={() => {
-                if (window.confirm(`🚨 DANGER: Are you sure you want to permanently delete user: ${user.username}?`)) {
+                if (window.confirm(t('admin.users.confirm_delete_user', { username: user.username }))) {
                   deleteUserMutation.mutate(user.id)
                 }
               }}
@@ -134,14 +136,14 @@ export const AdminUsers: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="admin-page-title">
           <Users className="w-8 h-8 mr-3" />
-          User Management
+          {t('admin.users.users_title')}
         </h1>
       </div>
 
       <div className="bg-orange-50 border border-orange-200 p-4 rounded-xl flex items-start space-x-3 text-orange-800">
         <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5" />
         <div className="text-sm">
-          <strong>Caution:</strong> Changing a user's role to Admin grants them full access to this dashboard. Deleting a user is permanent and may fail if they have associated orders or tickets.
+          <strong>{t('admin.users.users_caution_title')}</strong> {t('admin.users.users_caution_desc')}
         </div>
       </div>
 
@@ -151,7 +153,7 @@ export const AdminUsers: React.FC = () => {
         </div>
       ) : (
         <div className="card-panel-flush">
-          <DataTable columns={columns} data={users || []} searchKey="username" searchPlaceholder="Search by username..." />
+          <DataTable columns={columns} data={users || []} searchKey="username" searchPlaceholder={t('admin.users.search_users')} />
         </div>
       )}
     </div>
