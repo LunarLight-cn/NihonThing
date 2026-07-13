@@ -101,10 +101,10 @@ export const ShoppingAreasMap: React.FC = () => {
     {
       id: 1,
       name: t('home.areas.shibuyaName'),
-      type: `12 ${t('home.areas.shops')}`,
+      type: `0 ${t('home.areas.shops')}`,
       lat: 35.6595,
       lng: 139.7004,
-      description: `45 ${t('home.areas.products')}`
+      description: `0 ${t('home.areas.products')}`
     }
   ]
 
