@@ -11,7 +11,9 @@ export const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'addresses'>('profile')
 
   const [profileForm, setProfileForm] = useState({
-    username: user?.username || ''
+    username: user?.username || '',
+    birth_date: user?.birth_date || '',
+    gender: user?.gender || ''
   })
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false)
 
@@ -28,13 +30,13 @@ export const Settings: React.FC = () => {
     try {
       const res = await api.put('/users/me', profileForm)
       if (res.data.success) {
-        alert(t('settings.profileUpdated') || 'Profile updated successfully!')
+        alert(t('settings.profileUpdated'))
         if (user) {
-          login(token || '', { ...user, username: profileForm.username })
+          login(token || '', { ...user, ...profileForm })
         }
       }
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to update profile')
+      alert(error.response?.data?.message)
     } finally {
       setIsUpdatingProfile(false)
     }
@@ -43,7 +45,7 @@ export const Settings: React.FC = () => {
   const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
     if (passwordForm.new_password !== passwordForm.confirm_password) {
-      alert(t('settings.passwordMismatch') || 'New passwords do not match!')
+      alert(t('settings.passwordMismatch'))
       return
     }
 
@@ -54,11 +56,11 @@ export const Settings: React.FC = () => {
         new_password: passwordForm.new_password
       })
       if (res.data.success) {
-        alert(t('settings.passwordUpdated') || 'Password updated successfully!')
+        alert(t('settings.passwordUpdated'))
         setPasswordForm({ current_password: '', new_password: '', confirm_password: '' })
       }
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to update password')
+      alert(error.response?.data?.message)
     } finally {
       setIsUpdatingPassword(false)
     }
@@ -101,25 +103,40 @@ export const Settings: React.FC = () => {
             <form onSubmit={handleProfileUpdate} className="card-panel space-y-6 p-6">
               <h2 className="text-xl font-bold flex items-center border-b border-border pb-4">
                 <User className="w-5 h-5 mr-2 text-primary" />
-                {t('settings.profileInfo') || 'Profile Information'}
+                {t('settings.profileInfo')}
               </h2>
 
               <div className="space-y-4 max-w-md">
                 <div>
-                  <label className="label-customer">{t('settings.username') || 'Username'}</label>
+                  <label className="label-customer">{t('settings.username')}</label>
                   <input type="text" required value={profileForm.username} onChange={(e) => setProfileForm({ ...profileForm, username: e.target.value })} className="input-customer" />
                 </div>
 
                 <div>
-                  <label className="label-customer">{t('settings.email') || 'Email Address'}</label>
+                  <label className="label-customer">{t('settings.email')}</label>
                   <input type="email" disabled value={user?.email || ''} className="input-customer bg-secondary cursor-not-allowed text-muted-foreground" />
+                </div>
+                
+                <div>
+                  <label className="label-customer">{t('settings.birthDate')}</label>
+                  <input type="date" value={profileForm.birth_date} onChange={(e) => setProfileForm({ ...profileForm, birth_date: e.target.value })} className="input-customer" />
+                </div>
+
+                <div>
+                  <label className="label-customer">{t('settings.gender')}</label>
+                  <select value={profileForm.gender} onChange={(e) => setProfileForm({ ...profileForm, gender: e.target.value })} className="input-customer bg-background">
+                    <option value="">{t('settings.selectGender')}</option>
+                    <option value="male">{t('settings.male')}</option>
+                    <option value="female">{t('settings.female')}</option>
+                    <option value="other">{t('settings.other')}</option>
+                  </select>
                 </div>
               </div>
 
               <div className="pt-4 flex justify-end max-w-md">
                 <button type="submit" disabled={isUpdatingProfile} className="btn-primary px-6 flex items-center">
                   {isUpdatingProfile && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  {t('settings.save') || 'Save Changes'}
+                  {t('settings.save')}
                 </button>
               </div>
             </form>
@@ -129,20 +146,20 @@ export const Settings: React.FC = () => {
             <form onSubmit={handlePasswordUpdate} className="card-panel space-y-6 p-6">
               <h2 className="text-xl font-bold flex items-center border-b border-border pb-4 text-destructive">
                 <Shield className="w-5 h-5 mr-2" />
-                {t('settings.securityTitle') || 'Security & Password'}
+                {t('settings.securityTitle')}
               </h2>
 
               <div className="space-y-4 max-w-md">
                 <div>
-                  <label className="label-customer">{t('settings.currentPassword') || 'Current Password'}</label>
+                  <label className="label-customer">{t('settings.currentPassword')}</label>
                   <input type="password" required value={passwordForm.current_password} onChange={(e) => setPasswordForm({ ...passwordForm, current_password: e.target.value })} className="input-customer" />
                 </div>
                 <div>
-                  <label className="label-customer">{t('settings.newPassword') || 'New Password'}</label>
+                  <label className="label-customer">{t('settings.newPassword')}</label>
                   <input type="password" required minLength={6} value={passwordForm.new_password} onChange={(e) => setPasswordForm({ ...passwordForm, new_password: e.target.value })} className="input-customer" />
                 </div>
                 <div>
-                  <label className="label-customer">{t('settings.confirmPassword') || 'Confirm New Password'}</label>
+                  <label className="label-customer">{t('settings.confirmPassword')}</label>
                   <input type="password" required minLength={6} value={passwordForm.confirm_password} onChange={(e) => setPasswordForm({ ...passwordForm, confirm_password: e.target.value })} className="input-customer" />
                 </div>
               </div>
@@ -150,7 +167,7 @@ export const Settings: React.FC = () => {
               <div className="pt-4 flex justify-end max-w-md">
                 <button type="submit" disabled={isUpdatingPassword} className="border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground px-6 py-2 rounded-lg transition-colors flex items-center">
                   {isUpdatingPassword && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  {t('settings.updatePassword') || 'Update Password'}
+                  {t('settings.updatePassword')}
                 </button>
               </div>
             </form>

@@ -36,11 +36,13 @@ authRoutes.openapi(loginRoute, async (c) => {
   try {
     const { token, user } = await loginUser(c.env.nihonthing_db, identifier, password, c.env.JWT_SECRET, c.env.AUTH_SALT)
     
+    const isProduction = new URL(c.req.url).protocol === 'https:'
+    
     // Set HttpOnly cookie
     setCookie(c, 'token', token, {
       httpOnly: true,
-      secure: new URL(c.req.url).protocol === 'https:',
-      sameSite: 'None',
+      secure: isProduction,
+      sameSite: isProduction ? 'None' : 'Lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/'
     })
@@ -62,10 +64,11 @@ const logoutRoute = createRoute({
 })
 
 authRoutes.openapi(logoutRoute, async (c) => {
+  const isProduction = new URL(c.req.url).protocol === 'https:'
   deleteCookie(c, 'token', { 
     path: '/',
-    secure: new URL(c.req.url).protocol === 'https:',
-    sameSite: 'None'
+    secure: isProduction,
+    sameSite: isProduction ? 'None' : 'Lax'
   })
   return c.json({ success: true, message: 'Logged out successfully' })
 })
