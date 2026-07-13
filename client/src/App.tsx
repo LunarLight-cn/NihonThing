@@ -27,7 +27,15 @@ import { AdminTickets } from './pages/admin/AdminTickets'
 import { AdminAreas } from './pages/admin/AdminAreas'
 import { AdminShops } from './pages/admin/AdminShops'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // ปิดการยิง API ซ้ำเมื่อสลับแท็บไปมา
+      staleTime: 5 * 60 * 1000,    // จำข้อมูลไว้ในหน่วยความจำ 5 นาที (ไม่ต้องยิง API ใหม่ถ้ายังไม่หมดเวลา)
+      retry: 1                     // ถ้า Error ให้ลองใหม่แค่ 1 ครั้งพอ
+    }
+  }
+})
 
 export default function App() {
   return (
