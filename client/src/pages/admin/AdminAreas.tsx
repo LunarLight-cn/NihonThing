@@ -148,7 +148,15 @@ export const AdminAreas: React.FC = () => {
                       <select
                         value={area.status}
                         onChange={(e) => {
-                          updateMutation.mutate({ id: area.id, payload: { ...area, status: e.target.value as 'active' | 'inactive' } })
+                          updateMutation.mutate({ 
+                            id: area.id, 
+                            payload: { 
+                              ...area, 
+                              name_jp: area.name_jp || '', 
+                              map_location: area.map_location || '', 
+                              status: e.target.value as 'active' | 'inactive' 
+                            } 
+                          })
                         }}
                         className="input-inline-select"
                       >
