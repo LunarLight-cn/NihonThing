@@ -10,16 +10,16 @@ export const AdminLayout: React.FC = () => {
   const { t, i18n } = useTranslation()
 
   const navItems = [
-    { name: t('admin.overview'), path: '/admin', icon: LayoutDashboard },
-    { name: t('admin.orders'), path: '/admin/orders', icon: Package },
-    { name: t('admin.trips'), path: '/admin/trips', icon: Plane },
-    { name: t('admin.tickets'), path: '/admin/tickets', icon: Ticket },
-    { name: t('admin.purchases'), path: '/admin/purchases', icon: ShoppingCart },
-    { name: t('admin.catalog'), path: '/admin/products', icon: Store },
-    { name: 'Locations', path: '/admin/locations', icon: MapPin },
-    { name: 'Events', path: '/admin/events', icon: Calendar },
-    { name: t('admin.users'), path: '/admin/users', icon: Users },
-    { name: t('admin.settings'), path: '/admin/settings', icon: Settings }
+    { name: t('admin.nav.overview'), path: '/admin', icon: LayoutDashboard },
+    { name: t('admin.nav.orders'), path: '/admin/orders', icon: Package },
+    { name: t('admin.nav.trips'), path: '/admin/trips', icon: Plane },
+    { name: t('admin.nav.tickets'), path: '/admin/tickets', icon: Ticket },
+    { name: t('admin.nav.purchases'), path: '/admin/purchases', icon: ShoppingCart },
+    { name: t('admin.nav.catalog'), path: '/admin/products', icon: Store },
+    { name: t('admin.nav.locations'), path: '/admin/locations', icon: MapPin },
+    { name: t('admin.nav.events'), path: '/admin/events', icon: Calendar },
+    { name: t('admin.nav.users'), path: '/admin/users', icon: Users },
+    { name: t('admin.nav.settings'), path: '/admin/settings', icon: Settings }
   ]
 
   return (

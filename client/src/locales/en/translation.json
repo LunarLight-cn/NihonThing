@@ -162,6 +162,19 @@
     }
   },
   "admin": {
+    "logout": "Logout",
+    "nav": {
+      "overview": "Overview",
+      "orders": "Orders",
+      "trips": "Trips",
+      "tickets": "Tickets",
+      "purchases": "Purchases",
+      "catalog": "Catalog",
+      "locations": "Locations",
+      "events": "Events",
+      "users": "Users",
+      "settings": "Settings"
+    },
     "components": {
       "search": "Search...",
       "no_results": "No results.",
