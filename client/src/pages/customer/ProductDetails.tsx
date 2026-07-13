@@ -7,6 +7,13 @@ import { api } from '../../services/api'
 import { useTranslation } from 'react-i18next'
 import { useLocalizedName, useLocalizedDesc } from '../../utils/localization'
 
+interface LocalizedRef {
+  id: number
+  name_en: string
+  name_th: string | null
+  name_jp: string | null
+}
+
 interface Product {
   id: number
   name_en: string
@@ -15,7 +22,7 @@ interface Product {
   desc_en: string | null
   desc_th: string | null
   desc_jp: string | null
-  brand: string | null
+  brand: LocalizedRef | null
   price_tentative_jpy: number | null
   price_tentative_thb: number | null
   price_thb: number | null
@@ -23,7 +30,7 @@ interface Product {
   tag: string | null
   category_id: number | null
   status: string
-  origin_country: string | null
+  origin_country: LocalizedRef | null
 }
 
 export const ProductDetails: React.FC = () => {
@@ -83,7 +90,7 @@ export const ProductDetails: React.FC = () => {
               {product.origin_country && (
                 <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm text-foreground text-xs font-bold px-3 py-1.5 rounded-full border border-border shadow-sm z-10 flex items-center space-x-1">
                   <MapPin className="w-3 h-3 text-primary" />
-                  <span>{product.origin_country}</span>
+                  <span>{product.origin_country && getName(product.origin_country)}</span>
                 </div>
               )}
               <img
@@ -112,7 +119,7 @@ export const ProductDetails: React.FC = () => {
             {/* Product Info */}
             <div className="flex flex-col">
               <div className="mb-6">
-                {product.brand && <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">{(product.brand as any)?.name_en || (product.brand as string)}</p>}
+                {product.brand && <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">{getName(product.brand)}</p>}
                 <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight">{getName(product)}</h1>
               </div>
 
@@ -141,7 +148,7 @@ export const ProductDetails: React.FC = () => {
                   addItem({
                     id: product.id,
                     name: getName(product),
-                    brand: ((product.brand as any)?.name_en || (product.brand as string)) || t('product.noBrand'),
+                    brand: (product.brand && getName(product.brand)) || t('product.noBrand'),
                     price_thb: product.price_tentative_thb || product.price_thb || 0,
                     image: (product.img && product.img.length > 0) ? product.img[0] : ''
                   })
