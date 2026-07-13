@@ -40,19 +40,22 @@ export const createOrder = async (
     throw new Error('Invalid address or unauthorized.')
   }
 
-  // Calculate Total Price
+  // Calculate Total Price and Weight
   let itemPriceTotal = 0
+  let totalWeight = 0
   
   for (const item of items) {
     if (item.type === 'product') {
       const product = await db.query.Products.findFirst({ where: eq(schema.Products.id, item.id) })
       if (!product) throw new Error(`Product ${item.id} not found`)
       itemPriceTotal += (product.price_tentative_thb || 0) * item.quantity
+      totalWeight += (product.weight || 0) * item.quantity
     } else if (item.type === 'ticket') {
       const ticket = await db.query.Tickets.findFirst({ where: eq(schema.Tickets.id, item.id) })
       if (!ticket) throw new Error(`Ticket ${item.id} not found`)
       if (ticket.client_id !== userId) throw new Error(`Unauthorized access to ticket ${item.id}`)
       itemPriceTotal += (ticket.proposed_price_thb || ticket.expected_price || 0) * item.quantity
+      // Assuming tickets have negligible weight, or we could add weight to tickets later if needed
     }
   }
 
@@ -60,11 +63,11 @@ export const createOrder = async (
   const PER_USER_LIMIT = 50
   const orderAmount = items.reduce((sum, item) => sum + item.quantity, 0)
   
-  // Check global capacity
+  // Check global capacity using weight
   const currentCap = Number(trip.current_cap || 0)
   const maxCap = Number(trip.max_cap || 1000)
-  if (currentCap + orderAmount > maxCap) {
-    throw new Error(`Trip capacity exceeded. Only ${maxCap - currentCap} items remaining.`)
+  if (currentCap + totalWeight > maxCap) {
+    throw new Error(`Trip capacity exceeded. Only ${maxCap - currentCap} kg remaining.`)
   }
 
   return await db.transaction(async (tx) => {
@@ -89,13 +92,13 @@ export const createOrder = async (
     // Atomic Capacity Update & Auto-Close
     const capacityUpdate = await tx.update(schema.Ships)
       .set({
-        current_cap: sql`CAST((CAST(COALESCE(current_cap, '0') AS INTEGER) + ${orderAmount}) AS TEXT)`,
-        status: sql`CASE WHEN CAST(COALESCE(current_cap, '0') AS INTEGER) + ${orderAmount} >= CAST(COALESCE(max_cap, '1000') AS INTEGER) THEN 'closed' ELSE status END`
+        current_cap: sql`COALESCE(current_cap, 0) + ${totalWeight}`,
+        status: sql`CASE WHEN COALESCE(current_cap, 0) + ${totalWeight} >= COALESCE(max_cap, 1000) THEN 'closed' ELSE status END`
       })
       .where(
         and(
           eq(schema.Ships.id, tripId),
-          sql`CAST(COALESCE(current_cap, '0') AS INTEGER) + ${orderAmount} <= CAST(COALESCE(max_cap, '1000') AS INTEGER)`
+          sql`COALESCE(current_cap, 0) + ${totalWeight} <= COALESCE(max_cap, 1000)`
         )
       ).returning()
 

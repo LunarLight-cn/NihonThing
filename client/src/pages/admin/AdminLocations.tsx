@@ -248,6 +248,7 @@ export const AdminLocations: React.FC = () => {
                       <th className="table-th">Area</th>
                       <th className="table-th">Name (EN)</th>
                       <th className="table-th">Name (TH)</th>
+                      <th className="table-th">Name (JP)</th>
                       <th className="table-th">Status</th>
                       <th className="table-th text-right">Actions</th>
                     </tr>
@@ -261,6 +262,7 @@ export const AdminLocations: React.FC = () => {
                         </td>
                         <td className="table-td">{shop.name_en}</td>
                         <td className="table-td">{shop.name_th}</td>
+                        <td className="table-td">{shop.name_jp || '-'}</td>
                         <td className="table-td">
                           <select
                             value={shop.status}
@@ -282,7 +284,7 @@ export const AdminLocations: React.FC = () => {
                     ))}
                     {(!shops || shops.length === 0) && (
                       <tr>
-                        <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
+                        <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
                           No shops found. Add your first shop to get started.
                         </td>
                       </tr>

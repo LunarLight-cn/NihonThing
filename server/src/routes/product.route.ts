@@ -20,6 +20,7 @@ const CreateProductSchema = z.object({
   img: z.string().url('Must be a valid image URL').optional(),
   tag: z.string().optional(),
   amount: z.number().optional(),
+  weight: z.number().optional(),
   remain: z.number().optional(),
   status: z.enum(['active', 'inactive', 'out_of_stock']).optional()
 })

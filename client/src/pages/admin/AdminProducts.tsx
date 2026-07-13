@@ -300,6 +300,7 @@ export const AdminProducts: React.FC = () => {
               price_tentative_jpy: row.original.price_tentative_jpy?.toString() || '',
               price_tentative_thb: row.original.price_tentative_thb?.toString() || '',
               amount: row.original.amount?.toString() || '0',
+              weight: (row.original as any).weight?.toString() || '0',
               img: row.original.img || '',
               category_id: (row.original as any).category_id || 1,
               status: row.original.status || 'active',
@@ -427,6 +428,7 @@ export const AdminProducts: React.FC = () => {
     price_tentative_jpy: '',
     price_tentative_thb: '',
     amount: '10',
+    weight: '0',
     img: '',
     category_id: 1,
     status: 'active',
@@ -515,7 +517,7 @@ export const AdminProducts: React.FC = () => {
                   setProductForm({
                     name_en: '', name_th: '', name_jp: '', desc_en: '', desc_th: '', desc_jp: '',
                     brand_id: '', origin_country_id: '',
-                    price_tentative_jpy: '', price_tentative_thb: '', amount: '10', img: '', category_id: 1, status: 'active', tag: '', shopIds: []
+                    price_tentative_jpy: '', price_tentative_thb: '', amount: '10', weight: '0', img: '', category_id: 1, status: 'active', tag: '', shopIds: []
                   })
                 } else {
                   setIsAddingProduct(true)
@@ -536,6 +538,7 @@ export const AdminProducts: React.FC = () => {
                   price_tentative_jpy: productForm.price_tentative_jpy ? Number(productForm.price_tentative_jpy) : undefined,
                   price_tentative_thb: productForm.price_tentative_thb ? Number(productForm.price_tentative_thb) : undefined,
                   amount: Number(productForm.amount),
+                  weight: Number(productForm.weight),
                   status: productForm.status as 'active' | 'inactive' | 'out_of_stock'
                 }
                 const { shopIds, ...restPayload } = basePayload
@@ -681,6 +684,16 @@ export const AdminProducts: React.FC = () => {
                     type="number"
                     value={productForm.amount}
                     onChange={(e) => setProductForm({ ...productForm, amount: e.target.value })}
+                    className="input-admin"
+                  />
+                </div>
+                <div>
+                  <label className="label-admin">Weight (kg)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={productForm.weight}
+                    onChange={(e) => setProductForm({ ...productForm, weight: e.target.value })}
                     className="input-admin"
                   />
                 </div>
