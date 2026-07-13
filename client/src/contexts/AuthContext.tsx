@@ -38,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [])
 
   const login = (newToken: string, newUser: User) => {
+    localStorage.setItem('token', newToken)
     setToken(newToken)
     setUser(newUser)
   }
@@ -48,6 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (e) {
       // ignore
     }
+    localStorage.removeItem('token')
     setToken(null)
     setUser(null)
   }
