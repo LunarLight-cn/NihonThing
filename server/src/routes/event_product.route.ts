@@ -46,7 +46,7 @@ const postEventProductRoute = createRoute({
 eventProductRoutes.openapi(postEventProductRoute, async (c) => {
   const data = c.req.valid('json')
   const newMapping = await createEventProduct(c.env.nihonthing_db, data)
-  return c.json({ success: true, data: newMapping }, 201)
+  return c.json({ success: true, data: [0] })
 })
 
 // DELETE /api/event-products/:id
@@ -63,7 +63,7 @@ const deleteEventProductRoute = createRoute({
 eventProductRoutes.openapi(deleteEventProductRoute, async (c) => {
   const { id } = c.req.valid('param')
   const deletedMapping = await deleteEventProduct(c.env.nihonthing_db, parseInt(id))
-  return c.json({ success: true, data: deletedMapping })
+  return c.json({ success: true, data: [0] })
 })
 
 export default eventProductRoutes

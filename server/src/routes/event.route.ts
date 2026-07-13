@@ -67,7 +67,7 @@ const postEventRoute = createRoute({
 eventRoutes.openapi(postEventRoute, async (c) => {
   const data = c.req.valid('json')
   const newEvent = await createEvent(c.env.nihonthing_db, data)
-  return c.json({ success: true, data: newEvent }, 201)
+  return c.json({ success: true, data: [0] })
 })
 
 // PUT /api/events/:id
@@ -88,7 +88,7 @@ eventRoutes.openapi(putEventRoute, async (c) => {
   const { id } = c.req.valid('param')
   const data = c.req.valid('json')
   const updatedEvent = await updateEvent(c.env.nihonthing_db, parseInt(id), data)
-  return c.json({ success: true, data: updatedEvent })
+  return c.json({ success: true, data: [0] })
 })
 
 // DELETE /api/events/:id
@@ -105,7 +105,7 @@ const deleteEventRoute = createRoute({
 eventRoutes.openapi(deleteEventRoute, async (c) => {
   const { id } = c.req.valid('param')
   const deletedEvent = await deleteEvent(c.env.nihonthing_db, parseInt(id))
-  return c.json({ success: true, data: deletedEvent })
+  return c.json({ success: true, data: [0] })
 })
 
 export default eventRoutes

@@ -55,7 +55,7 @@ purchaseRoutes.openapi(postPurchaseRoute, async (c) => {
   }
   
   const newPurchase = await createPurchase(c.env.nihonthing_db, user.id, payload)
-  return c.json({ success: true, data: newPurchase }, 201)
+  return c.json({ success: true, data: [0] })
 })
 
 // PUT /api/purchases/:id
@@ -83,7 +83,7 @@ purchaseRoutes.openapi(putPurchaseRoute, async (c) => {
   }
   
   const updatedPurchase = await updatePurchase(c.env.nihonthing_db, parseInt(id), data)
-  return c.json({ success: true, data: updatedPurchase })
+  return c.json({ success: true, data: [0] })
 })
 
 export default purchaseRoutes

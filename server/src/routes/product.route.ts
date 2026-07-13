@@ -126,7 +126,7 @@ productRoutes.openapi(postProductRoute, async (c) => {
   }
   
   const newProduct = await createProduct(c.env.nihonthing_db, payload)
-  return c.json({ success: true, data: newProduct }, 201)
+  return c.json({ success: true, data: newProduct[0] }, 201)
 })
 
 // PUT Products
@@ -154,7 +154,7 @@ productRoutes.openapi(putProductRoute, async (c) => {
   }
   
   const updatedProduct = await updateProduct(c.env.nihonthing_db, parseInt(id), payload)
-  return c.json({ success: true, data: updatedProduct })
+  return c.json({ success: true, data: updatedProduct[0] })
 })
 
 // DELETE Products

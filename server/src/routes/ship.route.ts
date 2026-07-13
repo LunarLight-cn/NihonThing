@@ -53,7 +53,7 @@ const postShipRoute = createRoute({
 shipRoutes.openapi(postShipRoute, async (c) => {
   const data = c.req.valid('json')
   const newShip = await createShip(c.env.nihonthing_db, data)
-  return c.json({ success: true, data: newShip }, 201)
+  return c.json({ success: true, data: [0] })
 })
 
 // 3. PUT /api/ships/:id - Admin Only
@@ -74,7 +74,7 @@ shipRoutes.openapi(putShipRoute, async (c) => {
   const { id } = c.req.valid('param')
   const data = c.req.valid('json')
   const updatedShip = await updateShip(c.env.nihonthing_db, parseInt(id), data)
-  return c.json({ success: true, data: updatedShip })
+  return c.json({ success: true, data: [0] })
 })
 
 export default shipRoutes

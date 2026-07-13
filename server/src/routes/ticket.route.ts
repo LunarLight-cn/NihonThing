@@ -74,7 +74,7 @@ ticketRoutes.openapi(postTicketRoute, async (c) => {
   const user = c.get('user')
   const data = c.req.valid('json')
   const newTicket = await createTicket(c.env.nihonthing_db, user.id, data)
-  return c.json({ success: true, data: newTicket }, 201)
+  return c.json({ success: true, data: [0] })
 })
 
 // 4. PUT /api/tickets/:id - Admin only (Agent proposes price or updates status)
@@ -95,7 +95,7 @@ ticketRoutes.openapi(putTicketRoute, async (c) => {
   const { id } = c.req.valid('param')
   const data = c.req.valid('json')
   const updatedTicket = await updateTicket(c.env.nihonthing_db, parseInt(id), data)
-  return c.json({ success: true, data: updatedTicket })
+  return c.json({ success: true, data: [0] })
 })
 
 export default ticketRoutes
