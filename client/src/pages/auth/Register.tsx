@@ -49,7 +49,7 @@ export const Register: React.FC = () => {
 
       if (response.data.success) {
         // Since register on the backend usually returns token or just success, we'll try to log them in automatically
-        const loginRes = await api.post('/auth/login', { email: data.email, password: data.password })
+        const loginRes = await api.post('/auth/login', { identifier: data.email, password: data.password })
         if (loginRes.data.success) {
           login(loginRes.data.data.token, loginRes.data.data.user)
         }
