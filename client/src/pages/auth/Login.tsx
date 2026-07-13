@@ -9,7 +9,7 @@ import { ArrowRight, Loader2, ArrowLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
+  identifier: z.string().min(1, 'Email or Username is required'),
   password: z.string().min(1, 'Password is required')
 })
 
@@ -79,14 +79,14 @@ export const Login: React.FC = () => {
           className="space-y-4"
         >
           <div>
-            <label className="label-customer">{t('auth.login.email')}</label>
+            <label className="label-customer">Email or Username</label>
             <input
-              type="email"
-              {...register('email')}
-              placeholder={t('auth.login.emailPlaceholder')}
-              className={`input-customer py-2 px-4 rounded-md ${errors.email ? 'border-destructive' : ''}`}
+              type="text"
+              {...register('identifier')}
+              placeholder="you@example.com or username"
+              className={`input-customer py-2 px-4 rounded-md ${errors.identifier ? 'border-destructive' : ''}`}
             />
-            {errors.email && <p className="text-destructive text-sm mt-1">{errors.email.message}</p>}
+            {errors.identifier && <p className="text-destructive text-sm mt-1">{errors.identifier.message}</p>}
           </div>
 
           <div>

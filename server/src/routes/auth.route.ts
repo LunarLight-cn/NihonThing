@@ -6,7 +6,7 @@ const authRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; JWT_
 
 // Login Zone
 const LoginSchema = z.object({
-  email: z.string().email(),
+  identifier: z.string().min(1, 'Username or Email is required'),
   password: z.string().min(6)
 })
 
@@ -31,16 +31,16 @@ const loginRoute = createRoute({
 })
 
 authRoutes.openapi(loginRoute, async (c) => {
-  const { email, password } = c.req.valid('json')
+  const { identifier, password } = c.req.valid('json')
 
   try {
-    const { token, user } = await loginUser(c.env.nihonthing_db, email, password, c.env.JWT_SECRET, c.env.AUTH_SALT)
+    const { token, user } = await loginUser(c.env.nihonthing_db, identifier, password, c.env.JWT_SECRET, c.env.AUTH_SALT)
     
     // Set HttpOnly cookie
     setCookie(c, 'token', token, {
       httpOnly: true,
       secure: new URL(c.req.url).protocol === 'https:',
-      sameSite: 'Lax',
+      sameSite: 'None',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/'
     })
@@ -62,7 +62,11 @@ const logoutRoute = createRoute({
 })
 
 authRoutes.openapi(logoutRoute, async (c) => {
-  deleteCookie(c, 'token', { path: '/' })
+  deleteCookie(c, 'token', { 
+    path: '/',
+    secure: new URL(c.req.url).protocol === 'https:',
+    sameSite: 'None'
+  })
   return c.json({ success: true, message: 'Logged out successfully' })
 })
 
