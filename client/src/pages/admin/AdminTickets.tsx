@@ -5,6 +5,7 @@ import { DataTable } from '../../components/admin/DataTable'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Ticket, Loader2, Save, X, ExternalLink, Image as ImageIcon, Edit2 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useTranslation } from 'react-i18next'
 
 interface TicketData {
   id: number
@@ -21,6 +22,7 @@ interface TicketData {
 }
 
 export const AdminTickets: React.FC = () => {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const [selectedTicket, setSelectedTicket] = useState<TicketData | null>(null)
@@ -86,10 +88,10 @@ export const AdminTickets: React.FC = () => {
   }
 
   const columns: ColumnDef<TicketData>[] = [
-    { accessorKey: 'id', header: 'ID' },
+    { accessorKey: 'id', header: t('admin.ticket.id') },
     {
       accessorKey: 'img',
-      header: 'Item',
+      header: t('admin.ticket.item'),
       cell: ({ row }) => (
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded overflow-hidden bg-secondary flex items-center justify-center">
@@ -103,10 +105,10 @@ export const AdminTickets: React.FC = () => {
         </div>
       )
     },
-    { accessorKey: 'client.username', header: 'Client' },
+    { accessorKey: 'client.username', header: t('admin.ticket.client') },
     {
       accessorKey: 'status',
-      header: 'Status',
+      header: t('admin.ticket.status'),
       cell: ({ row }) => {
         const s = row.original.status
         const color =
@@ -124,17 +126,17 @@ export const AdminTickets: React.FC = () => {
     },
     {
       accessorKey: 'expected_price',
-      header: 'Client Budget',
+      header: t('admin.ticket.client_budget'),
       cell: ({ row }) => (row.original.expected_price ? `¥${row.original.expected_price.toLocaleString()}` : '-')
     },
     {
       accessorKey: 'proposed_price_thb',
-      header: 'Our Price',
+      header: t('admin.ticket.our_price'),
       cell: ({ row }) => (row.original.proposed_price_thb ? `฿${row.original.proposed_price_thb.toLocaleString()}` : '-')
     },
     {
       id: 'actions',
-      header: 'Actions',
+      header: t('admin.ticket.actions'),
       cell: ({ row }) => (
         <button onClick={() => handleEdit(row.original)} className="btn-icon">
           <Edit2 className="w-4 h-4" />
@@ -148,14 +150,14 @@ export const AdminTickets: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="admin-page-title">
           <Ticket className="w-8 h-8 mr-3" />
-          Custom Requests
+          {t('admin.ticket.tickets_title')}
         </h1>
       </div>
 
       {selectedTicket && (
         <div className="card-panel space-y-6">
           <div className="flex justify-between items-center border-b border-border pb-4">
-            <h2 className="text-xl font-bold">Manage Request #{selectedTicket.id}</h2>
+            <h2 className="text-xl font-bold">{t('admin.ticket.manage_request')} {selectedTicket.id}</h2>
             <button onClick={() => setSelectedTicket(null)} className="text-muted-foreground hover:text-foreground">
               <X className="w-5 h-5" />
             </button>
@@ -163,7 +165,7 @@ export const AdminTickets: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
-              <h3 className="font-medium text-muted-foreground">Item Details</h3>
+              <h3 className="font-medium text-muted-foreground">{t('admin.ticket.item_details')}</h3>
               <div className="flex space-x-4">
                 {selectedTicket.img && selectedTicket.img.length > 0 && (
                   <div className="flex flex-col gap-2">
@@ -176,11 +178,11 @@ export const AdminTickets: React.FC = () => {
                   <p className="font-bold text-lg">{selectedTicket.item_name}</p>
                   <p className="text-sm text-muted-foreground">Client: {selectedTicket.client?.username}</p>
                   <p className="text-sm text-muted-foreground">
-                    Client's Budget: <span className="font-medium text-foreground">{selectedTicket.expected_price ? `¥${selectedTicket.expected_price.toLocaleString()}` : 'Not specified'}</span>
+                    {t('admin.ticket.client_budget')}: <span className="font-medium text-foreground">{selectedTicket.expected_price ? `¥${selectedTicket.expected_price.toLocaleString()}` : t('admin.ticket.not_specified')}</span>
                   </p>
                   {selectedTicket.external_link && (
                     <a href={selectedTicket.external_link} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline flex items-center mt-2">
-                      <ExternalLink className="w-3 h-3 mr-1" /> View Original Link
+                      <ExternalLink className="w-3 h-3 mr-1" /> {t('admin.ticket.view_original_link')}
                     </a>
                   )}
                 </div>
@@ -188,36 +190,36 @@ export const AdminTickets: React.FC = () => {
             </div>
 
             <form onSubmit={handleUpdate} className="space-y-4 bg-secondary/50 p-4 rounded-lg">
-              <h3 className="font-medium text-muted-foreground">Propose & Update</h3>
+              <h3 className="font-medium text-muted-foreground">{t('admin.ticket.propose_update')}</h3>
 
               <div>
-                <label className="label-admin">Status</label>
+                <label className="label-admin">{t('admin.ticket.status')}</label>
                 <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="input-admin">
-                  <option value="pending">Pending</option>
-                  <option value="negotiating">Negotiating (Waiting for client)</option>
-                  <option value="accepted">Accepted (Client paid)</option>
-                  <option value="purchasing">Purchasing in Japan</option>
-                  <option value="completed">Completed</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="cancelled">Cancelled</option>
+                  <option value="pending">{t('admin.ticket.status_pending')}</option>
+                  <option value="negotiating">{t('admin.ticket.status_negotiating')}</option>
+                  <option value="accepted">{t('admin.ticket.status_accepted')}</option>
+                  <option value="purchasing">{t('admin.ticket.status_purchasing_jp')}</option>
+                  <option value="completed">{t('admin.ticket.status_completed')}</option>
+                  <option value="rejected">{t('admin.ticket.status_rejected')}</option>
+                  <option value="cancelled">{t('admin.ticket.status_cancelled')}</option>
                 </select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="label-admin">Price (JPY)</label>
-                  <input type="number" value={form.proposed_price_jpy} onChange={(e) => setForm({ ...form, proposed_price_jpy: e.target.value })} placeholder="e.g. 1500" className="input-admin" />
+                  <label className="label-admin">{t('admin.ticket.price_jpy')}</label>
+                  <input type="number" value={form.proposed_price_jpy} onChange={(e) => setForm({ ...form, proposed_price_jpy: e.target.value })} className="input-admin" />
                 </div>
                 <div>
-                  <label className="label-admin">Price (THB)</label>
-                  <input type="number" value={form.proposed_price_thb} onChange={(e) => setForm({ ...form, proposed_price_thb: e.target.value })} placeholder="e.g. 500" className="input-admin" />
+                  <label className="label-admin">{t('admin.ticket.price_thb')}</label>
+                  <input type="number" value={form.proposed_price_thb} onChange={(e) => setForm({ ...form, proposed_price_thb: e.target.value })} className="input-admin" />
                 </div>
               </div>
 
               <div>
-                <label className="label-admin">Assign to Trip (Optional)</label>
+                <label className="label-admin">{t('admin.ticket.assign_trip')}</label>
                 <select value={form.trip_id} onChange={(e) => setForm({ ...form, trip_id: e.target.value })} className="input-admin">
-                  <option value="">-- No Trip Assigned --</option>
+                  <option value="">{t('admin.ticket.no_trip_assigned')}</option>
                   {trips?.map((t: any) => (
                     <option key={t.id} value={t.id}>
                       Trip #{t.id} ({new Date(t.ship_date).toLocaleDateString()}) - {t.type.toUpperCase()}
@@ -229,7 +231,7 @@ export const AdminTickets: React.FC = () => {
               <div className="flex justify-end pt-2">
                 <button type="submit" disabled={updateTicketMutation.isPending} className="btn-primary">
                   {updateTicketMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                  Save Changes
+                  {t('admin.ticket.save_changes')}
                 </button>
               </div>
             </form>
@@ -243,7 +245,7 @@ export const AdminTickets: React.FC = () => {
         </div>
       ) : (
         <div className="card-panel-flush">
-          <DataTable columns={columns} data={tickets || []} searchKey="item_name" searchPlaceholder="Search by item name..." />
+          <DataTable columns={columns} data={tickets || []} searchKey="item_name" searchPlaceholder={t('admin.ticket.search_item_name')} />
         </div>
       )}
     </div>

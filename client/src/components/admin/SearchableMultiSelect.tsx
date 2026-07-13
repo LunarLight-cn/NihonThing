@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Search, Plus, Check } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface Option {
   id: number | string
@@ -20,9 +21,13 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
   values,
   onChange,
   onAdd,
-  placeholder = 'Select multiple...',
-  addLabel = 'Add New'
+  placeholder,
+  addLabel
 }) => {
+  const { t } = useTranslation()
+  const displayPlaceholder = placeholder || t('admin.components.select_multiple')
+  const displayAddLabel = addLabel || t('admin.components.add_new')
+
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -66,14 +71,14 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
                 e.stopPropagation()
                 toggleOption(opt.id)
               }}
-              title="Click to remove"
+              title={t('admin.components.click_to_remove')}
             >
               {opt.label}
               <span className="opacity-50 group-hover:opacity-100">&times;</span>
             </span>
           ))
         ) : (
-          <span className="text-muted-foreground">{placeholder}</span>
+          <span className="text-muted-foreground">{displayPlaceholder}</span>
         )}
       </div>
 
@@ -85,7 +90,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
               <input
                 type="text"
                 className="w-full pl-8 pr-4 py-2 bg-secondary/50 border-none rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                placeholder="Search..."
+                placeholder={t('admin.components.search')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
@@ -113,7 +118,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
               })
             ) : (
               <div className="px-3 py-4 text-sm text-center text-muted-foreground">
-                No results found
+                {t('admin.components.no_results')}
               </div>
             )}
             
@@ -126,7 +131,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
                 }}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                {addLabel} "{search}"
+                {displayAddLabel} "{search}"
               </div>
             )}
           </div>

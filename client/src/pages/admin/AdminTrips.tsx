@@ -17,7 +17,7 @@ interface Trip {
 }
 
 export const AdminTrips: React.FC = () => {
-  useTranslation()
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [isAdding, setIsAdding] = useState(false)
   const [editingTripId, setEditingTripId] = useState<number | null>(null)
@@ -55,21 +55,21 @@ export const AdminTrips: React.FC = () => {
   })
 
   const columns: ColumnDef<Trip>[] = [
-    { accessorKey: 'id', header: 'ID' },
-    { accessorKey: 'type', header: 'Type' },
+    { accessorKey: 'id', header: t('admin.trips.id') },
+    { accessorKey: 'type', header: t('admin.trips.type') },
     {
       accessorKey: 'ship_date',
-      header: 'Ship Date',
+      header: t('admin.trips.ship_date'),
       cell: ({ row }) => new Date(row.original.ship_date).toLocaleDateString()
     },
     {
       accessorKey: 'close_date',
-      header: 'Close Date',
+      header: t('admin.trips.close_date'),
       cell: ({ row }) => (row.original.close_date ? new Date(row.original.close_date).toLocaleDateString() : '-')
     },
     {
       accessorKey: 'status',
-      header: 'Status',
+      header: t('admin.trips.status'),
       cell: ({ row }) => {
         const status = row.original.status
         const colors = {
@@ -84,22 +84,22 @@ export const AdminTrips: React.FC = () => {
             onChange={(e) => updateStatusMutation.mutate({ id: row.original.id, status: e.target.value })}
             className={`text-xs px-2 py-1 rounded-full font-medium ${colors[status] || 'bg-gray-100'} border-0 cursor-pointer`}
           >
-            <option value="open">Open</option>
-            <option value="closed">Closed</option>
-            <option value="in_transit">In Transit</option>
-            <option value="arrived">Arrived</option>
+            <option value="open">{t('admin.trips.status_open')}</option>
+            <option value="closed">{t('admin.trips.status_closed')}</option>
+            <option value="in_transit">{t('admin.trips.status_in_transit')}</option>
+            <option value="arrived">{t('admin.trips.status_arrived')}</option>
           </select>
         )
       }
     },
     {
       accessorKey: 'max_cap',
-      header: 'Capacity (kg)',
+      header: t('admin.trips.capacity'),
       cell: ({ row }) => `${row.original.current_cap || 0} / ${row.original.max_cap || '-'} kg`
     },
     {
       id: 'actions',
-      header: 'Actions',
+      header: t('admin.trips.actions'),
       cell: ({ row }) => (
         <button
           onClick={() => {
@@ -145,56 +145,55 @@ export const AdminTrips: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="admin-page-title">
           <Plane className="w-8 h-8 mr-3" />
-          Trip Management
+          {t('admin.trips.trips_title')}
         </h1>
         <button onClick={() => setIsAdding(!isAdding)} className="btn-primary">
-          {isAdding ? <X className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
-          {isAdding ? 'Cancel' : 'Add Trip'}
+          {isAdding ? <><X className="w-4 h-4 mr-2" /> {t('admin.trips.cancel')}</> : <><Plus className="w-4 h-4 mr-2" /> {t('admin.trips.add_trip')}</>}
         </button>
       </div>
 
       {isAdding && (
         <form onSubmit={handleAddSubmit} className="card-panel space-y-4">
-          <h2 className="text-xl font-bold">{editingTripId ? 'Edit Trip' : 'New Trip'}</h2>
+          <h2 className="text-xl font-bold">{editingTripId ? t('admin.trips.edit_trip') : t('admin.trips.add_trip')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="label-admin">Type</label>
+              <label className="label-admin">{t('admin.trips.type')}</label>
               <select value={newTripForm.type} onChange={(e) => setNewTripForm({ ...newTripForm, type: e.target.value })} className="input-admin">
-                <option value="flight">Flight</option>
-                <option value="sea">Sea Freight</option>
+                <option value="flight">{t('admin.trips.flight')}</option>
+                <option value="sea">{t('admin.trips.sea_freight')}</option>
               </select>
             </div>
             <div>
-              <label className="label-admin">Origin Country</label>
+              <label className="label-admin">{t('admin.trips.origin')}</label>
               <select value={newTripForm.origin_id} onChange={(e) => setNewTripForm({ ...newTripForm, origin_id: Number(e.target.value) })} className="input-admin">
-                <option value={1}>Thailand</option>
-                <option value={2}>Japan</option>
+                <option value={1}>{t('admin.trips.thailand')}</option>
+                <option value={2}>{t('admin.trips.japan')}</option>
               </select>
             </div>
             <div>
-              <label className="label-admin">Destination Country</label>
+              <label className="label-admin">{t('admin.trips.destination')}</label>
               <select value={newTripForm.destination_id} onChange={(e) => setNewTripForm({ ...newTripForm, destination_id: Number(e.target.value) })} className="input-admin">
-                <option value={1}>Thailand</option>
-                <option value={2}>Japan</option>
+                <option value={1}>{t('admin.trips.thailand')}</option>
+                <option value={2}>{t('admin.trips.japan')}</option>
               </select>
             </div>
             <div>
-              <label className="label-admin">Max Capacity (kg)</label>
+              <label className="label-admin">{t('admin.trips.max_cap')}</label>
               <input type="number" step="0.1" value={newTripForm.max_cap} onChange={(e) => setNewTripForm({ ...newTripForm, max_cap: Number(e.target.value) })} className="input-admin" />
             </div>
             <div>
-              <label className="label-admin">Ship Date</label>
+              <label className="label-admin">{t('admin.trips.ship_date')}</label>
               <input type="date" required value={newTripForm.ship_date} onChange={(e) => setNewTripForm({ ...newTripForm, ship_date: e.target.value })} className="input-admin" />
             </div>
             <div>
-              <label className="label-admin">Close Date</label>
+              <label className="label-admin">{t('admin.trips.close_date')}</label>
               <input type="date" required value={newTripForm.close_date} onChange={(e) => setNewTripForm({ ...newTripForm, close_date: e.target.value })} className="input-admin" />
             </div>
           </div>
           <div className="flex justify-end">
             <button type="submit" disabled={addTripMutation.isPending} className="btn-primary px-6">
               {addTripMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-              Save Trip
+              {t('admin.trips.save')}
             </button>
           </div>
         </form>
@@ -205,7 +204,7 @@ export const AdminTrips: React.FC = () => {
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : (
-        <DataTable columns={columns} data={trips || []} searchKey="type" searchPlaceholder="Search trips..." />
+        <DataTable columns={columns} data={trips || []} searchKey="type" searchPlaceholder={t('admin.trips.search_trips')} />
       )}
     </div>
   )

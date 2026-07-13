@@ -72,7 +72,7 @@ export const NewArrivals: React.FC<Props> = ({ hideViewAll }) => {
         ) : error ? (
           <div className="flex items-center text-xs text-destructive bg-destructive/10 p-3 rounded-xl">
             <AlertCircle className="w-4 h-4 mr-2" />
-            Failed to load new arrivals
+            {t('home.newArrivals.failedToLoad')}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">

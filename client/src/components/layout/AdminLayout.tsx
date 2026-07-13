@@ -14,7 +14,7 @@ export const AdminLayout: React.FC = () => {
     { name: t('admin.orders'), path: '/admin/orders', icon: Package },
     { name: t('admin.trips'), path: '/admin/trips', icon: Plane },
     { name: t('admin.tickets'), path: '/admin/tickets', icon: Ticket },
-    { name: 'Purchases', path: '/admin/purchases', icon: ShoppingCart },
+    { name: t('admin.purchases'), path: '/admin/purchases', icon: ShoppingCart },
     { name: t('admin.catalog'), path: '/admin/products', icon: Store },
     { name: 'Locations', path: '/admin/locations', icon: MapPin },
     { name: 'Events', path: '/admin/events', icon: Calendar },

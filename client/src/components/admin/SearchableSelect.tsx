@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Search, Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface Option {
   id: number | string
@@ -20,9 +21,13 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   value,
   onChange,
   onAdd,
-  placeholder = 'Select...',
-  addLabel = 'Add New'
+  placeholder,
+  addLabel
 }) => {
+  const { t } = useTranslation()
+  const displayPlaceholder = placeholder || t('admin.components.select')
+  const displayAddLabel = addLabel || t('admin.components.add_new')
+
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -50,7 +55,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className={selectedOption ? 'text-foreground' : 'text-muted-foreground'}>
-          {selectedOption ? selectedOption.label : placeholder}
+          {selectedOption ? selectedOption.label : displayPlaceholder}
         </span>
       </div>
 
@@ -62,7 +67,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
               <input
                 type="text"
                 className="w-full pl-8 pr-4 py-2 bg-secondary/50 border-none rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                placeholder="Search..."
+                placeholder={t('admin.components.search')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
@@ -87,7 +92,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
               ))
             ) : (
               <div className="px-3 py-4 text-sm text-center text-muted-foreground">
-                No results found
+                {t('admin.components.no_results')}
               </div>
             )}
             
@@ -101,7 +106,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 }}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                {addLabel} "{search}"
+                {displayAddLabel} "{search}"
               </div>
             )}
           </div>

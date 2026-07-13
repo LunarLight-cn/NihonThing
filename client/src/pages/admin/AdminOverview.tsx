@@ -1,11 +1,14 @@
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { api } from '../../services/api'
 import { Package, ShoppingCart, Plane, DollarSign, Loader2 } from 'lucide-react'
 import { DataTable } from '../../components/admin/DataTable'
 import type { ColumnDef } from '@tanstack/react-table'
 
 export const AdminOverview: React.FC = () => {
+  const { t } = useTranslation()
+
   const { data: orders, isLoading: isLoadingOrders } = useQuery({
     queryKey: ['admin-orders'],
     queryFn: async () => {
@@ -51,25 +54,25 @@ export const AdminOverview: React.FC = () => {
   const recentOrders = orders ? [...orders].sort((a: any, b: any) => new Date(b.cdate).getTime() - new Date(a.cdate).getTime()).slice(0, 5) : []
 
   const recentOrderColumns: ColumnDef<any>[] = [
-    { accessorKey: 'id', header: 'Order ID' },
+    { accessorKey: 'id', header: t('admin.overview.order_id') },
     {
       accessorKey: 'cdate',
-      header: 'Date',
+      header: t('admin.overview.date'),
       cell: ({ row }) => new Date(row.original.cdate).toLocaleDateString()
     },
     {
       accessorKey: 'status',
-      header: 'Status',
+      header: t('admin.overview.status'),
       cell: ({ row }) => <span className="capitalize">{row.original.status.replace('_', ' ')}</span>
     },
     {
       accessorKey: 'payment_status',
-      header: 'Payment',
+      header: t('admin.overview.payment'),
       cell: ({ row }) => <span className="capitalize">{row.original.payment_status.replace('_', ' ')}</span>
     },
     {
       accessorKey: 'grand_total',
-      header: 'Total',
+      header: t('admin.overview.total'),
       cell: ({ row }) => `฿${row.original.grand_total?.toLocaleString() || 0}`
     }
   ]
@@ -77,8 +80,8 @@ export const AdminOverview: React.FC = () => {
   return (
     <div className="admin-page max-w-7xl space-y-8">
       <div>
-        <h1 className="admin-page-title mb-2">Dashboard Overview</h1>
-        <p className="text-muted-foreground">Welcome back! Here's what's happening today.</p>
+        <h1 className="admin-page-title mb-2">{t('admin.overview.overview_title')}</h1>
+        <p className="text-muted-foreground">{t('admin.overview.overview_welcome')}</p>
       </div>
 
       {isLoading ? (
@@ -94,7 +97,7 @@ export const AdminOverview: React.FC = () => {
                 <DollarSign className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('admin.overview.total_revenue')}</p>
                 <h3 className="text-2xl font-bold">฿{totalRevenue.toLocaleString()}</h3>
               </div>
             </div>
@@ -104,7 +107,7 @@ export const AdminOverview: React.FC = () => {
                 <ShoppingCart className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Orders</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('admin.overview.total_orders')}</p>
                 <h3 className="text-2xl font-bold">{totalOrders}</h3>
               </div>
             </div>
@@ -114,7 +117,7 @@ export const AdminOverview: React.FC = () => {
                 <Package className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Products</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('admin.overview.total_products')}</p>
                 <h3 className="text-2xl font-bold">{totalProducts}</h3>
               </div>
             </div>
@@ -124,7 +127,7 @@ export const AdminOverview: React.FC = () => {
                 <Plane className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Active Trips</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('admin.overview.active_trips')}</p>
                 <h3 className="text-2xl font-bold">{activeTrips}</h3>
               </div>
             </div>
@@ -133,7 +136,7 @@ export const AdminOverview: React.FC = () => {
           {/* Recent Orders */}
           <div className="card-panel-flush overflow-hidden">
             <div className="p-6 border-b border-border">
-              <h2 className="text-xl font-bold">Recent Orders</h2>
+              <h2 className="text-xl font-bold">{t('admin.overview.recent_orders')}</h2>
             </div>
             <div className="p-6">
               <DataTable columns={recentOrderColumns} data={recentOrders} />

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useReactTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, flexRender } from '@tanstack/react-table'
 import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -10,7 +11,8 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string
 }
 
-export function DataTable<TData, TValue>({ columns, data, searchKey, searchPlaceholder = 'Search...' }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, searchKey, searchPlaceholder }: DataTableProps<TData, TValue>) {
+  const { t } = useTranslation()
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
 
@@ -36,7 +38,7 @@ export function DataTable<TData, TValue>({ columns, data, searchKey, searchPlace
           <div className="relative max-w-sm w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
-              placeholder={searchPlaceholder}
+              placeholder={searchPlaceholder || t('admin.components.search')}
               value={globalFilter ?? ''}
               onChange={(e) => setGlobalFilter(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
@@ -88,7 +90,7 @@ export function DataTable<TData, TValue>({ columns, data, searchKey, searchPlace
               ) : (
                 <tr>
                   <td colSpan={columns.length} className="px-4 py-8 text-center text-muted-foreground">
-                    No results.
+                    {t('admin.components.no_results')}
                   </td>
                 </tr>
               )}
@@ -99,7 +101,7 @@ export function DataTable<TData, TValue>({ columns, data, searchKey, searchPlace
 
       <div className="flex items-center justify-between px-2">
         <div className="text-sm text-muted-foreground">
-          Showing {table.getRowModel().rows.length} of {table.getFilteredRowModel().rows.length} rows
+          {t('admin.components.showing_rows', { count: table.getRowModel().rows.length, total: table.getFilteredRowModel().rows.length })}
         </div>
         <div className="flex items-center space-x-2">
           <button onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()} className="btn-pagination">
@@ -109,7 +111,7 @@ export function DataTable<TData, TValue>({ columns, data, searchKey, searchPlace
             <ChevronLeft className="w-4 h-4" />
           </button>
           <span className="text-sm font-medium px-2">
-            Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+            {t('admin.components.page_of', { page: table.getState().pagination.pageIndex + 1, pages: table.getPageCount() })}
           </span>
           <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="btn-pagination">
             <ChevronRight className="w-4 h-4" />
