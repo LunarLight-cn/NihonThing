@@ -238,7 +238,7 @@ export const AdminProducts: React.FC = () => {
         <div className="w-10 h-10 rounded-md overflow-hidden bg-secondary">
           {row.original.img ? (
             <img
-              src={row.original.img}
+              src={row.original.img.startsWith('http') ? row.original.img : `${(import.meta.env.VITE_API_BASE_URL || '').replace('/api', '')}${row.original.img}`}
               alt="Product"
               className="w-full h-full object-cover"
             />
@@ -459,9 +459,7 @@ export const AdminProducts: React.FC = () => {
     try {
       const formData = new FormData()
       formData.append('file', file)
-      const res = await api.post('/uploads', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
+      const res = await api.post('/uploads', formData)
       if (res.data.success) {
         setProductForm((prev) => ({ ...prev, img: res.data.url }))
       }
@@ -723,7 +721,7 @@ export const AdminProducts: React.FC = () => {
                   </div>
                   {productForm.img && (
                     <img
-                      src={productForm.img}
+                      src={productForm.img.startsWith('http') ? productForm.img : `${(import.meta.env.VITE_API_BASE_URL || '').replace('/api', '')}${productForm.img}`}
                       alt="Preview"
                       className="mt-2 h-20 rounded-md border border-border"
                     />
