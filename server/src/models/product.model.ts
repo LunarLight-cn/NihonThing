@@ -4,7 +4,7 @@ import * as schema from '../db/schema'
 
 export const getAllProducts = async (
   d1: D1Database, 
-  query?: { category_id?: number, brand?: string, page?: number, limit?: number }
+  query?: { category_id?: number, brand_id?: number, page?: number, limit?: number }
 ) => {
   const db = drizzle(d1, { schema })
   const page = query?.page || 1
@@ -13,7 +13,7 @@ export const getAllProducts = async (
 
   const conditions = []
   if (query?.category_id) conditions.push(eq(schema.Products.category_id, query.category_id))
-  if (query?.brand) conditions.push(like(schema.Products.brand, `%${query.brand}%`))
+  if (query?.brand_id) conditions.push(eq(schema.Products.brand_id, query.brand_id))
 
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined
 
@@ -28,7 +28,7 @@ export const getAllProducts = async (
     where: whereClause,
     limit,
     offset,
-    with: { category: true }
+    with: { category: true, brand: true, origin_country: true }
   })
 
   return { data: products, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } }
@@ -38,7 +38,7 @@ export const getProductById = async (d1: D1Database, id: number) => {
   const db = drizzle(d1, { schema })
   return await db.query.Products.findFirst({
     where: eq(schema.Products.id, id),
-    with: { category: true }
+    with: { category: true, brand: true, origin_country: true }
   })
 }
 
@@ -67,7 +67,7 @@ export const getNewArrivals = async (d1: D1Database, limit: number = 6) => {
     where: eq(schema.Products.status, 'active'),
     orderBy: [desc(schema.Products.cdate)],
     limit,
-    with: { category: true }
+    with: { category: true, brand: true, origin_country: true }
   })
 }
 
@@ -95,7 +95,7 @@ export const getTrendingProducts = async (d1: D1Database, limit: number = 4, are
   const taggedProducts = await db.query.Products.findMany({
     where: and(...taggedConditions),
     limit,
-    with: { category: true }
+    with: { category: true, brand: true, origin_country: true }
   })
 
   let result = [...taggedProducts]
@@ -120,7 +120,7 @@ export const getTrendingProducts = async (d1: D1Database, limit: number = 4, are
     where: and(...bestSellersConditions),
     orderBy: [desc(schema.Products.total_sold), desc(schema.Products.cdate)],
     limit: remainingLimit,
-    with: { category: true }
+    with: { category: true, brand: true, origin_country: true }
   })
   
   result = [...result, ...bestSellerProducts]

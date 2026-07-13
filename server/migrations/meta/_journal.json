@@ -5,57 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1783322555497,
-      "tag": "0000_happy_baron_strucker",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1783664504762,
-      "tag": "0001_classy_starjammers",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1783665158209,
-      "tag": "0002_simple_stepford_cuckoos",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1783666214622,
-      "tag": "0003_noisy_tigra",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1783788121256,
-      "tag": "0004_past_moon_knight",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1783839841678,
-      "tag": "0005_glorious_clint_barton",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "6",
-      "when": 1783848631608,
-      "tag": "0006_eminent_redwing",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "6",
-      "when": 1783914687117,
-      "tag": "0007_aberrant_sumo",
+      "when": 1783926499642,
+      "tag": "0000_funny_sway",
       "breakpoints": true
     }
   ]

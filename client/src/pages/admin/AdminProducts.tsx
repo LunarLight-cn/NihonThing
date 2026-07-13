@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../services/api'
 import { DataTable } from '../../components/admin/DataTable'
+import { SearchableSelect } from '../../components/admin/SearchableSelect'
+import { SearchableMultiSelect } from '../../components/admin/SearchableMultiSelect'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Package, Tags, Plus, Loader2, Save, X, Image as ImageIcon, Edit2, Trash2 } from 'lucide-react'
 
@@ -13,13 +15,16 @@ interface Product {
   desc_en: string
   desc_th: string
   desc_jp: string
-  brand: string
+  brand_id?: number
+  origin_country_id?: number
+  brand?: { id: number, name_en: string }
+  origin_country?: { id: number, name_en: string }
   price_tentative_thb: number
   price_tentative_jpy: number
   amount: number
   status: 'active' | 'inactive' | 'out_of_stock'
   img: string
-  origin_country: string
+  tag?: string
 }
 
 interface Category {
@@ -29,13 +34,23 @@ interface Category {
   name_jp: string
 }
 
+interface Brand {
+  id: number
+  name_en: string
+  name_th: string
+  name_jp: string
+  status: 'active' | 'inactive'
+}
+
 export const AdminProducts: React.FC = () => {
   const queryClient = useQueryClient()
-  const [activeTab, setActiveTab] = useState<'products' | 'categories'>('products')
+  const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'brands'>('products')
   const [isAddingProduct, setIsAddingProduct] = useState(false)
   const [isAddingCategory, setIsAddingCategory] = useState(false)
+  const [isAddingBrand, setIsAddingBrand] = useState(false)
   const [editingProductId, setEditingProductId] = useState<number | null>(null)
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null)
+  const [editingBrandId, setEditingBrandId] = useState<number | null>(null)
 
   // -- Queries --
   const { data: products, isLoading: isLoadingProducts } = useQuery({
@@ -55,9 +70,25 @@ export const AdminProducts: React.FC = () => {
   })
 
   const { data: shops } = useQuery({
-    queryKey: ['admin', 'shops'],
+    queryKey: ['admin-shops'],
     queryFn: async () => {
       const res = await api.get('/shops')
+      return res.data.data
+    }
+  })
+
+  const { data: brands } = useQuery({
+    queryKey: ['admin-brands'],
+    queryFn: async () => {
+      const res = await api.get('/brands')
+      return res.data.data
+    }
+  })
+
+  const { data: countries } = useQuery({
+    queryKey: ['admin-countries'],
+    queryFn: async () => {
+      const res = await api.get('/locations/countries')
       return res.data.data
     }
   })
@@ -157,6 +188,46 @@ export const AdminProducts: React.FC = () => {
     }
   })
 
+  const addBrandMutation = useMutation({
+    mutationFn: (name: string) => api.post('/brands', { name_en: name, name_th: name }),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-brands'] })
+      setProductForm(prev => ({ ...prev, brand_id: res.data.data.id }))
+    }
+  })
+
+  const addCountryMutation = useMutation({
+    mutationFn: (name: string) => api.post('/locations/countries', { name_en: name, name_th: name }),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-countries'] })
+      setProductForm(prev => ({ ...prev, origin_country_id: res.data.data.id }))
+    }
+  })
+
+  const createBrandMutation = useMutation({
+    mutationFn: (payload: any) => api.post('/brands', payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-brands'] })
+      setIsAddingBrand(false)
+    }
+  })
+
+  const updateBrandMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: any }) => api.put(`/brands/${id}`, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-brands'] })
+      setIsAddingBrand(false)
+      setEditingBrandId(null)
+    }
+  })
+
+  const deleteBrandMutation = useMutation({
+    mutationFn: (id: number) => api.delete(`/brands/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-brands'] })
+    }
+  })
+
   // -- Columns --
   const productColumns: ColumnDef<Product>[] = [
     { accessorKey: 'id', header: 'ID' },
@@ -200,6 +271,19 @@ export const AdminProducts: React.FC = () => {
       )
     },
     {
+      accessorKey: 'tag',
+      header: 'Tag',
+      cell: ({ row }) => (
+        <span className={`px-2 py-1 text-xs rounded-full ${
+          row.original.tag === 'trending' ? 'bg-orange-100 text-orange-600' :
+          row.original.tag === 'new_arrival' ? 'bg-blue-100 text-blue-600' :
+          'bg-gray-100 text-gray-500'
+        }`}>
+          {row.original.tag === 'trending' ? 'Trending' : row.original.tag === 'new_arrival' ? 'New Arrival' : 'None'}
+        </span>
+      )
+    },
+    {
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => (
@@ -212,14 +296,15 @@ export const AdminProducts: React.FC = () => {
               desc_en: row.original.desc_en || '',
               desc_th: row.original.desc_th || '',
               desc_jp: row.original.desc_jp || '',
-              brand: row.original.brand || '',
+              brand_id: (row.original as any).brand_id || '',
               price_tentative_jpy: row.original.price_tentative_jpy?.toString() || '',
               price_tentative_thb: row.original.price_tentative_thb?.toString() || '',
               amount: row.original.amount?.toString() || '0',
               img: row.original.img || '',
               category_id: (row.original as any).category_id || 1,
               status: row.original.status || 'active',
-              origin_country: row.original.origin_country || 'Japan',
+              tag: row.original.tag || '',
+              origin_country_id: (row.original as any).origin_country_id || '',
               shopIds: []
             })
             setEditingProductId(row.original.id)
@@ -281,6 +366,55 @@ export const AdminProducts: React.FC = () => {
     }
   ]
 
+  const brandColumns: ColumnDef<Brand>[] = [
+    { accessorKey: 'id', header: 'ID' },
+    { accessorKey: 'name_en', header: 'Name (EN)' },
+    { accessorKey: 'name_th', header: 'Name (TH)' },
+    { accessorKey: 'name_jp', header: 'Name (JP)' },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ row }) => (
+        <span className={`px-2 py-1 rounded-full text-xs ${row.original.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          {row.original.status}
+        </span>
+      )
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => (
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => {
+              setBrandForm({
+                name_en: row.original.name_en || '',
+                name_th: row.original.name_th || '',
+                name_jp: row.original.name_jp || '',
+                status: row.original.status || 'active'
+              })
+              setEditingBrandId(row.original.id)
+              setIsAddingBrand(true)
+            }}
+            className="btn-icon"
+          >
+            <Edit2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => {
+              if (window.confirm('Are you sure you want to delete this brand?')) {
+                deleteBrandMutation.mutate(row.original.id)
+              }
+            }}
+            className="btn-icon-destructive"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      )
+    }
+  ]
+
   // -- State for Forms --
   const [productForm, setProductForm] = useState({
     name_en: '',
@@ -289,14 +423,15 @@ export const AdminProducts: React.FC = () => {
     desc_en: '',
     desc_th: '',
     desc_jp: '',
-    brand: '',
+    brand_id: '' as string | number,
     price_tentative_jpy: '',
     price_tentative_thb: '',
     amount: '10',
     img: '',
     category_id: 1,
     status: 'active',
-    origin_country: 'Japan',
+    tag: '',
+    origin_country_id: '' as string | number,
     shopIds: [] as number[]
   })
 
@@ -304,6 +439,13 @@ export const AdminProducts: React.FC = () => {
     name_en: '',
     name_th: '',
     name_jp: ''
+  })
+
+  const [brandForm, setBrandForm] = useState({
+    name_en: '',
+    name_th: '',
+    name_jp: '',
+    status: 'active'
   })
 
   // -- Image Upload Handler --
@@ -353,13 +495,32 @@ export const AdminProducts: React.FC = () => {
           <Tags className="w-4 h-4 inline mr-2" />
           Categories
         </button>
+        <button
+          onClick={() => setActiveTab('brands')}
+          className={`tab-btn ${activeTab === 'brands' ? 'is-active' : ''}`}
+        >
+          <Tags className="w-4 h-4 inline mr-2" />
+          Brands
+        </button>
       </div>
 
       {activeTab === 'products' && (
         <div className="space-y-4">
           <div className="flex justify-end">
             <button
-              onClick={() => setIsAddingProduct(!isAddingProduct)}
+              onClick={() => {
+                if (isAddingProduct) {
+                  setIsAddingProduct(false)
+                  setEditingProductId(null)
+                  setProductForm({
+                    name_en: '', name_th: '', name_jp: '', desc_en: '', desc_th: '', desc_jp: '',
+                    brand_id: '', origin_country_id: '',
+                    price_tentative_jpy: '', price_tentative_thb: '', amount: '10', img: '', category_id: 1, status: 'active', tag: '', shopIds: []
+                  })
+                } else {
+                  setIsAddingProduct(true)
+                }
+              }}
               className="btn-primary"
             >
               {isAddingProduct ? <X className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />} {isAddingProduct ? 'Cancel' : 'Add Product'}
@@ -450,38 +611,45 @@ export const AdminProducts: React.FC = () => {
                 </div>
                 <div>
                   <label className="label-admin">Brand</label>
-                  <input
-                    type="text"
-                    value={productForm.brand}
-                    onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })}
-                    className="input-admin"
-                    placeholder="e.g. Sony, Shiseido"
+                  <SearchableSelect
+                    options={brands?.map((b: any) => ({ id: b.id, label: b.name_en })) || []}
+                    value={productForm.brand_id}
+                    onChange={(val) => setProductForm({ ...productForm, brand_id: val })}
+                    onAdd={(search) => addBrandMutation.mutate(search)}
+                    placeholder="Select or Search Brand"
+                    addLabel="Add Brand"
                   />
                 </div>
                 <div>
                   <label className="label-admin">Origin Country</label>
-                  <input
-                    type="text"
-                    value={productForm.origin_country}
-                    onChange={(e) => setProductForm({ ...productForm, origin_country: e.target.value })}
-                    className="input-admin"
+                  <SearchableSelect
+                    options={countries?.map((c: any) => ({ id: c.id, label: c.name_en })) || []}
+                    value={productForm.origin_country_id}
+                    onChange={(val) => setProductForm({ ...productForm, origin_country_id: val })}
+                    onAdd={(search) => addCountryMutation.mutate(search)}
+                    placeholder="Select or Search Country"
+                    addLabel="Add Country"
                   />
                 </div>
                 <div>
                   <label className="label-admin">Category</label>
-                  <select
+                  <SearchableSelect
+                    options={categories?.map((c) => ({ id: c.id, label: c.name_en })) || []}
                     value={productForm.category_id}
-                    onChange={(e) => setProductForm({ ...productForm, category_id: Number(e.target.value) })}
+                    onChange={(val) => setProductForm({ ...productForm, category_id: Number(val) })}
+                    placeholder="Search Category"
+                  />
+                </div>
+                <div>
+                  <label className="label-admin">Product Tag</label>
+                  <select
+                    value={productForm.tag}
+                    onChange={(e) => setProductForm({ ...productForm, tag: e.target.value })}
                     className="input-admin"
                   >
-                    {categories?.map((c) => (
-                      <option
-                        key={c.id}
-                        value={c.id}
-                      >
-                        {c.name_en}
-                      </option>
-                    ))}
+                    <option value="">None</option>
+                    <option value="new_arrival">New Arrival</option>
+                    <option value="trending">Trending</option>
                   </select>
                 </div>
 
@@ -520,29 +688,12 @@ export const AdminProducts: React.FC = () => {
                 <div className="form-section-divider">Locations (Shops)</div>
                 <div className="col-span-3">
                   <label className="label-admin mb-2">Select Shops</label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    {shops?.map((shop: any) => (
-                      <label
-                        key={shop.id}
-                        className="flex items-center space-x-2 text-sm bg-secondary/20 p-2 rounded border border-border cursor-pointer hover:bg-secondary/40 transition-colors"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={productForm.shopIds.includes(shop.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setProductForm((prev) => ({ ...prev, shopIds: [...prev.shopIds, shop.id] }))
-                            } else {
-                              setProductForm((prev) => ({ ...prev, shopIds: prev.shopIds.filter((id) => id !== shop.id) }))
-                            }
-                          }}
-                          className="rounded text-primary focus:ring-primary/50 bg-background border-border w-4 h-4"
-                        />
-                        <span className="truncate">{shop.name_en}</span>
-                      </label>
-                    ))}
-                    {!shops?.length && <div className="text-muted-foreground text-sm">No shops available. Create shops first.</div>}
-                  </div>
+                  <SearchableMultiSelect
+                    options={shops?.map((s: any) => ({ id: s.id, label: s.name_en })) || []}
+                    values={productForm.shopIds}
+                    onChange={(vals) => setProductForm({ ...productForm, shopIds: vals as number[] })}
+                    placeholder="Search and select shops..."
+                  />
                 </div>
 
                 <div className="form-section-divider">Media</div>
@@ -672,6 +823,92 @@ export const AdminProducts: React.FC = () => {
               searchPlaceholder="Search categories..."
             />
           )}
+        </div>
+      )}
+
+      {activeTab === 'brands' && (
+        <div className="space-y-4">
+          <div className="flex justify-end">
+            <button
+              onClick={() => setIsAddingBrand(!isAddingBrand)}
+              className="btn-primary"
+            >
+              {isAddingBrand ? <X className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />} {isAddingBrand ? 'Cancel' : 'Add Brand'}
+            </button>
+          </div>
+
+          {isAddingBrand && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                if (editingBrandId) {
+                  updateBrandMutation.mutate({ id: editingBrandId, payload: brandForm })
+                } else {
+                  createBrandMutation.mutate(brandForm)
+                }
+              }}
+              className="card-panel space-y-4"
+            >
+              <h2 className="text-xl font-bold">{editingBrandId ? 'Edit Brand' : 'New Brand'}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="label-admin">Name (EN) *</label>
+                  <input
+                    required
+                    type="text"
+                    value={brandForm.name_en}
+                    onChange={(e) => setBrandForm({ ...brandForm, name_en: e.target.value })}
+                    className="input-admin"
+                  />
+                </div>
+                <div>
+                  <label className="label-admin">Name (TH)</label>
+                  <input
+                    type="text"
+                    value={brandForm.name_th}
+                    onChange={(e) => setBrandForm({ ...brandForm, name_th: e.target.value })}
+                    className="input-admin"
+                  />
+                </div>
+                <div>
+                  <label className="label-admin">Name (JP)</label>
+                  <input
+                    type="text"
+                    value={brandForm.name_jp}
+                    onChange={(e) => setBrandForm({ ...brandForm, name_jp: e.target.value })}
+                    className="input-admin"
+                  />
+                </div>
+                <div>
+                  <label className="label-admin">Status</label>
+                  <select
+                    value={brandForm.status}
+                    onChange={(e) => setBrandForm({ ...brandForm, status: e.target.value as 'active' | 'inactive' })}
+                    className="input-admin"
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={createBrandMutation.isPending || updateBrandMutation.isPending}
+                  className="btn-primary px-6"
+                >
+                  {(createBrandMutation.isPending || updateBrandMutation.isPending) ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Save Brand
+                </button>
+              </div>
+            </form>
+          )}
+
+          <DataTable
+            columns={brandColumns}
+            data={brands || []}
+            searchKey="name_en"
+            searchPlaceholder="Search brands..."
+          />
         </div>
       )}
     </div>

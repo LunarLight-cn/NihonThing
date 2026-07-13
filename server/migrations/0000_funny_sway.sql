@@ -17,7 +17,16 @@ CREATE TABLE `Areas` (
 	`name_th` text NOT NULL,
 	`name_en` text NOT NULL,
 	`name_jp` text,
-	`map_location` text
+	`map_location` text,
+	`status` text DEFAULT 'active'
+);
+--> statement-breakpoint
+CREATE TABLE `Brands` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`name_th` text NOT NULL,
+	`name_en` text NOT NULL,
+	`name_jp` text,
+	`status` text DEFAULT 'active'
 );
 --> statement-breakpoint
 CREATE TABLE `Categories` (
@@ -53,8 +62,12 @@ CREATE TABLE `Event_Products` (
 --> statement-breakpoint
 CREATE TABLE `Events` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`title` text NOT NULL,
-	`desc` text,
+	`title_en` text NOT NULL,
+	`title_th` text,
+	`title_jp` text,
+	`desc_en` text,
+	`desc_th` text,
+	`desc_jp` text,
 	`start_date` text NOT NULL,
 	`end_date` text,
 	`banner_img` text,
@@ -143,18 +156,28 @@ CREATE TABLE `Product_Locations` (
 CREATE TABLE `Products` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`category_id` integer,
-	`name` text NOT NULL,
-	`desc` text,
+	`name_en` text NOT NULL,
+	`name_th` text,
+	`name_jp` text,
+	`desc_en` text,
+	`desc_th` text,
+	`desc_jp` text,
 	`brand` text,
-	`price_tentative` real,
+	`brand_id` integer,
+	`origin_country_id` integer,
+	`price_tentative_jpy` real,
+	`price_tentative_thb` real,
 	`img` text,
 	`tag` text,
 	`amount` integer,
 	`remain` integer,
 	`status` text,
+	`total_sold` integer DEFAULT 0,
 	`cdate` text DEFAULT CURRENT_TIMESTAMP,
 	`udate` text,
-	FOREIGN KEY (`category_id`) REFERENCES `Categories`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`category_id`) REFERENCES `Categories`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`brand_id`) REFERENCES `Brands`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`origin_country_id`) REFERENCES `Countries`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `Provinces` (
@@ -171,7 +194,8 @@ CREATE TABLE `Purchases` (
 	`order_item_id` integer NOT NULL,
 	`agent_id` integer NOT NULL,
 	`quantity` integer NOT NULL,
-	`actual_cost` real NOT NULL,
+	`actual_cost_jpy` real NOT NULL,
+	`actual_cost_thb` real NOT NULL,
 	`shop_name` text,
 	`receipt_img` text,
 	`cdate` text DEFAULT CURRENT_TIMESTAMP,
@@ -190,7 +214,8 @@ CREATE TABLE `Ships` (
 	`destination_id` integer NOT NULL,
 	`max_cap` text,
 	`current_cap` text,
-	`status` text,
+	`close_date` text,
+	`status` text DEFAULT 'open',
 	`cdate` text DEFAULT CURRENT_TIMESTAMP,
 	`udate` text,
 	FOREIGN KEY (`origin_id`) REFERENCES `Countries`(`id`) ON UPDATE no action ON DELETE no action,
@@ -200,8 +225,11 @@ CREATE TABLE `Ships` (
 CREATE TABLE `Shops` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`area_id` integer NOT NULL,
-	`name` text NOT NULL,
+	`name_th` text NOT NULL,
+	`name_en` text NOT NULL,
+	`name_jp` text,
 	`map_location` text,
+	`status` text DEFAULT 'active',
 	FOREIGN KEY (`area_id`) REFERENCES `Areas`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
@@ -229,7 +257,8 @@ CREATE TABLE `Tickets` (
 	`external_link` text,
 	`replacement` text,
 	`expected_price` real,
-	`proposed_price` real,
+	`proposed_price_jpy` real,
+	`proposed_price_thb` real,
 	`status` text,
 	`cdate` text DEFAULT CURRENT_TIMESTAMP,
 	`udate` text,
@@ -245,7 +274,8 @@ CREATE TABLE `Users` (
 	`password_hash` text NOT NULL,
 	`birth_date` text,
 	`gender` text,
-	`role` text,
+	`role` text DEFAULT 'client',
+	`status` text DEFAULT 'active',
 	`cdate` text DEFAULT CURRENT_TIMESTAMP,
 	`udate` text
 );

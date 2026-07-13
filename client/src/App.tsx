@@ -24,8 +24,7 @@ import { AdminEvents } from './pages/admin/AdminEvents'
 import { AdminSettings } from './pages/admin/AdminSettings'
 import { AdminUsers } from './pages/admin/AdminUsers'
 import { AdminTickets } from './pages/admin/AdminTickets'
-import { AdminAreas } from './pages/admin/AdminAreas'
-import { AdminShops } from './pages/admin/AdminShops'
+import { AdminLocations } from './pages/admin/AdminLocations'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -81,8 +80,7 @@ export default function App() {
               <Route path="tickets" element={<AdminTickets />} />
               <Route path="products" element={<AdminProducts />} />
               <Route path="events" element={<AdminEvents />} />
-              <Route path="areas" element={<AdminAreas />} />
-              <Route path="shops" element={<AdminShops />} />
+              <Route path="locations" element={<AdminLocations />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>

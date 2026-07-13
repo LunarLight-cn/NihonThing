@@ -168,7 +168,19 @@
     "catalog": "Catalog",
     "users": "Users",
     "settings": "Settings",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "manageBrands": "Brands",
+    "addBrand": "Add Brand",
+    "editBrand": "Edit Brand",
+    "nameEn": "Name (EN)",
+    "nameTh": "Name (TH)",
+    "nameJp": "Name (JP)",
+    "status": "Status",
+    "actions": "Actions",
+    "confirmDelete": "Are you sure you want to delete this?",
+    "save": "Save",
+    "cancel": "Cancel",
+    "searchBrands": "Search brands..."
   },
   "request": {
     "title": "Custom Request",
