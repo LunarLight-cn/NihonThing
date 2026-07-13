@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '../../services/api'
 import { useTranslation } from 'react-i18next'
 import { useLocalizedName, useLocalizedDesc } from '../../utils/localization'
+import { getImageUrl } from '../../utils/image'
 
 interface LocalizedRef {
   id: number
@@ -94,7 +95,7 @@ export const ProductDetails: React.FC = () => {
                 </div>
               )}
               <img
-                src={(product.img && product.img.length > 0) ? product.img[activeImageIndex] : 'https://images.unsplash.com/photo-1582793988951-9aed5509eb97?q=80&w=2942&auto=format&fit=crop'}
+                src={(product.img && product.img.length > 0) ? getImageUrl(product.img[activeImageIndex]) : 'https://images.unsplash.com/photo-1582793988951-9aed5509eb97?q=80&w=2942&auto=format&fit=crop'}
                 alt={getName(product)}
                 className="w-full h-full object-cover aspect-square hover:scale-105 transition-transform duration-500"
               />
@@ -108,7 +109,7 @@ export const ProductDetails: React.FC = () => {
                     onClick={() => setActiveImageIndex(idx)}
                     className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-colors ${activeImageIndex === idx ? 'border-primary' : 'border-transparent hover:border-primary/50'}`}
                   >
-                    <img src={url} alt={`Thumbnail ${idx}`} className="w-full h-full object-cover" />
+                    <img src={getImageUrl(url)} alt={`Thumbnail ${idx}`} className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
@@ -150,7 +151,7 @@ export const ProductDetails: React.FC = () => {
                     name: getName(product),
                     brand: (product.brand && getName(product.brand)) || t('product.noBrand'),
                     price_thb: product.price_tentative_thb || product.price_thb || 0,
-                    image: (product.img && product.img.length > 0) ? product.img[0] : ''
+                    image: (product.img && product.img.length > 0) ? getImageUrl(product.img[0]) : ''
                   })
                 }
                 className="btn-primary-lg"

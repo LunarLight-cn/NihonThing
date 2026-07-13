@@ -6,6 +6,7 @@ import { api } from '../../services/api'
 import { useCart } from '../../contexts/CartContext'
 import { useTranslation } from 'react-i18next'
 import { useLocalizedName } from '../../utils/localization'
+import { getImageUrl } from '../../utils/image'
 
 interface LocalizedRef {
   id: number
@@ -24,7 +25,7 @@ interface Product {
   price_tentative_jpy: number | null
   price_thb: number | null
   price_tentative_thb: number | null
-  img: string | null
+  img: string[] | null
   tag: string | null
   category_id: number | null
   status: string
@@ -253,7 +254,7 @@ export const Catalog: React.FC = () => {
                   <div key={item.id} className="product-card group">
                     <Link to={`/product/${item.id}`} className="product-card-img-container">
                       <img
-                        src={(item.img && item.img.length > 0) ? item.img[0] : 'https://images.unsplash.com/photo-1582793988951-9aed5509eb97?q=80&w=2942&auto=format&fit=crop'}
+                        src={(item.img && item.img.length > 0) ? getImageUrl(item.img[0]) : 'https://images.unsplash.com/photo-1582793988951-9aed5509eb97?q=80&w=2942&auto=format&fit=crop'}
                         alt={item.name}
                         className="product-card-img"
                       />
@@ -268,7 +269,7 @@ export const Catalog: React.FC = () => {
                           ฿{item.price_tentative_thb || item.price_thb ? (item.price_tentative_thb || item.price_thb || 0).toLocaleString() : 'N/A'}
                         </p>
                         <button
-                          onClick={() => addItem({ id: item.id, name: getName(item), brand: (item.brand && getName(item.brand)) || '', price_thb: item.price_tentative_thb || item.price_thb || 0, image: (item.img && item.img.length > 0) ? item.img[0] : '' })}
+                          onClick={() => addItem({ id: item.id, name: getName(item), brand: (item.brand && getName(item.brand)) || '', price_thb: item.price_tentative_thb || item.price_thb || 0, image: (item.img && item.img.length > 0) ? getImageUrl(item.img[0]) : '' })}
                           className="btn-add-to-cart"
                         >
                           <ShoppingBag className="w-3.5 h-3.5" />
