@@ -12,6 +12,7 @@ import { Catalog } from './pages/customer/Catalog'
 import { ProductDetails } from './pages/customer/ProductDetails'
 import { CustomRequest } from './pages/customer/CustomRequest'
 import { Checkout } from './pages/customer/Checkout'
+import { Orders } from './pages/customer/Orders'
 import { Settings } from './pages/customer/Settings'
 import { Support } from './pages/customer/Support'
 import { Terms } from './pages/customer/Terms'
@@ -70,7 +71,7 @@ export default function App() {
               } />
               <Route path="orders" element={
                 <ProtectedRoute>
-                  <div className="p-8"><h1 className="text-3xl font-bold text-primary">My Orders</h1></div>
+                  <Orders />
                 </ProtectedRoute>
               } />
             </Route>
