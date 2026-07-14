@@ -67,7 +67,7 @@ export const AdminUsers: React.FC = () => {
       cell: ({ row }) => (
         <span
           className={`badge ${
-            row.original.role === 'admin' ? 'bg-purple-100 text-purple-700' : row.original.role === 'customer' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'
+            row.original.role === 'admin' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400' : row.original.role === 'customer' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
           }`}
         >
           {row.original.role}
@@ -140,7 +140,7 @@ export const AdminUsers: React.FC = () => {
         </h1>
       </div>
 
-      <div className="bg-orange-50 border border-orange-200 p-4 rounded-xl flex items-start space-x-3 text-orange-800">
+      <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl flex items-start space-x-3 text-amber-700 dark:text-amber-400">
         <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5" />
         <div className="text-sm">
           <strong>{t('admin.users.users_caution_title')}</strong> {t('admin.users.users_caution_desc')}
@@ -152,9 +152,7 @@ export const AdminUsers: React.FC = () => {
           <Loader2 className="w-8 h-8 animate-spin" />
         </div>
       ) : (
-        <div className="card-panel-flush">
-          <DataTable columns={columns} data={users || []} searchKey="username" searchPlaceholder={t('admin.users.search_users')} />
-        </div>
+        <DataTable columns={columns} data={users || []} searchKey="username" searchPlaceholder={t('admin.users.search_users')} />
       )}
     </div>
   )
