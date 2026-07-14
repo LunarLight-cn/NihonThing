@@ -113,14 +113,14 @@ export const AdminTickets: React.FC = () => {
         const s = row.original.status
         const color =
           s === 'pending'
-            ? 'bg-yellow-100 text-yellow-700'
+            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
             : s === 'negotiating'
-              ? 'bg-blue-100 text-blue-700'
-              : s === 'accepted'
-                ? 'bg-green-100 text-green-700'
+              ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+              : s === 'accepted' || s === 'completed'
+                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                 : s === 'rejected' || s === 'cancelled'
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-gray-100 text-gray-700'
+                  ? 'bg-red-500/10 text-red-600 dark:text-red-400'
+                  : 'bg-muted text-muted-foreground'
         return <span className={`badge ${color}`}>{s}</span>
       }
     },
@@ -146,7 +146,7 @@ export const AdminTickets: React.FC = () => {
   ]
 
   return (
-    <div className="admin-page max-w-7xl">
+    <div className="admin-page">
       <div className="flex justify-between items-center">
         <h1 className="admin-page-title">
           <Ticket className="w-8 h-8 mr-3" />
@@ -244,9 +244,7 @@ export const AdminTickets: React.FC = () => {
           <Loader2 className="w-8 h-8 animate-spin" />
         </div>
       ) : (
-        <div className="card-panel-flush">
-          <DataTable columns={columns} data={tickets || []} searchKey="item_name" searchPlaceholder={t('admin.ticket.search_item_name')} />
-        </div>
+        <DataTable columns={columns} data={tickets || []} searchKey="item_name" searchPlaceholder={t('admin.ticket.search_item_name')} />
       )}
     </div>
   )
