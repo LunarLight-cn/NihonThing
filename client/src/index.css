@@ -124,6 +124,10 @@
     @apply p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors;
   }
 
+  .btn-secondary {
+    @apply px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors font-medium flex items-center justify-center;
+  }
+
   .btn-add-to-cart {
     @apply px-3 py-1.5 text-sm bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground font-medium rounded-md transition-colors shrink-0;
   }
@@ -217,6 +221,16 @@
   .badge-pill {
     @apply inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium;
   }
+
+  /* Semantic badge colors — theme-aware, pair with .badge */
+  .badge-success { @apply bg-emerald-500/10 text-emerald-600 dark:text-emerald-400; }
+  .badge-warning { @apply bg-amber-500/10 text-amber-600 dark:text-amber-400; }
+  .badge-info    { @apply bg-primary/10 text-primary; }
+  .badge-danger  { @apply bg-red-500/10 text-red-600 dark:text-red-400; }
+  .badge-muted   { @apply bg-muted text-muted-foreground; }
+  .badge-purple  { @apply bg-purple-500/10 text-purple-600 dark:text-purple-400; }
+  .badge-blue    { @apply bg-blue-500/10 text-blue-600 dark:text-blue-400; }
+  .badge-orange  { @apply bg-orange-500/10 text-orange-600 dark:text-orange-400; }
 
   /* ── Feedback States ────────────────────────────────────── */
 
@@ -312,6 +326,24 @@
 
   .modal-footer {
     @apply p-6 border-t border-border flex justify-end space-x-3 shrink-0 bg-secondary/20;
+  }
+
+  /* Centered scroll dialog (self-scrolling body, no fixed header/footer) */
+  .modal-scrim {
+    @apply fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm;
+  }
+
+  .modal-card {
+    @apply bg-card border border-border rounded-xl w-full max-h-[90vh] overflow-y-auto p-6 relative;
+  }
+
+  .modal-close {
+    @apply absolute top-4 right-4 text-muted-foreground hover:text-foreground;
+  }
+
+  /* Small muted section heading used inside detail panels */
+  .detail-heading {
+    @apply font-semibold text-sm text-muted-foreground mb-2 flex items-center gap-1.5;
   }
 
   /* ── Table ──────────────────────────────────────────────── */

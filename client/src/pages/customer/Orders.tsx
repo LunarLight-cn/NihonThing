@@ -68,10 +68,10 @@ interface Ticket {
 }
 
 const badgeClass = (kind: 'ok' | 'warn' | 'muted' | 'info') => ({
-  ok: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-  warn: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  muted: 'bg-muted text-muted-foreground',
-  info: 'bg-primary/10 text-primary'
+  ok: 'badge-success',
+  warn: 'badge-warning',
+  muted: 'badge-muted',
+  info: 'badge-info'
 }[kind])
 
 const payBadge = (status: string) =>
@@ -118,9 +118,9 @@ const PaymentModal: React.FC<{
   }
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-card border border-border rounded-xl w-full max-w-md p-6 relative" onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+    <div className="modal-scrim" onClick={onClose}>
+      <div className="modal-card max-w-md" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="modal-close">
           <X className="w-5 h-5" />
         </button>
 
@@ -166,7 +166,7 @@ const PaymentModal: React.FC<{
                     type="file"
                     accept="image/*"
                     onChange={(e) => setFile(e.target.files?.[0] || null)}
-                    className="block w-full text-sm text-muted-foreground file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/80"
+                    className="file-upload"
                   />
                   <button onClick={submit} disabled={!file || submitting} className="btn-primary w-full flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed">
                     {submitting
@@ -267,9 +267,9 @@ const OrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = ({ ord
   const shipFee = (order.shipping_fee_jp_th || 0) + (order.shipping_fee_th_th || 0)
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-card border border-border rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 relative" onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+    <div className="modal-scrim" onClick={onClose}>
+      <div className="modal-card max-w-4xl" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="modal-close">
           <X className="w-5 h-5" />
         </button>
 
@@ -284,7 +284,7 @@ const OrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = ({ ord
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 mt-6">
         {/* Left column: timeline */}
         <section>
-          <h3 className="font-semibold text-sm text-muted-foreground mb-3">{t('myOrders.timeline.title')}</h3>
+          <h3 className="detail-heading">{t('myOrders.timeline.title')}</h3>
           <StatusTimeline order={order} />
         </section>
 
@@ -292,7 +292,7 @@ const OrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = ({ ord
         <div>
         {/* Items */}
         <section>
-          <h3 className="font-semibold text-sm text-muted-foreground mb-2">{t('myOrders.detail.items')}</h3>
+          <h3 className="detail-heading">{t('myOrders.detail.items')}</h3>
           <div className="space-y-2">
             {order.items.map((it, idx) => {
               const label = it.product ? localizedName(it.product) : (it.ticket?.item_name || '—')
@@ -310,7 +310,7 @@ const OrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = ({ ord
 
         {/* Shipping & delivery */}
         <section className="mt-5">
-          <h3 className="font-semibold text-sm text-muted-foreground mb-2 flex items-center gap-1.5"><Truck className="w-4 h-4" />{t('myOrders.detail.shipment')}</h3>
+          <h3 className="detail-heading"><Truck className="w-4 h-4" />{t('myOrders.detail.shipment')}</h3>
           <div className="rounded-lg border border-border divide-y divide-border text-sm">
             {/* International leg */}
             {order.ship && (
@@ -377,7 +377,7 @@ const OrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = ({ ord
 
         {/* Payments */}
         <section className="mt-5">
-          <h3 className="font-semibold text-sm text-muted-foreground mb-2 flex items-center gap-1.5"><Receipt className="w-4 h-4" />{t('myOrders.detail.payments')}</h3>
+          <h3 className="detail-heading"><Receipt className="w-4 h-4" />{t('myOrders.detail.payments')}</h3>
           {(order.payments || []).length === 0 ? (
             <p className="text-sm text-muted-foreground">{t('myOrders.detail.noPayments')}</p>
           ) : (

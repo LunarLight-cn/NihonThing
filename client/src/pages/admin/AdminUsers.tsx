@@ -67,7 +67,7 @@ export const AdminUsers: React.FC = () => {
       cell: ({ row }) => (
         <span
           className={`badge ${
-            row.original.role === 'admin' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400' : row.original.role === 'customer' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
+            row.original.role === 'admin' ? 'badge-purple' : row.original.role === 'customer' ? 'badge-blue' : 'badge-orange'
           }`}
         >
           {row.original.role}
