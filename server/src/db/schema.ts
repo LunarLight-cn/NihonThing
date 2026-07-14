@@ -116,6 +116,7 @@ export const Products = sqliteTable("Products", {
 
 export const Orders = sqliteTable("Orders", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  order_code: text("order_code").unique(),
   user_id: integer("user_id").notNull().references(() => Users.id),
   trip_id: integer("trip_id").notNull().references(() => Ships.id),
   address_id: integer("address_id").notNull().references(() => Addresses.id),
@@ -287,7 +288,9 @@ export const subdistrictsRelations = relations(Subdistricts, ({ one, many }) => 
   addresses: many(Addresses),
 }));
 
-export const shipsRelations = relations(Ships, ({ many }) => ({
+export const shipsRelations = relations(Ships, ({ one, many }) => ({
+  origin: one(Countries, { fields: [Ships.origin_id], references: [Countries.id], relationName: "ship_origin" }),
+  destination: one(Countries, { fields: [Ships.destination_id], references: [Countries.id], relationName: "ship_destination" }),
   orders: many(Orders),
   tickets: many(Tickets),
   events: many(Events),

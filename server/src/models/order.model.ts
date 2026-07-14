@@ -8,6 +8,20 @@ export type OrderItemInput = {
   quantity: number
 }
 
+// Shopee-style human-facing order code: YYMMDD + 8 random base32 chars,
+// e.g. "260516JRSYRB13". Stored in Orders.order_code (unique), shown in the UI
+// instead of the raw autoincrement id.
+const generateOrderCode = () => {
+  const now = new Date()
+  const yy = String(now.getFullYear()).slice(-2)
+  const mm = String(now.getMonth() + 1).padStart(2, '0')
+  const dd = String(now.getDate()).padStart(2, '0')
+  const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // no ambiguous 0/O/1/I
+  const rnd = crypto.getRandomValues(new Uint8Array(8))
+  const suffix = Array.from(rnd, (b) => charset[b % charset.length]).join('')
+  return `${yy}${mm}${dd}${suffix}`
+}
+
 export const createOrder = async (
   d1: D1Database,
   userId: number,
@@ -70,76 +84,80 @@ export const createOrder = async (
     throw new Error(`Trip capacity exceeded. Only ${maxCap - currentCap} kg remaining.`)
   }
 
-  return await db.transaction(async (tx) => {
-    // Check per-user limit
-    const userPastOrders = await tx.query.Orders.findMany({
-      where: and(eq(schema.Orders.user_id, userId), eq(schema.Orders.trip_id, tripId))
-    })
-    
-    let userPastAmount = 0
-    if (userPastOrders.length > 0) {
-      const pastOrderIds = userPastOrders.map(o => o.id)
-      const pastItems = await tx.query.Order_Items.findMany({
-        where: inArray(schema.Order_Items.order_id, pastOrderIds)
-      })
-      userPastAmount = pastItems.reduce((sum, item) => sum + (item.quantity || 0), 0)
-    }
+  // NOTE: D1 does not support interactive transactions (db.transaction issues
+  // BEGIN, which D1 rejects: "Failed query: begin"). We run statements
+  // sequentially; the guarded capacity UPDATE below is itself atomic and
+  // provides the concurrency safety that matters for the FCFS queue.
 
-    if (userPastAmount + orderAmount > PER_USER_LIMIT) {
-      throw new Error(`Per-user limit exceeded. You can only order ${PER_USER_LIMIT} items per trip.`)
-    }
-
-    // Atomic Capacity Update & Auto-Close
-    const capacityUpdate = await tx.update(schema.Ships)
-      .set({
-        current_cap: sql`COALESCE(current_cap, 0) + ${totalWeight}`,
-        status: sql`CASE WHEN COALESCE(current_cap, 0) + ${totalWeight} >= COALESCE(max_cap, 1000) THEN 'closed' ELSE status END`
-      })
-      .where(
-        and(
-          eq(schema.Ships.id, tripId),
-          sql`COALESCE(current_cap, 0) + ${totalWeight} <= COALESCE(max_cap, 1000)`
-        )
-      ).returning()
-
-    if (capacityUpdate.length === 0) {
-      throw new Error(`Trip capacity exceeded. Cannot fulfill ${orderAmount} items.`)
-    }
-
-    // Insert Order
-    const [newOrder] = await tx.insert(schema.Orders).values({
-      user_id: userId,
-      trip_id: tripId,
-      address_id: addressId,
-      item_price_total: itemPriceTotal,
-      payment_status: 'pending_deposit',
-      status: 'pending'
-    }).returning()
-
-    // Insert Order Items
-    const orderItemsData = items.map(item => ({
-      order_id: newOrder.id,
-      product_id: item.type === 'product' ? item.id : null,
-      ticket_id: item.type === 'ticket' ? item.id : null,
-      quantity: item.quantity
-    }))
-
-    await tx.insert(schema.Order_Items).values(orderItemsData)
-
-    // Increment total_sold and decrement remain for products
-    for (const item of items) {
-      if (item.type === 'product') {
-        await tx.update(schema.Products)
-          .set({ 
-            total_sold: sql`COALESCE(total_sold, 0) + ${item.quantity}`,
-            remain: sql`COALESCE(remain, 0) - ${item.quantity}`
-          })
-          .where(eq(schema.Products.id, item.id))
-      }
-    }
-
-    return newOrder
+  // Check per-user limit
+  const userPastOrders = await db.query.Orders.findMany({
+    where: and(eq(schema.Orders.user_id, userId), eq(schema.Orders.trip_id, tripId))
   })
+
+  let userPastAmount = 0
+  if (userPastOrders.length > 0) {
+    const pastOrderIds = userPastOrders.map(o => o.id)
+    const pastItems = await db.query.Order_Items.findMany({
+      where: inArray(schema.Order_Items.order_id, pastOrderIds)
+    })
+    userPastAmount = pastItems.reduce((sum, item) => sum + (item.quantity || 0), 0)
+  }
+
+  if (userPastAmount + orderAmount > PER_USER_LIMIT) {
+    throw new Error(`Per-user limit exceeded. You can only order ${PER_USER_LIMIT} items per trip.`)
+  }
+
+  // Atomic Capacity Update & Auto-Close
+  const capacityUpdate = await db.update(schema.Ships)
+    .set({
+      current_cap: sql`COALESCE(current_cap, 0) + ${totalWeight}`,
+      status: sql`CASE WHEN COALESCE(current_cap, 0) + ${totalWeight} >= COALESCE(max_cap, 1000) THEN 'closed' ELSE status END`
+    })
+    .where(
+      and(
+        eq(schema.Ships.id, tripId),
+        sql`COALESCE(current_cap, 0) + ${totalWeight} <= COALESCE(max_cap, 1000)`
+      )
+    ).returning()
+
+  if (capacityUpdate.length === 0) {
+    throw new Error(`Trip capacity exceeded. Cannot fulfill ${orderAmount} items.`)
+  }
+
+  // Insert Order
+  const [newOrder] = await db.insert(schema.Orders).values({
+    order_code: generateOrderCode(),
+    user_id: userId,
+    trip_id: tripId,
+    address_id: addressId,
+    item_price_total: itemPriceTotal,
+    payment_status: 'pending_deposit',
+    status: 'pending'
+  }).returning()
+
+  // Insert Order Items
+  const orderItemsData = items.map(item => ({
+    order_id: newOrder.id,
+    product_id: item.type === 'product' ? item.id : null,
+    ticket_id: item.type === 'ticket' ? item.id : null,
+    quantity: item.quantity
+  }))
+
+  await db.insert(schema.Order_Items).values(orderItemsData)
+
+  // Increment total_sold and decrement remain for products
+  for (const item of items) {
+    if (item.type === 'product') {
+      await db.update(schema.Products)
+        .set({
+          total_sold: sql`COALESCE(total_sold, 0) + ${item.quantity}`,
+          remain: sql`COALESCE(remain, 0) - ${item.quantity}`
+        })
+        .where(eq(schema.Products.id, item.id))
+    }
+  }
+
+  return newOrder
 }
 
 export const getMyOrders = async (d1: D1Database, userId: number) => {
@@ -148,8 +166,9 @@ export const getMyOrders = async (d1: D1Database, userId: number) => {
     where: eq(schema.Orders.user_id, userId),
     orderBy: (orders, { desc }) => [desc(orders.cdate)],
     with: {
-      ship: true,
+      ship: { with: { destination: { columns: { name_en: true, name_th: true, name_jp: true } } } },
       payments: true,
+      address: true,
       items: {
         with: {
           product: { columns: { id: true, name_en: true, name_th: true, name_jp: true, img: true } },
