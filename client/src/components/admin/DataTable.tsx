@@ -1,20 +1,28 @@
 import { useState } from 'react'
 import { useReactTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, flexRender } from '@tanstack/react-table'
-import type { ColumnDef, SortingState } from '@tanstack/react-table'
+import type { ColumnDef, SortingState, ColumnFiltersState } from '@tanstack/react-table'
 import { Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+
+export interface ColumnFilter {
+  columnId: string
+  label: string
+  options: { value: string; label: string }[]
+}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   searchKey?: string
   searchPlaceholder?: string
+  filters?: ColumnFilter[]
 }
 
-export function DataTable<TData, TValue>({ columns, data, searchKey, searchPlaceholder }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, searchKey, searchPlaceholder, filters }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation()
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
   const table = useReactTable({
     data,
@@ -24,26 +32,46 @@ export function DataTable<TData, TValue>({ columns, data, searchKey, searchPlace
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    onColumnFiltersChange: setColumnFilters,
     state: {
       sorting,
-      globalFilter
+      globalFilter,
+      columnFilters
     },
     onGlobalFilterChange: setGlobalFilter
   })
 
   return (
     <div className="space-y-4">
-      {searchKey && (
-        <div className="flex items-center space-x-2">
-          <div className="relative max-w-sm w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              placeholder={searchPlaceholder || t('admin.components.search')}
-              value={globalFilter ?? ''}
-              onChange={(e) => setGlobalFilter(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
+      {(searchKey || (filters && filters.length > 0)) && (
+        <div className="flex flex-wrap items-center gap-2">
+          {searchKey && (
+            <div className="relative max-w-sm w-full sm:w-auto sm:flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                placeholder={searchPlaceholder || t('admin.components.search')}
+                value={globalFilter ?? ''}
+                onChange={(e) => setGlobalFilter(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+          )}
+          {(filters || []).map((f) => {
+            const current = (table.getColumn(f.columnId)?.getFilterValue() as string) ?? ''
+            return (
+              <select
+                key={f.columnId}
+                value={current}
+                onChange={(e) => table.getColumn(f.columnId)?.setFilterValue(e.target.value || undefined)}
+                className="py-2 px-3 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="">{f.label}</option>
+                {f.options.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            )
+          })}
         </div>
       )}
 
