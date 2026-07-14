@@ -11,6 +11,7 @@ import { Home } from './pages/customer/Home'
 import { Catalog } from './pages/customer/Catalog'
 import { ProductDetails } from './pages/customer/ProductDetails'
 import { CustomRequest } from './pages/customer/CustomRequest'
+import { Checkout } from './pages/customer/Checkout'
 import { Settings } from './pages/customer/Settings'
 import { Support } from './pages/customer/Support'
 import { Terms } from './pages/customer/Terms'
@@ -60,6 +61,11 @@ export default function App() {
               <Route path="settings" element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              } />
+              <Route path="checkout" element={
+                <ProtectedRoute>
+                  <Checkout />
                 </ProtectedRoute>
               } />
               <Route path="orders" element={
