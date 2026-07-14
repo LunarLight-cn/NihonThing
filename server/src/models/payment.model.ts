@@ -27,8 +27,12 @@ export const getOrderAmountForPayment = async (d1: D1Database, orderId: number, 
 
 export const generatePromptPayQR = async (promptpayId: string, amount: number) => {
   const payload = generatePayload(promptpayId, { amount })
-  const qrImage = await qrcode.toDataURL(payload)
-  return qrImage
+  // Use the SVG renderer instead of toDataURL: the latter resolves to qrcode's
+  // browser build in the Workers runtime and requires a <canvas> element
+  // ("You need to specify a canvas element"). SVG is canvas-free and works in
+  // both Node and Workers. Return it as an inline data URL usable in <img src>.
+  const svg = await qrcode.toString(payload, { type: 'svg', margin: 1 })
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
 
 export const submitPaymentSlip = async (d1: D1Database, data: any) => {
