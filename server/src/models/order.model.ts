@@ -145,7 +145,18 @@ export const createOrder = async (
 export const getMyOrders = async (d1: D1Database, userId: number) => {
   const db = drizzle(d1, { schema })
   return await db.query.Orders.findMany({
-    where: eq(schema.Orders.user_id, userId)
+    where: eq(schema.Orders.user_id, userId),
+    orderBy: (orders, { desc }) => [desc(orders.cdate)],
+    with: {
+      ship: true,
+      payments: true,
+      items: {
+        with: {
+          product: { columns: { id: true, name_en: true, name_th: true, name_jp: true, img: true } },
+          ticket: { columns: { id: true, item_name: true, img: true } }
+        }
+      }
+    }
   })
 }
 

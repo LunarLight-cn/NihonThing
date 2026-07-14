@@ -170,6 +170,73 @@
     "viewOrders": "View My Orders",
     "continueShopping": "Continue Shopping"
   },
+  "myOrders": {
+    "title": "My Orders",
+    "subtitle": "Track your orders and custom requests.",
+    "tabOrders": "Orders",
+    "tabRequests": "Custom Requests",
+    "loading": "Loading...",
+    "empty": "No orders yet",
+    "emptyDesc": "Your orders will appear here once you check out.",
+    "emptyRequests": "No custom requests yet",
+    "emptyRequestsDesc": "Requests you submit will appear here.",
+    "browse": "Browse Catalog",
+    "makeRequest": "Make a Request",
+    "orderNum": "Order #{{id}}",
+    "placedOn": "Placed {{date}}",
+    "shipVia": "Ships via {{type}} · {{date}}",
+    "flight": "Flight",
+    "sea": "Sea Freight",
+    "itemsCount": "{{count}} item(s)",
+    "itemsTotal": "Items Subtotal",
+    "shippingFee": "Shipping Fee",
+    "grandTotal": "Grand Total",
+    "pendingCalc": "Pending",
+    "trackNo": "Tracking: {{no}}",
+    "status": {
+      "pending": "Pending",
+      "purchasing": "Purchasing",
+      "arrived_th": "Arrived in Thailand",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    },
+    "payment": {
+      "pending_deposit": "Pending Deposit",
+      "deposit_paid": "Deposit Paid",
+      "pending_remaining": "Pending Balance",
+      "fully_paid": "Fully Paid"
+    },
+    "payDeposit": "Pay Deposit",
+    "payRemaining": "Pay Balance",
+    "request": {
+      "reqNum": "Request #{{id}}",
+      "budget": "Your Budget",
+      "ourPrice": "Our Price",
+      "notProposed": "Awaiting quote",
+      "status": {
+        "pending": "Pending Review",
+        "negotiating": "Quote Ready",
+        "accepted": "Accepted",
+        "purchasing": "Purchasing",
+        "completed": "Completed",
+        "rejected": "Rejected",
+        "cancelled": "Cancelled"
+      }
+    },
+    "pay": {
+      "title": "Pay for Order #{{id}}",
+      "amountDue": "Amount due",
+      "scan": "Scan this PromptPay QR to pay",
+      "qrError": "Could not load payment QR",
+      "uploadSlip": "Upload Payment Slip",
+      "submit": "Submit Slip",
+      "submitting": "Submitting...",
+      "slipError": "Slip verification failed. Check the image and try again.",
+      "success": "Payment submitted!",
+      "close": "Close"
+    }
+  },
   "auth": {
     "back": "Back",
     "login": {
