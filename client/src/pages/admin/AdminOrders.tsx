@@ -60,9 +60,9 @@ const ShippingEditModal: React.FC<{ order: Order; onClose: () => void }> = ({ or
   })
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-card border border-border rounded-xl w-full max-w-md p-6 relative" onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
+    <div className="modal-scrim" onClick={onClose}>
+      <div className="modal-card max-w-md" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="modal-close"><X className="w-5 h-5" /></button>
         <h3 className="font-bold text-lg flex items-center gap-2 mb-1"><Truck className="w-5 h-5 text-primary" />{t('admin.order.manage_shipping')}</h3>
         <p className="text-sm text-muted-foreground font-mono mb-4">{order.order_code || `NT-${order.id}`}</p>
 
@@ -102,7 +102,7 @@ const ShippingEditModal: React.FC<{ order: Order; onClose: () => void }> = ({ or
         </div>
 
         <div className="flex justify-end gap-2 mt-6">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 text-sm font-medium">{t('admin.order.cancel')}</button>
+          <button onClick={onClose} className="btn-secondary text-sm">{t('admin.order.cancel')}</button>
           <button onClick={() => mutation.mutate()} disabled={mutation.isPending} className="btn-primary px-6 disabled:opacity-50">
             {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t('admin.order.save')}
           </button>

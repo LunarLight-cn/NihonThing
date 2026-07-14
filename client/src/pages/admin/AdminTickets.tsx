@@ -113,14 +113,14 @@ export const AdminTickets: React.FC = () => {
         const s = row.original.status
         const color =
           s === 'pending'
-            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+            ? 'badge-warning'
             : s === 'negotiating'
-              ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+              ? 'badge-blue'
               : s === 'accepted' || s === 'completed'
-                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                ? 'badge-success'
                 : s === 'rejected' || s === 'cancelled'
-                  ? 'bg-red-500/10 text-red-600 dark:text-red-400'
-                  : 'bg-muted text-muted-foreground'
+                  ? 'badge-danger'
+                  : 'badge-muted'
         return <span className={`badge ${color}`}>{s}</span>
       }
     },

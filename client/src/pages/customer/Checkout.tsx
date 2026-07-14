@@ -281,7 +281,7 @@ export const Checkout: React.FC = () => {
                   type="file"
                   accept="image/*"
                   onChange={(e) => setSlipFile(e.target.files?.[0] || null)}
-                  className="block w-full text-sm text-muted-foreground file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/80"
+                  className="file-upload"
                 />
                 <button
                   onClick={handleSubmitSlip}
@@ -309,7 +309,7 @@ export const Checkout: React.FC = () => {
           <p className="text-muted-foreground">{t('checkout.doneDesc')}</p>
           <div className="flex gap-3 justify-center pt-2">
             <Link to="/orders" className="btn-primary px-6 py-2">{t('checkout.viewOrders')}</Link>
-            <Link to="/catalog" className="px-6 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors font-medium">{t('checkout.continueShopping')}</Link>
+            <Link to="/catalog" className="btn-secondary px-6">{t('checkout.continueShopping')}</Link>
           </div>
         </div>
       )}
