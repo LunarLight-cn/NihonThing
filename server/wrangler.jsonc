@@ -15,7 +15,29 @@
 			"binding": "nihonthing_bucket",
 			"bucket_name": "nihonthing-bucket"
 		}
-	]
+	],
+	// Staging environment: separate Worker + separate D1 (own data, safe for
+	// testing migrations), sharing the prod R2 bucket (image uploads are keyed
+	// by random UUID, so no collision). Deploy with: wrangler deploy --env staging
+	// Secrets are set per-env via: wrangler secret put <NAME> --env staging
+	"env": {
+		"staging": {
+			"name": "nihonthing-api-staging",
+			"d1_databases": [
+				{
+					"binding": "nihonthing_db",
+					"database_name": "nihonthing-db-staging",
+					"database_id": "f16beada-a39d-456c-833c-eb6e1750e41f"
+				}
+			],
+			"r2_buckets": [
+				{
+					"binding": "nihonthing_bucket",
+					"bucket_name": "nihonthing-bucket"
+				}
+			]
+		}
+	}
 	// "compatibility_flags": [
 	//   "nodejs_compat"
 	// ],
