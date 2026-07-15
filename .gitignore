@@ -45,3 +45,5 @@ ehthumbs.db
 Thumbs.db
 server/users-seed.sql
 server/base-data-seed.sql
+server/location-seed.sql
+server/staging-location-seed.sql
