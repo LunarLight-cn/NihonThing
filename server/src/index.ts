@@ -1,6 +1,6 @@
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { swaggerUI } from '@hono/swagger-ui'
-import { cors } from 'hono/cors'
+import { corsMiddleware } from './middlewares/cors'
 import userRoutes from './routes/user.route'
 import authRoutes from './routes/auth.route'
 import productRoutes from './routes/product.route'
@@ -22,14 +22,7 @@ import brandRoutes from './routes/brand.route'
 
 const app = new OpenAPIHono()
 
-app.use('*', (c, next) => {
-  const corsMiddleware = cors({
-    // @ts-ignore - Env might not be fully typed here
-    origin: c.env?.FRONTEND_URL || 'http://localhost:5173',
-    credentials: true
-  })
-  return corsMiddleware(c, next)
-})
+app.use('*', corsMiddleware)
 
 app.onError((err, c) => {
   console.error('[Global Error]', err)
