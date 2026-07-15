@@ -28,6 +28,7 @@ interface Product {
   price_tentative_thb: number | null
   price_thb: number | null
   img: string[] | null
+  options: { name: string; values: string[] }[] | null
   tag: string | null
   category_id: number | null
   status: string
@@ -41,6 +42,7 @@ export const ProductDetails: React.FC = () => {
   const getName = useLocalizedName()
   const getDesc = useLocalizedDesc()
   const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
 
   const {
     data: product,
@@ -133,6 +135,32 @@ export const ProductDetails: React.FC = () => {
 
               <p className="text-foreground leading-relaxed mb-8">{getDesc(product) || t('product.noDesc')}</p>
 
+              {/* Options (size, colour, ...) */}
+              {product.options && product.options.length > 0 && (
+                <div className="space-y-4 mb-8">
+                  {product.options.map((opt) => (
+                    <div key={opt.name}>
+                      <p className="text-sm font-semibold mb-2">{opt.name}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {opt.values.map((val) => {
+                          const active = selectedOptions[opt.name] === val
+                          return (
+                            <button
+                              key={val}
+                              type="button"
+                              onClick={() => setSelectedOptions((prev) => ({ ...prev, [opt.name]: val }))}
+                              className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${active ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:border-primary/50'}`}
+                            >
+                              {val}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div className="space-y-4 mb-8">
                 <div className="flex items-center text-sm text-muted-foreground">
                   <ShieldCheck className="w-5 h-5 text-primary mr-3" />
@@ -144,21 +172,33 @@ export const ProductDetails: React.FC = () => {
                 </div>
               </div>
 
-              <button
-                onClick={() =>
-                  addItem({
-                    id: product.id,
-                    name: getName(product),
-                    brand: (product.brand && getName(product.brand)) || t('product.noBrand'),
-                    price_thb: product.price_tentative_thb || product.price_thb || 0,
-                    image: (product.img && product.img.length > 0) ? getImageUrl(product.img[0]) : ''
-                  })
-                }
-                className="btn-primary-lg"
-                disabled={product.status === 'out_of_stock'}
-              >
-                {product.status === 'out_of_stock' ? t('product.outOfStock') : t('product.addToCart')}
-              </button>
+              {(() => {
+                const allChosen = (product.options || []).every((o) => selectedOptions[o.name])
+                const outOfStock = product.status === 'out_of_stock'
+                return (
+                  <>
+                    <button
+                      onClick={() =>
+                        addItem({
+                          id: product.id,
+                          name: getName(product),
+                          brand: (product.brand && getName(product.brand)) || t('product.noBrand'),
+                          price_thb: product.price_tentative_thb || product.price_thb || 0,
+                          image: (product.img && product.img.length > 0) ? getImageUrl(product.img[0]) : '',
+                          selectedOptions: (product.options && product.options.length > 0) ? selectedOptions : undefined
+                        })
+                      }
+                      className="btn-primary-lg"
+                      disabled={outOfStock || !allChosen}
+                    >
+                      {outOfStock ? t('product.outOfStock') : t('product.addToCart')}
+                    </button>
+                    {!outOfStock && !allChosen && (
+                      <p className="text-sm text-muted-foreground mt-2 text-center">{t('product.selectOptions')}</p>
+                    )}
+                  </>
+                )
+              })()}
             </div>
           </>
         )}

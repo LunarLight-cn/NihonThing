@@ -18,6 +18,7 @@ const CreateProductSchema = z.object({
   price_tentative_jpy: z.number().optional(),
   price_tentative_thb: z.number().optional(),
   img: z.array(z.string()).optional(),
+  options: z.array(z.object({ name: z.string().min(1), values: z.array(z.string().min(1)).min(1) })).optional(),
   tag: z.string().optional(),
   weight: z.number().optional(),
   status: z.enum(['active', 'inactive', 'out_of_stock']).optional()

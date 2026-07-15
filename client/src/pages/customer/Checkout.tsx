@@ -69,7 +69,7 @@ export const Checkout: React.FC = () => {
       const res = await api.post('/orders', {
         trip_id: selectedTrip,
         address_id: selectedAddress,
-        items: items.map((i) => ({ type: 'product' as const, id: i.id, quantity: i.quantity }))
+        items: items.map((i) => ({ type: 'product' as const, id: i.id, quantity: i.quantity, options: i.selectedOptions }))
       })
       const newId = res.data.data.id as number
       setOrderId(newId)
@@ -217,10 +217,13 @@ export const Checkout: React.FC = () => {
               <h2 className="font-bold text-lg mb-4">{t('checkout.orderSummary')}</h2>
               <div className="space-y-3 max-h-72 overflow-y-auto">
                 {items.map((item) => (
-                  <div key={item.id} className="flex gap-3">
+                  <div key={item.lineId} className="flex gap-3">
                     <img src={getImageUrl(item.image)} alt={item.name} className="w-14 h-14 object-cover rounded-md border border-border" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium line-clamp-2">{item.name}</p>
+                      {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                        <p className="text-xs text-muted-foreground">{Object.entries(item.selectedOptions).map(([k, v]) => `${k}: ${v}`).join(' · ')}</p>
+                      )}
                       <p className="text-xs text-muted-foreground">x{item.quantity}</p>
                     </div>
                     <p className="text-sm font-semibold text-primary whitespace-nowrap">฿{(item.price_thb * item.quantity).toLocaleString()}</p>

@@ -14,9 +14,13 @@ import { useLocalizedName } from '../../utils/localization'
 
 interface OrderItem {
   quantity: number
+  selected_options?: Record<string, string> | null
   product?: { id: number; name_en?: string; name_th?: string; name_jp?: string; img?: string[] } | null
   ticket?: { id: number; item_name: string; img?: string | string[] } | null
 }
+
+const optionsLine = (o?: Record<string, string> | null) =>
+  o && Object.keys(o).length ? Object.entries(o).map(([k, v]) => `${k}: ${v}`).join(' · ') : ''
 interface OrderAddress {
   fullname: string
   surname: string
@@ -300,7 +304,10 @@ const OrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = ({ ord
               return (
                 <div key={idx} className="flex items-center gap-3">
                   <img src={getImageUrl(img)} alt={label} className="w-12 h-12 object-cover rounded-md border border-border" />
-                  <span className="text-sm flex-1 min-w-0 truncate">{label}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm truncate">{label}</p>
+                    {optionsLine(it.selected_options) && <p className="text-xs text-muted-foreground truncate">{optionsLine(it.selected_options)}</p>}
+                  </div>
                   <span className="text-sm text-muted-foreground">x{it.quantity}</span>
                 </div>
               )
@@ -492,7 +499,10 @@ export const Orders: React.FC = () => {
                       return (
                         <div key={idx} className="flex items-center gap-3">
                           <img src={getImageUrl(img)} alt={label} className="w-11 h-11 object-cover rounded-md border border-border" />
-                          <span className="text-sm flex-1 min-w-0 truncate">{label}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm truncate">{label}</p>
+                            {optionsLine(it.selected_options) && <p className="text-xs text-muted-foreground truncate">{optionsLine(it.selected_options)}</p>}
+                          </div>
                           <span className="text-sm text-muted-foreground">x{it.quantity}</span>
                         </div>
                       )

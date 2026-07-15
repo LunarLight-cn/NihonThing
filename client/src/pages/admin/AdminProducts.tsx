@@ -308,7 +308,8 @@ export const AdminProducts: React.FC = () => {
               status: row.original.status || 'active',
               tag: row.original.tag || '',
               origin_country_id: (row.original as any).origin_country_id || '',
-              shopIds: []
+              shopIds: [],
+              options: (row.original as any).options || []
             })
             setEditingProductId(row.original.id)
             setSelectedFiles([])
@@ -437,7 +438,8 @@ export const AdminProducts: React.FC = () => {
     status: 'active',
     tag: '',
     origin_country_id: '' as string | number,
-    shopIds: [] as number[]
+    shopIds: [] as number[],
+    options: [] as { name: string; values: string[] }[]
   })
 
   const [categoryForm, setCategoryForm] = useState({
@@ -510,7 +512,7 @@ export const AdminProducts: React.FC = () => {
                   setProductForm({
                     name_en: '', name_th: '', name_jp: '', desc_en: '', desc_th: '', desc_jp: '',
                     brand_id: '', origin_country_id: '',
-                    price_tentative_jpy: '', price_tentative_thb: '', amount: '10', weight: '0', img: [], category_id: 1, status: 'active', tag: '', shopIds: []
+                    price_tentative_jpy: '', price_tentative_thb: '', amount: '10', weight: '0', img: [], category_id: 1, status: 'active', tag: '', shopIds: [], options: []
                   })
                 } else {
                   setIsAddingProduct(true)
@@ -772,6 +774,66 @@ export const AdminProducts: React.FC = () => {
                       ))}
                     </div>
                   )}
+                </div>
+
+                <div className="form-section-divider">{t('admin.product.options_title')}</div>
+                <div className="col-span-3 space-y-3">
+                  <p className="text-xs text-muted-foreground">{t('admin.product.options_hint')}</p>
+                  {productForm.options.map((opt, oi) => (
+                    <div key={oi} className="border border-border rounded-lg p-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={opt.name}
+                          placeholder={t('admin.product.option_name_ph')}
+                          onChange={(e) => setProductForm((prev) => ({ ...prev, options: prev.options.map((o, i) => i === oi ? { ...o, name: e.target.value } : o) }))}
+                          className="input-admin flex-1"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setProductForm((prev) => ({ ...prev, options: prev.options.filter((_, i) => i !== oi) }))}
+                          className="btn-icon-destructive"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {opt.values.map((val, vi) => (
+                          <span key={vi} className="badge bg-secondary text-secondary-foreground flex items-center gap-1 normal-case">
+                            {val}
+                            <button
+                              type="button"
+                              onClick={() => setProductForm((prev) => ({ ...prev, options: prev.options.map((o, i) => i === oi ? { ...o, values: o.values.filter((_, j) => j !== vi) } : o) }))}
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </span>
+                        ))}
+                        <input
+                          type="text"
+                          placeholder={t('admin.product.add_value_ph')}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              const v = (e.target as HTMLInputElement).value.trim()
+                              if (v) {
+                                setProductForm((prev) => ({ ...prev, options: prev.options.map((o, i) => i === oi ? { ...o, values: [...o.values, v] } : o) }))
+                                ;(e.target as HTMLInputElement).value = ''
+                              }
+                            }
+                          }}
+                          className="input-admin w-44 text-sm"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setProductForm((prev) => ({ ...prev, options: [...prev.options, { name: '', values: [] }] }))}
+                    className="btn-secondary text-sm w-fit"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />{t('admin.product.add_option')}
+                  </button>
                 </div>
               </div>
               <div className="flex justify-end">
