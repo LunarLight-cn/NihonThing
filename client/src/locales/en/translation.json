@@ -120,7 +120,8 @@
     "addToCart": "Add to Cart",
     "outOfStock": "Out of Stock",
     "tentativePrice": "* Tentative price, subject to change based on actual store price.",
-    "notFound": "Product not found or failed to load."
+    "notFound": "Product not found or failed to load.",
+    "selectOptions": "Please select all options first."
   },
   "cart": {
     "title": "Your Cart",
@@ -375,7 +376,12 @@
       "search_categories": "Search categories...",
       "search_category": "Search category...",
       "search_brands": "Search brands...",
-      "search_shops": "Search shops..."
+      "search_shops": "Search shops...",
+      "options_title": "Options",
+      "options_hint": "Add choices customers pick when ordering, e.g. Size or Colour. Type a value and press Enter.",
+      "option_name_ph": "Option name (e.g. Size)",
+      "add_value_ph": "Add value + Enter",
+      "add_option": "Add Option"
     },
     "purchases": {
       "purchases_title": "Purchases",

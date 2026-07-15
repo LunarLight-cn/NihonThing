@@ -6,6 +6,7 @@ export type OrderItemInput = {
   type: 'product' | 'ticket'
   id: number
   quantity: number
+  options?: Record<string, string>
 }
 
 // Shopee-style human-facing order code: YYMMDD + 8 random base32 chars,
@@ -140,7 +141,8 @@ export const createOrder = async (
     order_id: newOrder.id,
     product_id: item.type === 'product' ? item.id : null,
     ticket_id: item.type === 'ticket' ? item.id : null,
-    quantity: item.quantity
+    quantity: item.quantity,
+    selected_options: item.options ?? null
   }))
 
   await db.insert(schema.Order_Items).values(orderItemsData)

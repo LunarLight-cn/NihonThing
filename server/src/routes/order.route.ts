@@ -7,7 +7,8 @@ const orderRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; DEF
 const OrderItemSchema = z.object({
   type: z.enum(['product', 'ticket']),
   id: z.number(),
-  quantity: z.number().min(1)
+  quantity: z.number().min(1),
+  options: z.record(z.string(), z.string()).optional()
 })
 
 const CreateOrderSchema = z.object({
