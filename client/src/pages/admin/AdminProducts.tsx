@@ -7,6 +7,7 @@ import { SearchableSelect } from '../../components/admin/SearchableSelect'
 import { SearchableMultiSelect } from '../../components/admin/SearchableMultiSelect'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Package, Tags, Plus, Loader2, Save, X, Image as ImageIcon, Edit2, Trash2 } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
 
 interface Product {
   id: number
@@ -46,6 +47,9 @@ interface Brand {
 export const AdminProducts: React.FC = () => {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
+  // An agent retires a product by setting it inactive; deleting is the admin's.
+  const { user } = useAuth()
+  const canDelete = user?.role !== 'agent'
   const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'brands'>('products')
   const [isAddingProduct, setIsAddingProduct] = useState(false)
   const [isAddingCategory, setIsAddingCategory] = useState(false)
@@ -368,16 +372,18 @@ export const AdminProducts: React.FC = () => {
           >
             <Edit2 className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => {
-              if (window.confirm('Are you sure you want to delete this category?')) {
-                deleteCategoryMutation.mutate(row.original.id)
-              }
-            }}
-            className="btn-icon-destructive"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {canDelete && (
+            <button
+              onClick={() => {
+                if (window.confirm('Are you sure you want to delete this category?')) {
+                  deleteCategoryMutation.mutate(row.original.id)
+                }
+              }}
+              className="btn-icon-destructive"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       )
     }
@@ -417,16 +423,18 @@ export const AdminProducts: React.FC = () => {
           >
             <Edit2 className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => {
-              if (window.confirm('Are you sure you want to delete this brand?')) {
-                deleteBrandMutation.mutate(row.original.id)
-              }
-            }}
-            className="btn-icon-destructive"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {canDelete && (
+            <button
+              onClick={() => {
+                if (window.confirm('Are you sure you want to delete this brand?')) {
+                  deleteBrandMutation.mutate(row.original.id)
+                }
+              }}
+              className="btn-icon-destructive"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       )
     }
