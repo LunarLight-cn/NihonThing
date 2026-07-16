@@ -6,14 +6,28 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { Plane, Plus, Loader2, Edit2, Save, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+type TripFillAxis = 'items' | 'weight' | 'price'
+interface TripAxis {
+  axis: TripFillAxis
+  percent: number
+  current: number
+  max: number
+}
 interface Trip {
   id: number
   type: string
   ship_date: string
   close_date: string
   status: 'open' | 'closed' | 'in_transit' | 'arrived'
+  // Capacity caps — 0 means that axis is unlimited
   max_cap: number
   current_cap: number
+  max_items: number
+  current_items: number
+  max_price: number
+  current_price: number
+  axes?: TripAxis[]
+  fill?: TripAxis | null
 }
 
 export const AdminTrips: React.FC = () => {
@@ -95,7 +109,21 @@ export const AdminTrips: React.FC = () => {
     {
       accessorKey: 'max_cap',
       header: t('admin.trips.capacity'),
-      cell: ({ row }) => `${row.original.current_cap || 0} / ${row.original.max_cap || '-'} kg`
+      cell: ({ row }) => {
+        const r = row.original
+        return (
+          <div className="text-xs space-y-0.5 whitespace-nowrap">
+            <div>{r.current_items || 0} / {r.max_items || '∞'} {t('admin.trips.items_unit')}</div>
+            <div>{r.current_cap || 0} / {r.max_cap || '∞'} kg</div>
+            <div>฿{(r.current_price || 0).toLocaleString()} / {r.max_price ? `฿${r.max_price.toLocaleString()}` : '∞'}</div>
+            {r.fill && (
+              <div className="font-semibold text-primary">
+                {t('admin.trips.fill_pct', { pct: r.fill.percent, axis: t(`admin.trips.axis_${r.fill.axis}`) })}
+              </div>
+            )}
+          </div>
+        )
+      }
     },
     {
       id: 'actions',
@@ -108,13 +136,19 @@ export const AdminTrips: React.FC = () => {
               ship_date: row.original.ship_date ? new Date(row.original.ship_date).toISOString().split('T')[0] : '',
               close_date: row.original.close_date ? new Date(row.original.close_date).toISOString().split('T')[0] : '',
               max_cap: row.original.max_cap || 0,
+              max_items: row.original.max_items || 0,
+              max_price: row.original.max_price || 0,
               origin_id: (row.original as any).origin_id || 2,
               destination_id: (row.original as any).destination_id || 1
             })
             setEditingTripId(row.original.id)
             setIsAdding(true)
+            // The form renders above the table — bring it into view, otherwise
+            // clicking edit on a lower row looks like nothing happened.
+            window.scrollTo({ top: 0, behavior: 'smooth' })
           }}
           className="btn-icon"
+          title={t('admin.trips.edit_trip')}
         >
           <Edit2 className="w-4 h-4" />
         </button>
@@ -127,9 +161,15 @@ export const AdminTrips: React.FC = () => {
     ship_date: '',
     close_date: '',
     max_cap: 30,
+    max_items: 0,
+    max_price: 0,
     origin_id: 2, // JP
     destination_id: 1 // TH
   })
+
+  // The trip currently being edited — shown in the form header so it's obvious
+  // which trip the form belongs to.
+  const editingTrip = editingTripId ? trips?.find((tr) => tr.id === editingTripId) : undefined
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -154,8 +194,29 @@ export const AdminTrips: React.FC = () => {
 
       {isAdding && (
         <form onSubmit={handleAddSubmit} className="card-panel space-y-4">
-          <h2 className="text-xl font-bold">{editingTripId ? t('admin.trips.edit_trip') : t('admin.trips.add_trip')}</h2>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
+            <h2 className="text-xl font-bold">
+              {editingTrip
+                ? `${t('admin.trips.edit_trip')} #${editingTrip.id}`
+                : t('admin.trips.add_trip')}
+            </h2>
+            {editingTrip && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span className="badge badge-info normal-case">
+                  {editingTrip.type === 'sea' ? t('admin.trips.sea_freight') : t('admin.trips.flight')}
+                </span>
+                <span>{t('admin.trips.ship_date')}: {new Date(editingTrip.ship_date).toLocaleDateString()}</span>
+                {editingTrip.fill && (
+                  <span className="badge badge-muted normal-case">
+                    {t('admin.trips.fill_pct', { pct: editingTrip.fill.percent, axis: t(`admin.trips.axis_${editingTrip.fill.axis}`) })}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2 form-section-divider">{t('admin.trips.schedule_title')}</div>
             <div>
               <label className="label-admin">{t('admin.trips.type')}</label>
               <select value={newTripForm.type} onChange={(e) => setNewTripForm({ ...newTripForm, type: e.target.value })} className="input-admin">
@@ -177,10 +238,7 @@ export const AdminTrips: React.FC = () => {
                 <option value={2}>{t('admin.trips.japan')}</option>
               </select>
             </div>
-            <div>
-              <label className="label-admin">{t('admin.trips.max_cap')}</label>
-              <input type="number" step="0.1" value={newTripForm.max_cap} onChange={(e) => setNewTripForm({ ...newTripForm, max_cap: Number(e.target.value) })} className="input-admin" />
-            </div>
+            <div className="hidden md:block" />
             <div>
               <label className="label-admin">{t('admin.trips.ship_date')}</label>
               <input type="date" required value={newTripForm.ship_date} onChange={(e) => setNewTripForm({ ...newTripForm, ship_date: e.target.value })} className="input-admin" />
@@ -188,6 +246,23 @@ export const AdminTrips: React.FC = () => {
             <div>
               <label className="label-admin">{t('admin.trips.close_date')}</label>
               <input type="date" required value={newTripForm.close_date} onChange={(e) => setNewTripForm({ ...newTripForm, close_date: e.target.value })} className="input-admin" />
+            </div>
+
+            <div className="md:col-span-2 form-section-divider">{t('admin.trips.caps_title')}</div>
+            <div className="md:col-span-2">
+              <p className="text-xs text-muted-foreground -mt-2">{t('admin.trips.caps_hint')}</p>
+            </div>
+            <div>
+              <label className="label-admin">{t('admin.trips.max_items')}</label>
+              <input type="number" min="0" step="1" value={newTripForm.max_items} onChange={(e) => setNewTripForm({ ...newTripForm, max_items: Number(e.target.value) })} className="input-admin" />
+            </div>
+            <div>
+              <label className="label-admin">{t('admin.trips.max_price')}</label>
+              <input type="number" min="0" step="1" value={newTripForm.max_price} onChange={(e) => setNewTripForm({ ...newTripForm, max_price: Number(e.target.value) })} className="input-admin" />
+            </div>
+            <div>
+              <label className="label-admin">{t('admin.trips.max_cap')}</label>
+              <input type="number" step="0.1" value={newTripForm.max_cap} onChange={(e) => setNewTripForm({ ...newTripForm, max_cap: Number(e.target.value) })} className="input-admin" />
             </div>
           </div>
           <div className="flex justify-end">

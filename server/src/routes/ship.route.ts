@@ -12,13 +12,18 @@ const CreateShipSchema = z.object({
   courier_name: z.string().optional(),
   origin_id: z.number(),
   destination_id: z.number(),
+  // Capacity caps — 0 or omitted means that axis is unlimited.
   max_cap: z.number().optional(),
+  max_items: z.number().int().optional(),
+  max_price: z.number().optional(),
   close_date: z.string().optional()
 })
 
 const UpdateShipSchema = CreateShipSchema.partial().extend({
   status: z.enum(['open', 'closed', 'in_transit', 'arrived']).optional(),
-  current_cap: z.number().optional()
+  current_cap: z.number().optional(),
+  current_items: z.number().int().optional(),
+  current_price: z.number().optional()
 })
 
 const ShipIdParamsSchema = z.object({

@@ -1,6 +1,7 @@
 import { drizzle } from 'drizzle-orm/d1'
 import { eq, inArray, sql, and } from 'drizzle-orm'
 import * as schema from '../db/schema'
+import { getSettings } from './settings.model'
 
 export type OrderItemInput = {
   type: 'product' | 'ticket'
@@ -32,17 +33,18 @@ export const createOrder = async (
   defaultCutoffDays: number
 ) => {
   const db = drizzle(d1, { schema })
-  
+  const settings = await getSettings(d1)
+
   // Validate Trip and check Cutoff Date
   const trip = await db.query.Ships.findFirst({ where: eq(schema.Ships.id, tripId) })
   if (!trip) throw new Error('Trip not found')
-  
+
   const now = new Date()
   let cutoffDate = new Date(trip.ship_date)
   if (trip.close_date) {
     cutoffDate = new Date(trip.close_date)
   } else {
-    cutoffDate.setDate(cutoffDate.getDate() - defaultCutoffDays)
+    cutoffDate.setDate(cutoffDate.getDate() - (settings.trip_cutoff_days ?? defaultCutoffDays))
   }
   
   if (trip.status !== 'open' || now > cutoffDate) {
@@ -74,15 +76,32 @@ export const createOrder = async (
     }
   }
 
-  // Capacity & Anti-Hoarding Limits
-  const PER_USER_LIMIT = 50
+  // Capacity & Anti-Hoarding Limits.
+  //
+  // A trip fills up along three axes: item count, weight and (tentative) price.
+  // A max of 0/null means that axis is unlimited. The last order may overshoot
+  // weight/price by the configured tolerance and is still accepted — the trip
+  // then closes. Item count may never be exceeded.
+  const PER_USER_LIMIT = settings.per_user_item_limit ?? 50
+  const weightTol = settings.weight_tolerance_kg ?? 0
+  const priceTol = settings.price_tolerance_thb ?? 0
   const orderAmount = items.reduce((sum, item) => sum + item.quantity, 0)
-  
-  // Check global capacity using weight
-  const currentCap = Number(trip.current_cap || 0)
-  const maxCap = Number(trip.max_cap || 1000)
-  if (currentCap + totalWeight > maxCap) {
-    throw new Error(`Trip capacity exceeded. Only ${maxCap - currentCap} kg remaining.`)
+
+  const maxItems = Number(trip.max_items || 0)
+  const maxWeight = Number(trip.max_cap || 0)
+  const maxPrice = Number(trip.max_price || 0)
+  const currentItems = Number(trip.current_items || 0)
+  const currentWeight = Number(trip.current_cap || 0)
+  const currentPrice = Number(trip.current_price || 0)
+
+  if (maxItems > 0 && currentItems + orderAmount > maxItems) {
+    throw new Error(`Trip is full. Only ${Math.max(maxItems - currentItems, 0)} item(s) left on this trip.`)
+  }
+  if (maxWeight > 0 && currentWeight + totalWeight > maxWeight + weightTol) {
+    throw new Error(`Trip weight limit exceeded. Only ${Math.max(maxWeight + weightTol - currentWeight, 0).toFixed(2)} kg left on this trip.`)
+  }
+  if (maxPrice > 0 && currentPrice + itemPriceTotal > maxPrice + priceTol) {
+    throw new Error(`Trip value limit exceeded. Only ฿${Math.max(maxPrice + priceTol - currentPrice, 0).toLocaleString()} left on this trip.`)
   }
 
   // NOTE: D1 does not support interactive transactions (db.transaction issues
@@ -90,9 +109,14 @@ export const createOrder = async (
   // sequentially; the guarded capacity UPDATE below is itself atomic and
   // provides the concurrency safety that matters for the FCFS queue.
 
-  // Check per-user limit
+  // Check per-user limit. Cancelled orders no longer occupy the trip, so they
+  // must not count against the user either.
   const userPastOrders = await db.query.Orders.findMany({
-    where: and(eq(schema.Orders.user_id, userId), eq(schema.Orders.trip_id, tripId))
+    where: and(
+      eq(schema.Orders.user_id, userId),
+      eq(schema.Orders.trip_id, tripId),
+      sql`(${schema.Orders.status} IS NULL OR ${schema.Orders.status} != 'cancelled')`
+    )
   })
 
   let userPastAmount = 0
@@ -108,21 +132,33 @@ export const createOrder = async (
     throw new Error(`Per-user limit exceeded. You can only order ${PER_USER_LIMIT} items per trip.`)
   }
 
-  // Atomic Capacity Update & Auto-Close
+  // Atomic Capacity Update & Auto-Close.
+  // The WHERE clause is the real enforcement: two concurrent orders cannot both
+  // slip past the caps, because only one UPDATE can win. Item count is strict;
+  // weight/price allow the tolerance overshoot. The trip closes as soon as any
+  // axis reaches its max.
   const capacityUpdate = await db.update(schema.Ships)
     .set({
       current_cap: sql`COALESCE(current_cap, 0) + ${totalWeight}`,
-      status: sql`CASE WHEN COALESCE(current_cap, 0) + ${totalWeight} >= COALESCE(max_cap, 1000) THEN 'closed' ELSE status END`
+      current_items: sql`COALESCE(current_items, 0) + ${orderAmount}`,
+      current_price: sql`COALESCE(current_price, 0) + ${itemPriceTotal}`,
+      status: sql`CASE WHEN
+        (COALESCE(max_items, 0) > 0 AND COALESCE(current_items, 0) + ${orderAmount} >= max_items)
+        OR (COALESCE(max_cap, 0) > 0 AND COALESCE(current_cap, 0) + ${totalWeight} >= max_cap)
+        OR (COALESCE(max_price, 0) > 0 AND COALESCE(current_price, 0) + ${itemPriceTotal} >= max_price)
+        THEN 'closed' ELSE status END`
     })
     .where(
       and(
         eq(schema.Ships.id, tripId),
-        sql`COALESCE(current_cap, 0) + ${totalWeight} <= COALESCE(max_cap, 1000)`
+        sql`(COALESCE(max_items, 0) = 0 OR COALESCE(current_items, 0) + ${orderAmount} <= max_items)`,
+        sql`(COALESCE(max_cap, 0) = 0 OR COALESCE(current_cap, 0) + ${totalWeight} <= max_cap + ${weightTol})`,
+        sql`(COALESCE(max_price, 0) = 0 OR COALESCE(current_price, 0) + ${itemPriceTotal} <= max_price + ${priceTol})`
       )
     ).returning()
 
   if (capacityUpdate.length === 0) {
-    throw new Error(`Trip capacity exceeded. Cannot fulfill ${orderAmount} items.`)
+    throw new Error(`Trip is full. Cannot fit ${orderAmount} item(s) — someone may have just taken the last slot.`)
   }
 
   // Insert Order
@@ -205,14 +241,53 @@ export const getOrderById = async (d1: D1Database, id: number) => {
   return order
 }
 
+// Give a cancelled order's slots back to its trip.
+//
+// createOrder increments current_items / current_cap / current_price and closes
+// the trip when an axis is reached; nothing decremented them, so cancelling an
+// order left the trip permanently fuller than it really was and it could close
+// with slots still free. Weight is recomputed from the order's items because it
+// is not stored on the order itself.
+const releaseTripCapacity = async (
+  db: ReturnType<typeof drizzle<typeof schema>>,
+  order: typeof schema.Orders.$inferSelect
+) => {
+  if (!order.trip_id) return
+
+  const items = await db.query.Order_Items.findMany({
+    where: eq(schema.Order_Items.order_id, order.id),
+    with: { product: { columns: { weight: true } } }
+  })
+
+  const itemCount = items.reduce((sum, item) => sum + (item.quantity || 0), 0)
+  const weight = items.reduce((sum, item) => sum + (item.product?.weight || 0) * (item.quantity || 0), 0)
+  const price = order.item_price_total || 0
+
+  // Clamp at 0: counters were backfilled in 0007 and could disagree with the
+  // orders if anything was edited by hand. Never let them go negative.
+  // A trip that auto-closed because it was full reopens once it is under every
+  // cap again — that is the point of freeing the capacity.
+  await db.update(schema.Ships)
+    .set({
+      current_items: sql`MAX(COALESCE(current_items, 0) - ${itemCount}, 0)`,
+      current_cap: sql`MAX(COALESCE(current_cap, 0) - ${weight}, 0)`,
+      current_price: sql`MAX(COALESCE(current_price, 0) - ${price}, 0)`,
+      status: sql`CASE WHEN status = 'closed'
+        AND (COALESCE(max_items, 0) = 0 OR MAX(COALESCE(current_items, 0) - ${itemCount}, 0) < max_items)
+        AND (COALESCE(max_cap, 0) = 0 OR MAX(COALESCE(current_cap, 0) - ${weight}, 0) < max_cap)
+        AND (COALESCE(max_price, 0) = 0 OR MAX(COALESCE(current_price, 0) - ${price}, 0) < max_price)
+        THEN 'open' ELSE status END`
+    })
+    .where(eq(schema.Ships.id, order.trip_id))
+}
+
 export const updateOrder = async (d1: D1Database, id: number, data: Partial<typeof schema.Orders.$inferInsert>, userId?: number) => {
   const db = drizzle(d1, { schema })
-  
-  if (userId) {
-    const order = await db.query.Orders.findFirst({ where: eq(schema.Orders.id, id) })
-    if (!order || order.user_id !== userId) {
-      throw new Error('Unauthorized to update this order')
-    }
+
+  const existing = await db.query.Orders.findFirst({ where: eq(schema.Orders.id, id) })
+  if (!existing) throw new Error('Order not found')
+  if (userId && existing.user_id !== userId) {
+    throw new Error('Unauthorized to update this order')
   }
 
   const updatedOrders = await db
@@ -220,6 +295,12 @@ export const updateOrder = async (d1: D1Database, id: number, data: Partial<type
     .set({ ...data, udate: sql`CURRENT_TIMESTAMP` })
     .where(eq(schema.Orders.id, id))
     .returning()
-    
+
+  // Only on the transition into cancelled, so re-saving a cancelled order does
+  // not release the same capacity twice.
+  if (data.status === 'cancelled' && existing.status !== 'cancelled') {
+    await releaseTripCapacity(db, existing)
+  }
+
   return updatedOrders[0]
 }

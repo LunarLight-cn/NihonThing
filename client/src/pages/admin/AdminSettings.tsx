@@ -1,14 +1,104 @@
-import React, { useState } from 'react'
-import { Settings, User, Shield, Loader2 } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Settings, User, Shield, Loader2, SlidersHorizontal, Save } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/AuthContext'
 import { api } from '../../services/api'
 import { AddressManager } from '../../components/profile/AddressManager'
 import { useTranslation } from 'react-i18next'
 
+interface PlatformSettings {
+  per_user_item_limit: number
+  trip_cutoff_days: number
+  weight_tolerance_kg: number
+  price_tolerance_thb: number
+}
+
+// Global platform rules — applies to every trip/order, not just this admin.
+const PlatformSettingsForm: React.FC = () => {
+  const { t } = useTranslation()
+  const qc = useQueryClient()
+  const [form, setForm] = useState<PlatformSettings | null>(null)
+  const [saved, setSaved] = useState(false)
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['settings'],
+    queryFn: async () => (await api.get('/settings')).data.data as PlatformSettings
+  })
+
+  useEffect(() => {
+    if (data) setForm(data)
+  }, [data])
+
+  const mutation = useMutation({
+    mutationFn: (payload: PlatformSettings) => api.put('/settings', {
+      per_user_item_limit: Number(payload.per_user_item_limit),
+      trip_cutoff_days: Number(payload.trip_cutoff_days),
+      weight_tolerance_kg: Number(payload.weight_tolerance_kg),
+      price_tolerance_thb: Number(payload.price_tolerance_thb)
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['settings'] })
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
+    },
+    onError: (e: any) => alert(e.response?.data?.message || 'Failed to save settings')
+  })
+
+  if (isLoading || !form) {
+    return <div className="loading-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+  }
+
+  const fields: { key: keyof PlatformSettings; label: string; hint: string; step: string }[] = [
+    { key: 'per_user_item_limit', label: t('admin.setting.per_user_item_limit'), hint: t('admin.setting.per_user_item_limit_hint'), step: '1' },
+    { key: 'trip_cutoff_days', label: t('admin.setting.trip_cutoff_days'), hint: t('admin.setting.trip_cutoff_days_hint'), step: '1' },
+    { key: 'weight_tolerance_kg', label: t('admin.setting.weight_tolerance_kg'), hint: t('admin.setting.weight_tolerance_kg_hint'), step: '0.1' },
+    { key: 'price_tolerance_thb', label: t('admin.setting.price_tolerance_thb'), hint: t('admin.setting.price_tolerance_thb_hint'), step: '1' }
+  ]
+
+  return (
+    <form
+      onSubmit={(e) => { e.preventDefault(); mutation.mutate(form) }}
+      className="card-panel space-y-6"
+    >
+      <h2 className="text-xl font-bold flex items-center border-b border-border pb-4">
+        <SlidersHorizontal className="w-5 h-5 mr-2 text-primary" />
+        {t('admin.setting.platform_title')}
+      </h2>
+      <p className="text-sm text-muted-foreground -mt-2">{t('admin.setting.platform_desc')}</p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {fields.map((f) => (
+          <div key={f.key}>
+            <label className="label-admin text-foreground">{f.label}</label>
+            <input
+              type="number"
+              min="0"
+              step={f.step}
+              required
+              value={form[f.key]}
+              onChange={(e) => setForm({ ...form, [f.key]: e.target.value === '' ? 0 : Number(e.target.value) })}
+              className="input-admin text-foreground"
+            />
+            <p className="text-xs text-muted-foreground mt-1">{f.hint}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center justify-end gap-3">
+        {saved && <span className="text-sm text-emerald-600 dark:text-emerald-400">{t('admin.setting.saved')}</span>}
+        <button type="submit" disabled={mutation.isPending} className="btn-primary px-6 disabled:opacity-50">
+          {mutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+          {t('admin.setting.save_changes')}
+        </button>
+      </div>
+    </form>
+  )
+}
+
 export const AdminSettings: React.FC = () => {
   const { t } = useTranslation()
   const { user, login, token } = useAuth()
-  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'addresses'>('profile')
+  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'addresses' | 'platform'>('profile')
 
   const [profileForm, setProfileForm] = useState({
     username: user?.username || ''
@@ -95,9 +185,17 @@ export const AdminSettings: React.FC = () => {
           >
             {t('admin.setting.tab_addresses')}
           </button>
+          <button
+            onClick={() => setActiveTab('platform')}
+            className={`sidebar-filter-btn ${activeTab === 'platform' ? 'is-active' : ''}`}
+          >
+            {t('admin.setting.tab_platform')}
+          </button>
         </div>
 
         <div className="md:col-span-3 space-y-6">
+          {activeTab === 'platform' && <PlatformSettingsForm />}
+
           {activeTab === 'profile' && (
             <form onSubmit={handleProfileUpdate} className="card-panel space-y-6">
               <h2 className="text-xl font-bold flex items-center border-b border-border pb-4">

@@ -52,6 +52,29 @@ interface Order {
   items?: OrderItem[]
 }
 
+type TripFillAxis = 'items' | 'weight' | 'price'
+interface TripAxis {
+  axis: TripFillAxis
+  percent: number
+  current: number
+  max: number
+}
+interface Trip {
+  id: number
+  type: string
+  ship_date: string
+  status: string
+  is_closed: boolean
+  max_cap: number
+  current_cap: number
+  max_items: number
+  current_items: number
+  max_price: number
+  current_price: number
+  axes?: TripAxis[]
+  fill?: TripAxis | null
+}
+
 const firstImg = (img?: string | string[] | null) => (Array.isArray(img) ? img[0] : img) || undefined
 const optionsLine = (o?: Record<string, string> | null) =>
   o && Object.keys(o).length ? Object.entries(o).map(([k, v]) => `${k}: ${v}`).join(' · ') : ''
@@ -145,6 +168,75 @@ const ShippingEditModal: React.FC<{ order: Order; onClose: () => void }> = ({ or
   )
 }
 
+// Capacity of the next trip to depart — how close it is to closing on each axis.
+const NextTripCapacity: React.FC = () => {
+  const { t } = useTranslation()
+  const { data: trips } = useQuery({
+    queryKey: ['ships'],
+    queryFn: async () => (await api.get('/ships')).data.data as Trip[]
+  })
+
+  // Nearest upcoming trip that is still accepting orders.
+  const next = (trips || [])
+    .filter((tr) => !tr.is_closed && tr.status === 'open')
+    .sort((a, b) => new Date(a.ship_date).getTime() - new Date(b.ship_date).getTime())[0]
+
+  if (!next) return null
+
+  const rows: { label: string; current: string; max: string; percent: number | null }[] = [
+    {
+      label: t('admin.trips.axis_items'),
+      current: String(next.current_items || 0),
+      max: next.max_items ? String(next.max_items) : '∞',
+      percent: next.max_items ? Math.min(100, Math.round(((next.current_items || 0) / next.max_items) * 100)) : null
+    },
+    {
+      label: t('admin.trips.axis_weight'),
+      current: `${next.current_cap || 0} kg`,
+      max: next.max_cap ? `${next.max_cap} kg` : '∞',
+      percent: next.max_cap ? Math.min(100, Math.round(((next.current_cap || 0) / next.max_cap) * 100)) : null
+    },
+    {
+      label: t('admin.trips.axis_price'),
+      current: `฿${(next.current_price || 0).toLocaleString()}`,
+      max: next.max_price ? `฿${next.max_price.toLocaleString()}` : '∞',
+      percent: next.max_price ? Math.min(100, Math.round(((next.current_price || 0) / next.max_price) * 100)) : null
+    }
+  ]
+
+  return (
+    <div className="card-panel p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="font-bold flex items-center gap-2">
+          {next.type === 'sea' ? <ShipIcon className="w-4 h-4 text-primary" /> : <PlaneTakeoff className="w-4 h-4 text-primary" />}
+          {t('admin.order.next_trip', { date: new Date(next.ship_date).toLocaleDateString() })}
+        </h2>
+        {next.fill && (
+          <span className={`badge ${next.fill.percent >= 80 ? 'badge-warning' : 'badge-info'}`}>
+            {t('admin.trips.fill_pct', { pct: next.fill.percent, axis: t(`admin.trips.axis_${next.fill.axis}`) })}
+          </span>
+        )}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {rows.map((r) => (
+          <div key={r.label}>
+            <div className="stat-row mb-1">
+              <span className="stat-row-label">{r.label}</span>
+              <span className="font-medium">{r.current} / {r.max}</span>
+            </div>
+            <div className="progress-track progress-track-sm">
+              <div
+                className={`progress-fill ${r.percent !== null && r.percent >= 80 ? 'progress-fill-warning' : 'progress-fill-primary'}`}
+                style={{ width: `${r.percent ?? 0}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // Full order detail for admin/agent — everything needed to fulfil the order.
 const AdminOrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = ({ order, onClose }) => {
   const { t } = useTranslation()
@@ -207,10 +299,10 @@ const AdminOrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = (
                     {order.ship.type} · {fmtDate(order.ship.ship_date)}
                   </p>
                 )}
-                <div className="flex justify-between text-muted-foreground"><span>{t('admin.order.courier')}</span><span>{order.courier_name || '—'}</span></div>
-                <div className="flex justify-between text-muted-foreground"><span>{t('admin.order.tracking_no')}</span><span className="font-mono">{order.track_no || '—'}</span></div>
-                <div className="flex justify-between text-muted-foreground"><span>{t('admin.order.shipped_date')}</span><span>{fmtDate(order.shipped_date) || '—'}</span></div>
-                <div className="flex justify-between text-muted-foreground"><span>{t('admin.order.deliv_date')}</span><span>{fmtDate(order.deliv_date) || '—'}</span></div>
+                <div className="stat-row stat-row-label"><span>{t('admin.order.courier')}</span><span>{order.courier_name || '—'}</span></div>
+                <div className="stat-row stat-row-label"><span>{t('admin.order.tracking_no')}</span><span className="font-mono">{order.track_no || '—'}</span></div>
+                <div className="stat-row stat-row-label"><span>{t('admin.order.shipped_date')}</span><span>{fmtDate(order.shipped_date) || '—'}</span></div>
+                <div className="stat-row stat-row-label"><span>{t('admin.order.deliv_date')}</span><span>{fmtDate(order.deliv_date) || '—'}</span></div>
               </div>
             </section>
 
@@ -227,10 +319,10 @@ const AdminOrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = (
             </section>
 
             {/* Totals */}
-            <section className="mt-5 border-t border-border pt-3 space-y-1.5 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">{t('admin.order.items_total')}</span><span>฿{(order.item_price_total || 0).toLocaleString()}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">{t('admin.order.shipping_fee')}</span><span>{shipFee > 0 ? `฿${shipFee.toLocaleString()}` : '—'}</span></div>
-              <div className="flex justify-between font-bold"><span>{t('admin.order.grand_total_calc')}</span><span className="text-primary">{order.grand_total ? `฿${order.grand_total.toLocaleString()}` : '—'}</span></div>
+            <section className="mt-5 border-t border-border pt-3 space-y-1.5">
+              <div className="stat-row"><span className="stat-row-label">{t('admin.order.items_total')}</span><span>฿{(order.item_price_total || 0).toLocaleString()}</span></div>
+              <div className="stat-row"><span className="stat-row-label">{t('admin.order.shipping_fee')}</span><span>{shipFee > 0 ? `฿${shipFee.toLocaleString()}` : '—'}</span></div>
+              <div className="stat-row font-bold"><span>{t('admin.order.grand_total_calc')}</span><span className="text-primary">{order.grand_total ? `฿${order.grand_total.toLocaleString()}` : '—'}</span></div>
             </section>
 
             {/* Payments */}
@@ -414,6 +506,8 @@ export const AdminOrders: React.FC = () => {
           {t('admin.order.orders_title')}
         </h1>
       </div>
+
+      <NextTripCapacity />
 
       {isLoading ? (
         <div className="loading-center">
