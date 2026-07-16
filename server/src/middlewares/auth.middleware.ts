@@ -43,10 +43,23 @@ export const authGuard = async (c: Context<{ Bindings: any; Variables: AuthVaria
 
 export const adminGuard = async (c: Context<{ Bindings: any; Variables: AuthVariables }>, next: Next) => {
   const user = c.get('user')
-  
+
   if (!user || user.role !== 'admin') {
     return c.json({ success: false, message: 'Admin access required.' }, 403)
   }
-  
+
+  await next()
+}
+
+export type Role = 'admin' | 'agent' | 'client'
+
+// Admin passes every roleGuard: listing it at each call site would be noise.
+export const roleGuard = (...roles: Role[]) => async (c: Context<{ Bindings: any; Variables: AuthVariables }>, next: Next) => {
+  const user = c.get('user')
+
+  if (!user || (user.role !== 'admin' && !roles.includes(user.role as Role))) {
+    return c.json({ success: false, message: 'You do not have access to this feature.' }, 403)
+  }
+
   await next()
 }

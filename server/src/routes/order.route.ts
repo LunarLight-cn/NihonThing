@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { authGuard, adminGuard, AuthVariables } from '../middlewares/auth.middleware'
+import { authGuard, roleGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { createOrder, getMyOrders, getAllOrders, updateOrder } from '../models/order.model'
 
 const orderRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; DEFAULT_TRIP_CUTOFF_DAYS: string }; Variables: AuthVariables }>()
@@ -78,13 +78,13 @@ const getAllOrdersRoute = createRoute({
   method: 'get',
   path: '/',
   tags: ['Orders (Admin)'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   responses: { 200: { description: 'Retrieve all orders successfully' } }
 })
 
 orderRoutes.openapi(getAllOrdersRoute, async (c) => {
-  const orders = await getAllOrders(c.env.nihonthing_db)
+  const orders = await getAllOrders(c.env.nihonthing_db, c.get('user').role)
   return c.json({ success: true, data: orders })
 })
 
@@ -93,7 +93,7 @@ const putOrderRoute = createRoute({
   method: 'put',
   path: '/{id}',
   tags: ['Orders (Admin)'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: {
     params: OrderIdParamsSchema,
@@ -102,9 +102,22 @@ const putOrderRoute = createRoute({
   responses: { 200: { description: 'Order updated successfully' } }
 })
 
+// An agent reports on shopping progress. Money and payment state are the
+// admin's call, so an agent sending those fields is rejected outright rather
+// than having them silently dropped.
+const AGENT_UPDATABLE_FIELDS = ['status']
+
 orderRoutes.openapi(putOrderRoute, async (c) => {
   const { id } = c.req.valid('param')
   const data = c.req.valid('json')
+
+  if (c.get('user').role === 'agent') {
+    const forbidden = Object.keys(data).filter((field) => !AGENT_UPDATABLE_FIELDS.includes(field))
+    if (forbidden.length > 0) {
+      return c.json({ success: false, message: `An agent may only update: ${AGENT_UPDATABLE_FIELDS.join(', ')}.` }, 403)
+    }
+  }
+
   const updatedOrder = await updateOrder(c.env.nihonthing_db, id, data)
   return c.json({ success: true, data: updatedOrder })
 })

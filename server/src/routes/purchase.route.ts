@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { authGuard, adminGuard, AuthVariables } from '../middlewares/auth.middleware'
+import { authGuard, roleGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { getPurchases, createPurchase, updatePurchase } from '../models/purchase.model'
 
 const purchaseRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; EXCHANGE_RATE_JPY_THB: string }; Variables: AuthVariables }>()
@@ -24,7 +24,7 @@ const getPurchasesRoute = createRoute({
   method: 'get',
   path: '/',
   tags: ['Purchases (Admin)'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   responses: { 200: { description: 'Retrieve all purchases successfully' } }
 })
@@ -39,7 +39,7 @@ const postPurchaseRoute = createRoute({
   method: 'post',
   path: '/',
   tags: ['Purchases (Admin)'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: { body: { content: { 'application/json': { schema: CreatePurchaseSchema } } } },
   responses: { 201: { description: 'Purchase created successfully' } }
@@ -64,7 +64,7 @@ const putPurchaseRoute = createRoute({
   method: 'put',
   path: '/{id}',
   tags: ['Purchases (Admin)'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: {
     params: PurchaseIdParamsSchema,

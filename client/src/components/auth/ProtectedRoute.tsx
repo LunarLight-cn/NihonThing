@@ -1,13 +1,14 @@
 import React from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import type { UserRole } from '../../types'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
-  requireAdmin?: boolean
+  allowRoles?: UserRole[]
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin = false }) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowRoles }) => {
   const { user, isLoading } = useAuth()
   const location = useLocation()
 
@@ -25,7 +26,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requir
     )
   }
 
-  if (requireAdmin && user.role !== 'admin') {
+  if (allowRoles && !allowRoles.includes(user.role)) {
     return (
       <Navigate
         to="/"
