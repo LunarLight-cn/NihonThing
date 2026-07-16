@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { authGuard, adminGuard, AuthVariables } from '../middlewares/auth.middleware'
+import { authGuard, roleGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { getAllTickets, getTicketsByClientId, getTicketById, createTicket, updateTicket } from '../models/ticket.model'
 
 const ticketRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database }; Variables: AuthVariables }>()
@@ -33,7 +33,7 @@ const getAllTicketsRoute = createRoute({
   method: 'get',
   path: '/',
   tags: ['Tickets'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   responses: { 200: { description: 'Retrieve all tickets successfully' } }
 })
@@ -82,7 +82,7 @@ const putTicketRoute = createRoute({
   method: 'put',
   path: '/{id}',
   tags: ['Tickets (Admin)'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: {
     params: TicketIdParamsSchema,

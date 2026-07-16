@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { authGuard, adminGuard, AuthVariables } from '../middlewares/auth.middleware'
+import { authGuard, roleGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { getProductLocations, createProductLocation, deleteProductLocation } from '../models/product_location.model'
 
 const productLocationRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database }; Variables: AuthVariables }>()
@@ -38,7 +38,7 @@ const postLocationRoute = createRoute({
   method: 'post',
   path: '/',
   tags: ['Product Locations (Admin)'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: { body: { content: { 'application/json': { schema: CreateProductLocationSchema } } } },
   responses: { 201: { description: 'Mapping created successfully' } }
@@ -55,7 +55,7 @@ const deleteLocationRoute = createRoute({
   method: 'delete',
   path: '/{id}',
   tags: ['Product Locations (Admin)'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: { params: ProductLocationIdParamsSchema },
   responses: { 200: { description: 'Mapping deleted successfully' } }

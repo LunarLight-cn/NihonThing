@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { authGuard, adminGuard, AuthVariables } from '../middlewares/auth.middleware'
+import { authGuard, roleGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { getAllAreas, getAreaById, createArea, updateArea, deleteArea } from '../models/area.model'
 
 const areaRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database }; Variables: AuthVariables }>()
@@ -51,7 +51,7 @@ const postAreaRoute = createRoute({
   method: 'post',
   path: '/',
   tags: ['Areas'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: { body: { content: { 'application/json': { schema: CreateAreaSchema } } } },
   responses: { 201: { description: 'Area created successfully' } }
@@ -68,7 +68,7 @@ const putAreaRoute = createRoute({
   method: 'put',
   path: '/{id}',
   tags: ['Areas'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: {
     params: AreaIdParamsSchema,

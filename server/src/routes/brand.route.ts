@@ -2,7 +2,7 @@ import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { drizzle } from 'drizzle-orm/d1'
 import { eq } from 'drizzle-orm'
 import * as schema from '../db/schema'
-import { authGuard, adminGuard } from '../middlewares/auth.middleware'
+import { authGuard, roleGuard } from '../middlewares/auth.middleware'
 
 const brandRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database } }>()
 
@@ -52,7 +52,7 @@ const createBrandRoute = createRoute({
   method: 'post',
   path: '/',
   tags: ['Brands'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: {
     body: {
@@ -79,7 +79,7 @@ const updateBrandRoute = createRoute({
   method: 'put',
   path: '/{id}',
   tags: ['Brands'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: {
     params: z.object({ id: z.string() }),
@@ -108,7 +108,7 @@ const deleteBrandRoute = createRoute({
   method: 'delete',
   path: '/{id}',
   tags: ['Brands'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: {
     params: z.object({ id: z.string() })

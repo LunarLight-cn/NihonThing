@@ -220,8 +220,24 @@ export const getMyOrders = async (d1: D1Database, userId: number) => {
   })
 }
 
-export const getAllOrders = async (d1: D1Database) => {
+export const getAllOrders = async (d1: D1Database, viewerRole: string = 'admin') => {
   const db = drizzle(d1, { schema })
+
+  // An agent shops in Japan: they need the item list and the trip, and nothing
+  // else. Withholding the delivery address, the payment slips and the
+  // customer's email is the point of the role, so it happens here rather than
+  // being left to the UI to hide.
+  if (viewerRole === 'agent') {
+    const { payments, address, ...agentVisible } = orderDetailWith
+    return await db.query.Orders.findMany({
+      orderBy: (orders, { desc }) => [desc(orders.cdate)],
+      with: {
+        ...agentVisible,
+        user: { columns: { id: true, username: true } }
+      }
+    })
+  }
+
   return await db.query.Orders.findMany({
     orderBy: (orders, { desc }) => [desc(orders.cdate)],
     with: {

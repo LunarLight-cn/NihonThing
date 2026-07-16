@@ -78,7 +78,7 @@ export default function App() {
 
             {/* Admin Dashboard */}
             <Route path="/admin" element={
-              <ProtectedRoute requireAdmin={true}>
+              <ProtectedRoute allowRoles={['admin', 'agent']}>
                 <AdminLayout />
               </ProtectedRoute>
             }>
