@@ -7,7 +7,6 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { ShoppingCart, Loader2, Truck, X, Eye, MapPin, Receipt, PlaneTakeoff, Ship as ShipIcon, User } from 'lucide-react'
 import { useLocalizedName } from '../../utils/localization'
 import { getImageUrl } from '../../utils/image'
-import { useAuth } from '../../contexts/AuthContext'
 
 interface OrderItem {
   quantity: number
@@ -240,10 +239,6 @@ const NextTripCapacity: React.FC = () => {
 
 // Full order detail for admin/agent — everything needed to fulfil the order.
 const AdminOrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = ({ order, onClose }) => {
-  // The API withholds these from an agent. Rendering the sections empty would
-  // read as "the customer never paid" rather than "you cannot see this".
-  const { user } = useAuth()
-  const canSeeCustomerDetails = user?.role !== 'agent'
   const { t } = useTranslation()
   const localizedName = useLocalizedName()
   const shipFee = (order.shipping_fee_jp_th || 0) + (order.shipping_fee_th_th || 0)
@@ -312,7 +307,6 @@ const AdminOrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = (
             </section>
 
             {/* Address */}
-            {canSeeCustomerDetails && (
             <section className="mt-5">
               <h4 className="detail-heading"><MapPin className="w-4 h-4" />{t('admin.order.deliver_to')}</h4>
               {order.address ? (
@@ -323,7 +317,6 @@ const AdminOrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = (
                 </div>
               ) : <p className="text-sm text-muted-foreground">—</p>}
             </section>
-            )}
 
             {/* Totals */}
             <section className="mt-5 border-t border-border pt-3 space-y-1.5">
@@ -333,7 +326,6 @@ const AdminOrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = (
             </section>
 
             {/* Payments */}
-            {canSeeCustomerDetails && (
             <section className="mt-5">
               <h4 className="detail-heading"><Receipt className="w-4 h-4" />{t('admin.order.payments')}</h4>
               {(order.payments || []).length === 0 ? (
@@ -355,7 +347,6 @@ const AdminOrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = (
                 </div>
               )}
             </section>
-            )}
           </div>
         </div>
 

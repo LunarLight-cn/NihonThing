@@ -92,9 +92,14 @@ export const CustomerLayout: React.FC = () => {
                     <Link to="/orders" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md">
                       {t('nav.myOrders')}
                     </Link>
-                    {user.role !== 'client' && (
+                    {user.role === 'admin' && (
                       <Link to="/admin" className="block px-4 py-2 text-sm text-primary hover:bg-secondary rounded-md">
                         {t('nav.adminDashboard')}
+                      </Link>
+                    )}
+                    {user.role === 'agent' && (
+                      <Link to="/agent" className="block px-4 py-2 text-sm text-primary hover:bg-secondary rounded-md">
+                        {t('nav.agentDashboard')}
                       </Link>
                     )}
                     <button

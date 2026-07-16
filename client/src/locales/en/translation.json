@@ -7,6 +7,7 @@
     "signIn": "Sign In",
     "myOrders": "My Orders",
     "adminDashboard": "Admin Dashboard",
+    "agentDashboard": "Agent Dashboard",
     "chat": "Chat",
     "logout": "Logout",
     "support": "Support",
@@ -780,5 +781,65 @@
     "editAddress": "Edit Address",
     "newAddress": "New Address",
     "deleteConfirm": "Are you sure you want to delete this address?"
+  },
+  "agent": {
+    "nav": {
+      "dashboard": "Shopping Queue",
+      "purchases": "My Purchases",
+      "catalog": "Catalog",
+      "trips": "Trips",
+      "tickets": "Custom Requests",
+      "locations": "Areas & Shops",
+      "adminDashboard": "Admin Dashboard",
+      "storefront": "Storefront",
+      "logout": "Log Out"
+    },
+    "queue": {
+      "title": "Shopping Queue",
+      "empty": "Nothing to shop for right now.",
+      "filterAll": "All",
+      "filterMine": "Mine",
+      "filterUnclaimed": "Unclaimed",
+      "tentative": "Tentative",
+      "agentSpent": "Agent spent",
+      "customerPaid": "Customer paid",
+      "balance": "Balance",
+      "bought": "{{bought}} / {{total}} bought",
+      "complete": "Done",
+      "allBought": "All bought",
+      "claim": "Claim",
+      "claimAll": "Claim all {{count}} remaining lines",
+      "claimedBy": "{{name}}",
+      "claimFailed": "Could not claim that line.",
+      "release": "Release claim",
+      "buy": "Buy"
+    },
+    "purchase": {
+      "title": "Record a purchase",
+      "quantity": "Quantity",
+      "remaining": "{{count}} left",
+      "costJpy": "Actual cost (JPY)",
+      "costHint": "Total paid for this quantity, not the unit price. Converted to THB automatically.",
+      "shop": "Shop",
+      "receipt": "Receipt",
+      "chooseFiles": "Choose images",
+      "filesChosen": "{{count}} selected",
+      "uploading": "Uploading...",
+      "save": "Save purchase",
+      "failed": "Could not save the purchase."
+    },
+    "purchases": {
+      "title": "My Purchases",
+      "totalSpent": "Total spent",
+      "date": "Date",
+      "order": "Order",
+      "item": "Item",
+      "quantity": "Qty",
+      "costJpy": "Cost (JPY)",
+      "costThb": "Cost (THB)",
+      "shop": "Shop",
+      "receipt": "Receipt",
+      "search": "Search by shop..."
+    }
   }
 }
