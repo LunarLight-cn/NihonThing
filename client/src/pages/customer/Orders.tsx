@@ -335,19 +335,19 @@ const OrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = ({ ord
             {/* Local leg */}
             <div className="p-3 space-y-1">
               <p className="font-medium flex items-center gap-1.5"><Truck className="w-4 h-4 text-primary" />{t('myOrders.detail.localLeg')}</p>
-              <div className="flex justify-between text-muted-foreground">
+              <div className="stat-row stat-row-label">
                 <span>{t('myOrders.detail.courier')}</span>
                 <span>{order.courier_name || t('myOrders.detail.notYet')}</span>
               </div>
-              <div className="flex justify-between text-muted-foreground">
+              <div className="stat-row stat-row-label">
                 <span>{t('myOrders.detail.trackingNo')}</span>
                 <span className="font-mono">{order.track_no || t('myOrders.detail.notYet')}</span>
               </div>
-              <div className="flex justify-between text-muted-foreground">
+              <div className="stat-row stat-row-label">
                 <span>{t('myOrders.detail.shippedDate')}</span>
                 <span>{fmtDate(order.shipped_date) || t('myOrders.detail.notYet')}</span>
               </div>
-              <div className="flex justify-between text-muted-foreground">
+              <div className="stat-row stat-row-label">
                 <span>{t('myOrders.detail.deliveredDate')}</span>
                 <span>{fmtDate(order.deliv_date) || t('myOrders.detail.notYet')}</span>
               </div>

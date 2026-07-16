@@ -112,9 +112,9 @@ export const TripSchedule: React.FC = () => {
                             : t('home.schedule.noLimit')}
                         </span>
                       </div>
-                      <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+                      <div className="progress-track">
                         <div
-                          className={`h-full rounded-full transition-all ${isFull ? 'bg-muted-foreground' : percentFilled >= 80 ? 'bg-amber-500' : 'bg-primary'}`}
+                          className={`progress-fill ${isFull ? 'progress-fill-muted' : percentFilled >= 80 ? 'progress-fill-warning' : 'progress-fill-primary'}`}
                           style={{ width: `${Math.max(percentFilled, trip.fill ? 2 : 0)}%` }}
                         />
                       </div>

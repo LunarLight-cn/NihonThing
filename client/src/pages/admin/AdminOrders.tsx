@@ -220,13 +220,13 @@ const NextTripCapacity: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {rows.map((r) => (
           <div key={r.label}>
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-muted-foreground">{r.label}</span>
+            <div className="stat-row mb-1">
+              <span className="stat-row-label">{r.label}</span>
               <span className="font-medium">{r.current} / {r.max}</span>
             </div>
-            <div className="w-full bg-secondary rounded-full h-1.5 overflow-hidden">
+            <div className="progress-track progress-track-sm">
               <div
-                className={`h-full rounded-full ${r.percent !== null && r.percent >= 80 ? 'bg-amber-500' : 'bg-primary'}`}
+                className={`progress-fill ${r.percent !== null && r.percent >= 80 ? 'progress-fill-warning' : 'progress-fill-primary'}`}
                 style={{ width: `${r.percent ?? 0}%` }}
               />
             </div>
@@ -299,10 +299,10 @@ const AdminOrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = (
                     {order.ship.type} · {fmtDate(order.ship.ship_date)}
                   </p>
                 )}
-                <div className="flex justify-between text-muted-foreground"><span>{t('admin.order.courier')}</span><span>{order.courier_name || '—'}</span></div>
-                <div className="flex justify-between text-muted-foreground"><span>{t('admin.order.tracking_no')}</span><span className="font-mono">{order.track_no || '—'}</span></div>
-                <div className="flex justify-between text-muted-foreground"><span>{t('admin.order.shipped_date')}</span><span>{fmtDate(order.shipped_date) || '—'}</span></div>
-                <div className="flex justify-between text-muted-foreground"><span>{t('admin.order.deliv_date')}</span><span>{fmtDate(order.deliv_date) || '—'}</span></div>
+                <div className="stat-row stat-row-label"><span>{t('admin.order.courier')}</span><span>{order.courier_name || '—'}</span></div>
+                <div className="stat-row stat-row-label"><span>{t('admin.order.tracking_no')}</span><span className="font-mono">{order.track_no || '—'}</span></div>
+                <div className="stat-row stat-row-label"><span>{t('admin.order.shipped_date')}</span><span>{fmtDate(order.shipped_date) || '—'}</span></div>
+                <div className="stat-row stat-row-label"><span>{t('admin.order.deliv_date')}</span><span>{fmtDate(order.deliv_date) || '—'}</span></div>
               </div>
             </section>
 
@@ -319,10 +319,10 @@ const AdminOrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = (
             </section>
 
             {/* Totals */}
-            <section className="mt-5 border-t border-border pt-3 space-y-1.5 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">{t('admin.order.items_total')}</span><span>฿{(order.item_price_total || 0).toLocaleString()}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">{t('admin.order.shipping_fee')}</span><span>{shipFee > 0 ? `฿${shipFee.toLocaleString()}` : '—'}</span></div>
-              <div className="flex justify-between font-bold"><span>{t('admin.order.grand_total_calc')}</span><span className="text-primary">{order.grand_total ? `฿${order.grand_total.toLocaleString()}` : '—'}</span></div>
+            <section className="mt-5 border-t border-border pt-3 space-y-1.5">
+              <div className="stat-row"><span className="stat-row-label">{t('admin.order.items_total')}</span><span>฿{(order.item_price_total || 0).toLocaleString()}</span></div>
+              <div className="stat-row"><span className="stat-row-label">{t('admin.order.shipping_fee')}</span><span>{shipFee > 0 ? `฿${shipFee.toLocaleString()}` : '—'}</span></div>
+              <div className="stat-row font-bold"><span>{t('admin.order.grand_total_calc')}</span><span className="text-primary">{order.grand_total ? `฿${order.grand_total.toLocaleString()}` : '—'}</span></div>
             </section>
 
             {/* Payments */}

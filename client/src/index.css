@@ -232,6 +232,33 @@
   .badge-blue    { @apply bg-blue-500/10 text-blue-600 dark:text-blue-400; }
   .badge-orange  { @apply bg-orange-500/10 text-orange-600 dark:text-orange-400; }
 
+  /* ── Progress / Meters ─────────────────────────────────── */
+
+  .progress-track {
+    @apply w-full bg-secondary rounded-full h-2 overflow-hidden;
+  }
+
+  .progress-track-sm {
+    @apply h-1.5;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full transition-all;
+  }
+
+  .progress-fill-primary { @apply bg-primary; }
+  .progress-fill-warning { @apply bg-amber-500; }
+  .progress-fill-muted   { @apply bg-muted-foreground; }
+
+  /* Label on the left, value on the right — used in totals and metric lists */
+  .stat-row {
+    @apply flex justify-between text-sm;
+  }
+
+  .stat-row-label {
+    @apply text-muted-foreground;
+  }
+
   /* ── Feedback States ────────────────────────────────────── */
 
   .loading-center {
