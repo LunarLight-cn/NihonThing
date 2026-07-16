@@ -48,6 +48,8 @@ export const AdminTrips: React.FC = () => {
     mutationFn: (newTrip: Partial<Trip>) => api.post('/ships', newTrip),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-trips'] })
+      // Customers read trips under ['ships'] (Home schedule, Checkout picker).
+      queryClient.invalidateQueries({ queryKey: ['ships'] })
       setIsAdding(false)
     }
   })
@@ -56,6 +58,8 @@ export const AdminTrips: React.FC = () => {
     mutationFn: ({ id, status }: { id: number; status: string }) => api.put(`/ships/${id}`, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-trips'] })
+      // Customers read trips under ['ships'] (Home schedule, Checkout picker).
+      queryClient.invalidateQueries({ queryKey: ['ships'] })
     }
   })
 
@@ -63,6 +67,8 @@ export const AdminTrips: React.FC = () => {
     mutationFn: ({ id, payload }: { id: number; payload: Partial<Trip> }) => api.put(`/ships/${id}`, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-trips'] })
+      // Customers read trips under ['ships'] (Home schedule, Checkout picker).
+      queryClient.invalidateQueries({ queryKey: ['ships'] })
       setIsAdding(false)
       setEditingTripId(null)
     }

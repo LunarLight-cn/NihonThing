@@ -74,6 +74,8 @@ export const AdminLocations: React.FC = () => {
     mutationFn: (data: typeof areaFormData) => api.post('/areas', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'areas'] })
+      // The shopping-areas map reads the same list under ['areas'].
+      queryClient.invalidateQueries({ queryKey: ['areas'] })
       closeAreaModal()
     }
   })
@@ -82,6 +84,8 @@ export const AdminLocations: React.FC = () => {
     mutationFn: (data: { id: number; payload: typeof areaFormData }) => api.put(`/areas/${data.id}`, data.payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'areas'] })
+      // The shopping-areas map reads the same list under ['areas'].
+      queryClient.invalidateQueries({ queryKey: ['areas'] })
       closeAreaModal()
     }
   })
@@ -91,6 +95,8 @@ export const AdminLocations: React.FC = () => {
     mutationFn: (data: any) => api.post('/shops', { ...data, area_id: parseInt(data.area_id) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'shops'] })
+      // AdminProducts caches the shop picker separately, under ['admin-shops'].
+      queryClient.invalidateQueries({ queryKey: ['admin-shops'] })
       closeShopModal()
     }
   })
@@ -99,6 +105,8 @@ export const AdminLocations: React.FC = () => {
     mutationFn: (data: { id: number; payload: any }) => api.put(`/shops/${data.id}`, { ...data.payload, area_id: parseInt(data.payload.area_id) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'shops'] })
+      // AdminProducts caches the shop picker separately, under ['admin-shops'].
+      queryClient.invalidateQueries({ queryKey: ['admin-shops'] })
       closeShopModal()
     }
   })

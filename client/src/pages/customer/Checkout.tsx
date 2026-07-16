@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {
   ShoppingBag, Loader2, MapPin, PlaneTakeoff, Ship as ShipIcon,
@@ -34,6 +34,7 @@ type Step = 'review' | 'payment' | 'done'
 export const Checkout: React.FC = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const qc = useQueryClient()
   const { items, totalPrice, clearCart } = useCart()
 
   const [step, setStep] = useState<Step>('review')
@@ -74,6 +75,12 @@ export const Checkout: React.FC = () => {
       const newId = res.data.data.id as number
       setOrderId(newId)
       clearCart()
+      // The order took capacity off the trip and sold stock, so every cached
+      // view of those is now wrong: My Orders lacks the new order, and the trip
+      // meters on Home / Checkout still show the old fill.
+      qc.invalidateQueries({ queryKey: ['my-orders'] })
+      qc.invalidateQueries({ queryKey: ['ships'] })
+      qc.invalidateQueries({ queryKey: ['products'] })
       setStep('payment')
       loadQr(newId)
     } catch (e: any) {
@@ -109,6 +116,7 @@ export const Checkout: React.FC = () => {
       await api.post('/payments/slip', form, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
+      qc.invalidateQueries({ queryKey: ['my-orders'] })
       setStep('done')
     } catch (e: any) {
       setError(e.response?.data?.message || t('checkout.slipError'))
