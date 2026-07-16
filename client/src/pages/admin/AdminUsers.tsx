@@ -5,12 +5,13 @@ import { DataTable } from '../../components/admin/DataTable'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Users, Loader2, ShieldAlert, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import type { UserRole } from '../../types'
 
 interface UserData {
   id: number
   username: string
   email: string
-  role: 'admin' | 'customer' | 'agent'
+  role: UserRole
   status: 'active' | 'inactive'
   cdate: string
 }
@@ -28,7 +29,7 @@ export const AdminUsers: React.FC = () => {
   })
 
   const updateRoleMutation = useMutation({
-    mutationFn: ({ id, role }: { id: number; role: string }) => api.put(`/users/${id}/role`, { role }),
+    mutationFn: ({ id, role }: { id: number; role: UserRole }) => api.put(`/users/${id}/role`, { role }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
     },
@@ -67,7 +68,7 @@ export const AdminUsers: React.FC = () => {
       cell: ({ row }) => (
         <span
           className={`badge ${
-            row.original.role === 'admin' ? 'badge-purple' : row.original.role === 'customer' ? 'badge-blue' : 'badge-orange'
+            row.original.role === 'admin' ? 'badge-purple' : row.original.role === 'client' ? 'badge-blue' : 'badge-orange'
           }`}
         >
           {row.original.role}
@@ -104,13 +105,14 @@ export const AdminUsers: React.FC = () => {
             <select
               value={user.role}
               onChange={(e) => {
-                if (window.confirm(t('admin.users.confirm_change_role', { username: user.username, role: e.target.value.toUpperCase() }))) {
-                  updateRoleMutation.mutate({ id: user.id, role: e.target.value })
+                const role = e.target.value as UserRole
+                if (window.confirm(t('admin.users.confirm_change_role', { username: user.username, role: role.toUpperCase() }))) {
+                  updateRoleMutation.mutate({ id: user.id, role })
                 }
               }}
               className="text-xs border border-border rounded p-1 bg-background"
             >
-              <option value="customer">{t('admin.users.role_customer')}</option>
+              <option value="client">{t('admin.users.role_customer')}</option>
               <option value="agent">{t('admin.users.role_agent')}</option>
               <option value="admin">{t('admin.users.role_admin')}</option>
             </select>
