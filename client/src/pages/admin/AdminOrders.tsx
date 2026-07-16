@@ -4,8 +4,31 @@ import { useTranslation } from 'react-i18next'
 import { api } from '../../services/api'
 import { DataTable } from '../../components/admin/DataTable'
 import type { ColumnDef } from '@tanstack/react-table'
-import { ShoppingCart, Loader2, Truck, X } from 'lucide-react'
+import { ShoppingCart, Loader2, Truck, X, Eye, MapPin, Receipt, PlaneTakeoff, Ship as ShipIcon, User } from 'lucide-react'
+import { useLocalizedName } from '../../utils/localization'
+import { getImageUrl } from '../../utils/image'
 
+interface OrderItem {
+  quantity: number
+  selected_options?: Record<string, string> | null
+  product?: { id: number; name_en?: string; name_th?: string; name_jp?: string; img?: string[] } | null
+  ticket?: { id: number; item_name: string; img?: string | string[] } | null
+}
+interface OrderAddress {
+  fullname: string
+  surname: string
+  tel: string
+  address_line: string
+}
+interface OrderPayment {
+  id: number
+  amount: number
+  payment_type: string
+  method?: string | null
+  slip_img?: string | null
+  status: string
+  cdate: string
+}
 interface Order {
   id: number
   order_code: string | null
@@ -22,7 +45,17 @@ interface Order {
   shipped_date: string | null
   deliv_date: string | null
   cdate: string
+  user?: { id: number; username: string; email: string } | null
+  ship?: { type: string; ship_date: string } | null
+  address?: OrderAddress | null
+  payments?: OrderPayment[]
+  items?: OrderItem[]
 }
+
+const firstImg = (img?: string | string[] | null) => (Array.isArray(img) ? img[0] : img) || undefined
+const optionsLine = (o?: Record<string, string> | null) =>
+  o && Object.keys(o).length ? Object.entries(o).map(([k, v]) => `${k}: ${v}`).join(' · ') : ''
+const fmtDate = (d?: string | null) => (d ? new Date(d).toLocaleDateString() : undefined)
 
 // yyyy-mm-dd for <input type=date>
 const dateInput = (d?: string | null) => {
@@ -112,10 +145,131 @@ const ShippingEditModal: React.FC<{ order: Order; onClose: () => void }> = ({ or
   )
 }
 
+// Full order detail for admin/agent — everything needed to fulfil the order.
+const AdminOrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = ({ order, onClose }) => {
+  const { t } = useTranslation()
+  const localizedName = useLocalizedName()
+  const shipFee = (order.shipping_fee_jp_th || 0) + (order.shipping_fee_th_th || 0)
+
+  return (
+    <div className="modal-scrim" onClick={onClose}>
+      <div className="modal-card max-w-3xl" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="modal-close"><X className="w-5 h-5" /></button>
+
+        <h3 className="font-bold text-xl font-mono tracking-wide">{order.order_code || `NT-${order.id}`}</h3>
+        <p className="text-sm text-muted-foreground">{new Date(order.cdate).toLocaleString()}</p>
+        <div className="flex gap-2 mt-3">
+          <span className="badge badge-info">{t(`admin.order.status_${order.status}`)}</span>
+          <span className="badge badge-warning">{t(`admin.order.payment_${order.payment_status}`)}</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 mt-6">
+          <div>
+            {/* Customer */}
+            <section>
+              <h4 className="detail-heading"><User className="w-4 h-4" />{t('admin.order.customer')}</h4>
+              <p className="text-sm font-medium">{order.user?.username || `#${order.user_id}`}</p>
+              <p className="text-sm text-muted-foreground">{order.user?.email}</p>
+            </section>
+
+            {/* Items — what the agent must buy */}
+            <section className="mt-5">
+              <h4 className="detail-heading"><ShoppingCart className="w-4 h-4" />{t('admin.order.items')}</h4>
+              <div className="space-y-2">
+                {(order.items || []).map((it, idx) => {
+                  const label = it.product ? localizedName(it.product) : (it.ticket?.item_name || '—')
+                  const img = firstImg(it.product?.img) || firstImg(it.ticket?.img)
+                  return (
+                    <div key={idx} className="flex items-center gap-3 border border-border rounded-lg p-2">
+                      <img src={getImageUrl(img)} alt={label} className="w-11 h-11 object-cover rounded-md border border-border" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{label}</p>
+                        {optionsLine(it.selected_options) && (
+                          <p className="text-xs text-primary font-medium">{optionsLine(it.selected_options)}</p>
+                        )}
+                      </div>
+                      <span className="text-sm text-muted-foreground">x{it.quantity}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+          </div>
+
+          <div>
+            {/* Shipping */}
+            <section>
+              <h4 className="detail-heading"><Truck className="w-4 h-4" />{t('admin.order.shipping')}</h4>
+              <div className="text-sm space-y-1">
+                {order.ship && (
+                  <p className="flex items-center gap-1.5">
+                    {order.ship.type === 'sea' ? <ShipIcon className="w-4 h-4 text-primary" /> : <PlaneTakeoff className="w-4 h-4 text-primary" />}
+                    {order.ship.type} · {fmtDate(order.ship.ship_date)}
+                  </p>
+                )}
+                <div className="flex justify-between text-muted-foreground"><span>{t('admin.order.courier')}</span><span>{order.courier_name || '—'}</span></div>
+                <div className="flex justify-between text-muted-foreground"><span>{t('admin.order.tracking_no')}</span><span className="font-mono">{order.track_no || '—'}</span></div>
+                <div className="flex justify-between text-muted-foreground"><span>{t('admin.order.shipped_date')}</span><span>{fmtDate(order.shipped_date) || '—'}</span></div>
+                <div className="flex justify-between text-muted-foreground"><span>{t('admin.order.deliv_date')}</span><span>{fmtDate(order.deliv_date) || '—'}</span></div>
+              </div>
+            </section>
+
+            {/* Address */}
+            <section className="mt-5">
+              <h4 className="detail-heading"><MapPin className="w-4 h-4" />{t('admin.order.deliver_to')}</h4>
+              {order.address ? (
+                <div className="text-sm text-muted-foreground">
+                  <p className="text-foreground font-medium">{order.address.fullname} {order.address.surname}</p>
+                  <p>{order.address.address_line}</p>
+                  <p>Tel: {order.address.tel}</p>
+                </div>
+              ) : <p className="text-sm text-muted-foreground">—</p>}
+            </section>
+
+            {/* Totals */}
+            <section className="mt-5 border-t border-border pt-3 space-y-1.5 text-sm">
+              <div className="flex justify-between"><span className="text-muted-foreground">{t('admin.order.items_total')}</span><span>฿{(order.item_price_total || 0).toLocaleString()}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{t('admin.order.shipping_fee')}</span><span>{shipFee > 0 ? `฿${shipFee.toLocaleString()}` : '—'}</span></div>
+              <div className="flex justify-between font-bold"><span>{t('admin.order.grand_total_calc')}</span><span className="text-primary">{order.grand_total ? `฿${order.grand_total.toLocaleString()}` : '—'}</span></div>
+            </section>
+
+            {/* Payments */}
+            <section className="mt-5">
+              <h4 className="detail-heading"><Receipt className="w-4 h-4" />{t('admin.order.payments')}</h4>
+              {(order.payments || []).length === 0 ? (
+                <p className="text-sm text-muted-foreground">—</p>
+              ) : (
+                <div className="space-y-2">
+                  {(order.payments || []).map((p) => (
+                    <div key={p.id} className="flex items-center justify-between text-sm border border-border rounded-lg px-3 py-2">
+                      <div>
+                        <p className="font-medium">{p.payment_type}</p>
+                        <p className="text-xs text-muted-foreground">{fmtDate(p.cdate)}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-semibold text-primary">฿{p.amount.toLocaleString()}</span>
+                        {p.slip_img && <a href={getImageUrl(p.slip_img)} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline">{t('admin.order.view_slip')}</a>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        </div>
+
+        <button onClick={onClose} className="btn-primary w-full justify-center mt-6">{t('admin.order.close')}</button>
+      </div>
+    </div>
+  )
+}
+
 export const AdminOrders: React.FC = () => {
   const { t } = useTranslation()
+  const localizedName = useLocalizedName()
   const queryClient = useQueryClient()
   const [editShipping, setEditShipping] = useState<Order | null>(null)
+  const [detailOrder, setDetailOrder] = useState<Order | null>(null)
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ['admin-orders'],
@@ -149,6 +303,29 @@ export const AdminOrders: React.FC = () => {
       accessorKey: 'cdate',
       header: t('admin.order.date'),
       cell: ({ row }) => new Date(row.original.cdate).toLocaleDateString()
+    },
+    {
+      id: 'customer',
+      header: t('admin.order.customer'),
+      accessorFn: (row) => row.user?.username || `#${row.user_id}`,
+      cell: ({ row }) => <span className="font-medium">{row.original.user?.username || `#${row.original.user_id}`}</span>
+    },
+    {
+      id: 'items',
+      header: t('admin.order.items'),
+      accessorFn: (row) => (row.items || []).map((i) => i.product ? (i.product.name_en || '') : (i.ticket?.item_name || '')).join(' '),
+      cell: ({ row }) => {
+        const its = row.original.items || []
+        if (its.length === 0) return <span className="text-muted-foreground">—</span>
+        const first = its[0]
+        const label = first.product ? localizedName(first.product) : (first.ticket?.item_name || '—')
+        return (
+          <span className="text-sm">
+            <span className="line-clamp-1 max-w-[220px]">{label}</span>
+            {its.length > 1 && <span className="text-xs text-muted-foreground">+{its.length - 1} {t('admin.order.more_items')}</span>}
+          </span>
+        )
+      }
     },
     {
       accessorKey: 'grand_total',
@@ -209,13 +386,22 @@ export const AdminOrders: React.FC = () => {
       id: 'actions',
       header: t('admin.order.actions'),
       cell: ({ row }) => (
-        <button
-          onClick={() => setEditShipping(row.original)}
-          className="btn-icon"
-          title={t('admin.order.manage_shipping')}
-        >
-          <Truck className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setDetailOrder(row.original)}
+            className="btn-icon"
+            title={t('admin.order.view_detail')}
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setEditShipping(row.original)}
+            className="btn-icon"
+            title={t('admin.order.manage_shipping')}
+          >
+            <Truck className="w-4 h-4" />
+          </button>
+        </div>
       )
     }
   ]
@@ -264,6 +450,10 @@ export const AdminOrders: React.FC = () => {
             }
           ]}
         />
+      )}
+
+      {detailOrder && (
+        <AdminOrderDetailModal order={detailOrder} onClose={() => setDetailOrder(null)} />
       )}
 
       {editShipping && (

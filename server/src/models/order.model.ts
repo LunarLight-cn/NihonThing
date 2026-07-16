@@ -6,6 +6,7 @@ export type OrderItemInput = {
   type: 'product' | 'ticket'
   id: number
   quantity: number
+  options?: Record<string, string>
 }
 
 // Shopee-style human-facing order code: YYMMDD + 8 random base32 chars,
@@ -140,7 +141,8 @@ export const createOrder = async (
     order_id: newOrder.id,
     product_id: item.type === 'product' ? item.id : null,
     ticket_id: item.type === 'ticket' ? item.id : null,
-    quantity: item.quantity
+    quantity: item.quantity,
+    selected_options: item.options ?? null
   }))
 
   await db.insert(schema.Order_Items).values(orderItemsData)
@@ -160,28 +162,38 @@ export const createOrder = async (
   return newOrder
 }
 
+// Relations loaded for any order detail view (customer or admin).
+const orderDetailWith = {
+  ship: { with: { destination: { columns: { name_en: true, name_th: true, name_jp: true } } } },
+  payments: true,
+  address: true,
+  items: {
+    with: {
+      product: { columns: { id: true, name_en: true, name_th: true, name_jp: true, img: true } },
+      ticket: { columns: { id: true, item_name: true, img: true } }
+    }
+  }
+} as const
+
 export const getMyOrders = async (d1: D1Database, userId: number) => {
   const db = drizzle(d1, { schema })
   return await db.query.Orders.findMany({
     where: eq(schema.Orders.user_id, userId),
     orderBy: (orders, { desc }) => [desc(orders.cdate)],
-    with: {
-      ship: { with: { destination: { columns: { name_en: true, name_th: true, name_jp: true } } } },
-      payments: true,
-      address: true,
-      items: {
-        with: {
-          product: { columns: { id: true, name_en: true, name_th: true, name_jp: true, img: true } },
-          ticket: { columns: { id: true, item_name: true, img: true } }
-        }
-      }
-    }
+    with: orderDetailWith
   })
 }
 
 export const getAllOrders = async (d1: D1Database) => {
   const db = drizzle(d1, { schema })
-  return await db.query.Orders.findMany()
+  return await db.query.Orders.findMany({
+    orderBy: (orders, { desc }) => [desc(orders.cdate)],
+    with: {
+      ...orderDetailWith,
+      // Admin also needs to know who placed it.
+      user: { columns: { id: true, username: true, email: true } }
+    }
+  })
 }
 
 export const getOrderById = async (d1: D1Database, id: number) => {

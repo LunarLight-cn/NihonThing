@@ -1,19 +1,30 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 
 export interface CartItem {
+  lineId: string
   id: number
   name: string
   brand: string
   price_thb: number
   image: string
   quantity: number
+  selectedOptions?: Record<string, string>
+}
+
+// Unique per product + chosen options — same product with a different size is a
+// separate cart line. Keys are sorted so the id is stable regardless of order.
+export const makeLineId = (id: number, options?: Record<string, string>) => {
+  const opts = options && Object.keys(options).length
+    ? Object.keys(options).sort().map((k) => `${k}=${options[k]}`).join('&')
+    : ''
+  return `${id}::${opts}`
 }
 
 interface CartContextType {
   items: CartItem[]
-  addItem: (item: Omit<CartItem, 'quantity'>) => void
-  removeItem: (id: number) => void
-  updateQuantity: (id: number, quantity: number) => void
+  addItem: (item: Omit<CartItem, 'quantity' | 'lineId'>) => void
+  removeItem: (lineId: string) => void
+  updateQuantity: (lineId: string, quantity: number) => void
   clearCart: () => void
   totalItems: number
   totalPrice: number
@@ -35,24 +46,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('cart', JSON.stringify(items))
   }, [items])
 
-  const addItem = (newItem: Omit<CartItem, 'quantity'>) => {
+  const addItem = (newItem: Omit<CartItem, 'quantity' | 'lineId'>) => {
+    const lineId = makeLineId(newItem.id, newItem.selectedOptions)
     setItems((current) => {
-      const existing = current.find((i) => i.id === newItem.id)
+      const existing = current.find((i) => i.lineId === lineId)
       if (existing) {
-        return current.map((i) => (i.id === newItem.id ? { ...i, quantity: i.quantity + 1 } : i))
+        return current.map((i) => (i.lineId === lineId ? { ...i, quantity: i.quantity + 1 } : i))
       }
-      return [...current, { ...newItem, quantity: 1 }]
+      return [...current, { ...newItem, lineId, quantity: 1 }]
     })
     setIsCartOpen(true) // Open cart sidebar when item added
   }
 
-  const removeItem = (id: number) => {
-    setItems((current) => current.filter((i) => i.id !== id))
+  const removeItem = (lineId: string) => {
+    setItems((current) => current.filter((i) => i.lineId !== lineId))
   }
 
-  const updateQuantity = (id: number, quantity: number) => {
-    if (quantity < 1) return removeItem(id)
-    setItems((current) => current.map((i) => (i.id === id ? { ...i, quantity } : i)))
+  const updateQuantity = (lineId: string, quantity: number) => {
+    if (quantity < 1) return removeItem(lineId)
+    setItems((current) => current.map((i) => (i.lineId === lineId ? { ...i, quantity } : i)))
   }
 
   const clearCart = () => {

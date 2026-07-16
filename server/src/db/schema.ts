@@ -104,6 +104,9 @@ export const Products = sqliteTable("Products", {
   price_tentative_jpy: real("price_tentative_jpy"),
   price_tentative_thb: real("price_tentative_thb"),
   img: text("img", { mode: 'json' }).$type<string[]>(),
+  // Product options (e.g. Size, Colour) — informational choices the customer
+  // selects when ordering. Single price/stock per product (Model A).
+  options: text("options", { mode: 'json' }).$type<{ name: string; values: string[] }[]>(),
   tag: text("tag"),
   amount: integer("amount").default(0),
   weight: real("weight").default(0),
@@ -142,6 +145,8 @@ export const Order_Items = sqliteTable("Order_Items", {
   product_id: integer("product_id").references(() => Products.id),
   final_price: real("final_price"),
   quantity: integer("quantity"),
+  // Customer's chosen options for this line, e.g. {"Size":"M","Colour":"Black"}
+  selected_options: text("selected_options", { mode: 'json' }).$type<Record<string, string>>(),
   missing: integer("missing"),
   udate: text("udate"),
 });

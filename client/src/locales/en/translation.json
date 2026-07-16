@@ -120,7 +120,8 @@
     "addToCart": "Add to Cart",
     "outOfStock": "Out of Stock",
     "tentativePrice": "* Tentative price, subject to change based on actual store price.",
-    "notFound": "Product not found or failed to load."
+    "notFound": "Product not found or failed to load.",
+    "selectOptions": "Please select all options first."
   },
   "cart": {
     "title": "Your Cart",
@@ -375,7 +376,17 @@
       "search_categories": "Search categories...",
       "search_category": "Search category...",
       "search_brands": "Search brands...",
-      "search_shops": "Search shops..."
+      "search_shops": "Search shops...",
+      "options_title": "Options",
+      "options_hint": "Choices the customer must pick when ordering — e.g. an option named \"Size\" with values S, M, L. Leave empty if the product has no choices.",
+      "option_name": "Option name",
+      "option_name_ph": "e.g. Size, Colour",
+      "option_values": "Values",
+      "add_value_ph": "Type a value, press Enter",
+      "option_values_empty": "Type a value (e.g. S) and press Enter to add it.",
+      "option_values_hint": "Press Enter after each value. Click ✕ on a chip to remove it.",
+      "remove_option": "Remove this option",
+      "add_option": "Add Option"
     },
     "purchases": {
       "purchases_title": "Purchases",
@@ -482,6 +493,17 @@
       "confirm_status_change": "Change the fulfillment status of this order?",
       "confirm_payment_change": "Change the payment status of this order?",
       "actions": "Actions",
+      "customer": "Customer",
+      "items": "Items",
+      "more_items": "more",
+      "view_detail": "View details",
+      "shipping": "Shipping",
+      "deliver_to": "Deliver To",
+      "items_total": "Items Subtotal",
+      "shipping_fee": "Shipping Fee",
+      "payments": "Payments",
+      "view_slip": "View slip",
+      "close": "Close",
       "manage_shipping": "Shipping & Fees",
       "fee_jp_th": "Shipping JP→TH (฿)",
       "fee_th_th": "Local Shipping (฿)",
