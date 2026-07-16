@@ -375,6 +375,9 @@ export const AdminOrders: React.FC = () => {
     mutationFn: ({ id, status }: { id: number; status: string }) => api.put(`/orders/${id}`, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] })
+      // Cancelling an order releases its trip capacity server-side, so the
+      // capacity panel and the customer trip meters are both stale now.
+      queryClient.invalidateQueries({ queryKey: ['ships'] })
     }
   })
 

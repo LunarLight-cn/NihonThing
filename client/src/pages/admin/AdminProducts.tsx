@@ -118,6 +118,10 @@ export const AdminProducts: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] })
+      // Customers read the same products under ['products'] (catalog, new
+      // arrivals, trending) and ['product', id] (detail page).
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['product'] })
       setIsAddingProduct(false)
       setEditingProductId(null)
     }
@@ -127,6 +131,10 @@ export const AdminProducts: React.FC = () => {
     mutationFn: ({ id, status }: { id: number; status: string }) => api.put(`/products/${id}`, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] })
+      // Customers read the same products under ['products'] (catalog, new
+      // arrivals, trending) and ['product', id] (detail page).
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['product'] })
     }
   })
 
@@ -161,6 +169,10 @@ export const AdminProducts: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] })
+      // Customers read the same products under ['products'] (catalog, new
+      // arrivals, trending) and ['product', id] (detail page).
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['product'] })
       setIsAddingProduct(false)
       setEditingProductId(null)
     }
