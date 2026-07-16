@@ -6,14 +6,28 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { Plane, Plus, Loader2, Edit2, Save, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+type TripFillAxis = 'items' | 'weight' | 'price'
+interface TripAxis {
+  axis: TripFillAxis
+  percent: number
+  current: number
+  max: number
+}
 interface Trip {
   id: number
   type: string
   ship_date: string
   close_date: string
   status: 'open' | 'closed' | 'in_transit' | 'arrived'
+  // Capacity caps — 0 means that axis is unlimited
   max_cap: number
   current_cap: number
+  max_items: number
+  current_items: number
+  max_price: number
+  current_price: number
+  axes?: TripAxis[]
+  fill?: TripAxis | null
 }
 
 export const AdminTrips: React.FC = () => {
@@ -95,7 +109,21 @@ export const AdminTrips: React.FC = () => {
     {
       accessorKey: 'max_cap',
       header: t('admin.trips.capacity'),
-      cell: ({ row }) => `${row.original.current_cap || 0} / ${row.original.max_cap || '-'} kg`
+      cell: ({ row }) => {
+        const r = row.original
+        return (
+          <div className="text-xs space-y-0.5 whitespace-nowrap">
+            <div>{r.current_items || 0} / {r.max_items || '∞'} {t('admin.trips.items_unit')}</div>
+            <div>{r.current_cap || 0} / {r.max_cap || '∞'} kg</div>
+            <div>฿{(r.current_price || 0).toLocaleString()} / {r.max_price ? `฿${r.max_price.toLocaleString()}` : '∞'}</div>
+            {r.fill && (
+              <div className="font-semibold text-primary">
+                {t('admin.trips.fill_pct', { pct: r.fill.percent, axis: t(`admin.trips.axis_${r.fill.axis}`) })}
+              </div>
+            )}
+          </div>
+        )
+      }
     },
     {
       id: 'actions',
@@ -108,6 +136,8 @@ export const AdminTrips: React.FC = () => {
               ship_date: row.original.ship_date ? new Date(row.original.ship_date).toISOString().split('T')[0] : '',
               close_date: row.original.close_date ? new Date(row.original.close_date).toISOString().split('T')[0] : '',
               max_cap: row.original.max_cap || 0,
+              max_items: row.original.max_items || 0,
+              max_price: row.original.max_price || 0,
               origin_id: (row.original as any).origin_id || 2,
               destination_id: (row.original as any).destination_id || 1
             })
@@ -127,6 +157,8 @@ export const AdminTrips: React.FC = () => {
     ship_date: '',
     close_date: '',
     max_cap: 30,
+    max_items: 0,
+    max_price: 0,
     origin_id: 2, // JP
     destination_id: 1 // TH
   })
@@ -176,6 +208,18 @@ export const AdminTrips: React.FC = () => {
                 <option value={1}>{t('admin.trips.thailand')}</option>
                 <option value={2}>{t('admin.trips.japan')}</option>
               </select>
+            </div>
+            <div className="md:col-span-2 form-section-divider">{t('admin.trips.caps_title')}</div>
+            <div className="md:col-span-2">
+              <p className="text-xs text-muted-foreground -mt-2">{t('admin.trips.caps_hint')}</p>
+            </div>
+            <div>
+              <label className="label-admin">{t('admin.trips.max_items')}</label>
+              <input type="number" min="0" step="1" value={newTripForm.max_items} onChange={(e) => setNewTripForm({ ...newTripForm, max_items: Number(e.target.value) })} className="input-admin" />
+            </div>
+            <div>
+              <label className="label-admin">{t('admin.trips.max_price')}</label>
+              <input type="number" min="0" step="1" value={newTripForm.max_price} onChange={(e) => setNewTripForm({ ...newTripForm, max_price: Number(e.target.value) })} className="input-admin" />
             </div>
             <div>
               <label className="label-admin">{t('admin.trips.max_cap')}</label>

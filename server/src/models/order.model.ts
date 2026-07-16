@@ -1,6 +1,7 @@
 import { drizzle } from 'drizzle-orm/d1'
 import { eq, inArray, sql, and } from 'drizzle-orm'
 import * as schema from '../db/schema'
+import { getSettings } from './settings.model'
 
 export type OrderItemInput = {
   type: 'product' | 'ticket'
@@ -32,17 +33,18 @@ export const createOrder = async (
   defaultCutoffDays: number
 ) => {
   const db = drizzle(d1, { schema })
-  
+  const settings = await getSettings(d1)
+
   // Validate Trip and check Cutoff Date
   const trip = await db.query.Ships.findFirst({ where: eq(schema.Ships.id, tripId) })
   if (!trip) throw new Error('Trip not found')
-  
+
   const now = new Date()
   let cutoffDate = new Date(trip.ship_date)
   if (trip.close_date) {
     cutoffDate = new Date(trip.close_date)
   } else {
-    cutoffDate.setDate(cutoffDate.getDate() - defaultCutoffDays)
+    cutoffDate.setDate(cutoffDate.getDate() - (settings.trip_cutoff_days ?? defaultCutoffDays))
   }
   
   if (trip.status !== 'open' || now > cutoffDate) {
@@ -74,15 +76,32 @@ export const createOrder = async (
     }
   }
 
-  // Capacity & Anti-Hoarding Limits
-  const PER_USER_LIMIT = 50
+  // Capacity & Anti-Hoarding Limits.
+  //
+  // A trip fills up along three axes: item count, weight and (tentative) price.
+  // A max of 0/null means that axis is unlimited. The last order may overshoot
+  // weight/price by the configured tolerance and is still accepted — the trip
+  // then closes. Item count may never be exceeded.
+  const PER_USER_LIMIT = settings.per_user_item_limit ?? 50
+  const weightTol = settings.weight_tolerance_kg ?? 0
+  const priceTol = settings.price_tolerance_thb ?? 0
   const orderAmount = items.reduce((sum, item) => sum + item.quantity, 0)
-  
-  // Check global capacity using weight
-  const currentCap = Number(trip.current_cap || 0)
-  const maxCap = Number(trip.max_cap || 1000)
-  if (currentCap + totalWeight > maxCap) {
-    throw new Error(`Trip capacity exceeded. Only ${maxCap - currentCap} kg remaining.`)
+
+  const maxItems = Number(trip.max_items || 0)
+  const maxWeight = Number(trip.max_cap || 0)
+  const maxPrice = Number(trip.max_price || 0)
+  const currentItems = Number(trip.current_items || 0)
+  const currentWeight = Number(trip.current_cap || 0)
+  const currentPrice = Number(trip.current_price || 0)
+
+  if (maxItems > 0 && currentItems + orderAmount > maxItems) {
+    throw new Error(`Trip is full. Only ${Math.max(maxItems - currentItems, 0)} item(s) left on this trip.`)
+  }
+  if (maxWeight > 0 && currentWeight + totalWeight > maxWeight + weightTol) {
+    throw new Error(`Trip weight limit exceeded. Only ${Math.max(maxWeight + weightTol - currentWeight, 0).toFixed(2)} kg left on this trip.`)
+  }
+  if (maxPrice > 0 && currentPrice + itemPriceTotal > maxPrice + priceTol) {
+    throw new Error(`Trip value limit exceeded. Only ฿${Math.max(maxPrice + priceTol - currentPrice, 0).toLocaleString()} left on this trip.`)
   }
 
   // NOTE: D1 does not support interactive transactions (db.transaction issues
@@ -108,21 +127,33 @@ export const createOrder = async (
     throw new Error(`Per-user limit exceeded. You can only order ${PER_USER_LIMIT} items per trip.`)
   }
 
-  // Atomic Capacity Update & Auto-Close
+  // Atomic Capacity Update & Auto-Close.
+  // The WHERE clause is the real enforcement: two concurrent orders cannot both
+  // slip past the caps, because only one UPDATE can win. Item count is strict;
+  // weight/price allow the tolerance overshoot. The trip closes as soon as any
+  // axis reaches its max.
   const capacityUpdate = await db.update(schema.Ships)
     .set({
       current_cap: sql`COALESCE(current_cap, 0) + ${totalWeight}`,
-      status: sql`CASE WHEN COALESCE(current_cap, 0) + ${totalWeight} >= COALESCE(max_cap, 1000) THEN 'closed' ELSE status END`
+      current_items: sql`COALESCE(current_items, 0) + ${orderAmount}`,
+      current_price: sql`COALESCE(current_price, 0) + ${itemPriceTotal}`,
+      status: sql`CASE WHEN
+        (COALESCE(max_items, 0) > 0 AND COALESCE(current_items, 0) + ${orderAmount} >= max_items)
+        OR (COALESCE(max_cap, 0) > 0 AND COALESCE(current_cap, 0) + ${totalWeight} >= max_cap)
+        OR (COALESCE(max_price, 0) > 0 AND COALESCE(current_price, 0) + ${itemPriceTotal} >= max_price)
+        THEN 'closed' ELSE status END`
     })
     .where(
       and(
         eq(schema.Ships.id, tripId),
-        sql`COALESCE(current_cap, 0) + ${totalWeight} <= COALESCE(max_cap, 1000)`
+        sql`(COALESCE(max_items, 0) = 0 OR COALESCE(current_items, 0) + ${orderAmount} <= max_items)`,
+        sql`(COALESCE(max_cap, 0) = 0 OR COALESCE(current_cap, 0) + ${totalWeight} <= max_cap + ${weightTol})`,
+        sql`(COALESCE(max_price, 0) = 0 OR COALESCE(current_price, 0) + ${itemPriceTotal} <= max_price + ${priceTol})`
       )
     ).returning()
 
   if (capacityUpdate.length === 0) {
-    throw new Error(`Trip capacity exceeded. Cannot fulfill ${orderAmount} items.`)
+    throw new Error(`Trip is full. Cannot fit ${orderAmount} item(s) — someone may have just taken the last slot.`)
   }
 
   // Insert Order

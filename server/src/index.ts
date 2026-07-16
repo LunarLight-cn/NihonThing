@@ -19,6 +19,7 @@ import categoryRoutes from './routes/category.route'
 import locationRoutes from './routes/location.route'
 import uploadRoutes from './routes/upload.route'
 import brandRoutes from './routes/brand.route'
+import settingsRoutes from './routes/settings.route'
 
 const app = new OpenAPIHono()
 
@@ -56,6 +57,7 @@ app.route('/api/categories', categoryRoutes)
 app.route('/api/locations', locationRoutes)
 app.route('/api/uploads', uploadRoutes)
 app.route('/api/brands', brandRoutes)
+app.route('/api/settings', settingsRoutes)
 
 app.doc('/doc', {
   openapi: '3.0.0',

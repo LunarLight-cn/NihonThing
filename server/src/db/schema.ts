@@ -66,6 +66,19 @@ export const Subdistricts = sqliteTable("Subdistricts", {
   postal_code: text("postal_code").notNull(),
 });
 
+// Global, admin-editable settings. Singleton row (id = 1).
+export const Settings = sqliteTable("Settings", {
+  id: integer("id").primaryKey(),
+  // Max items one user may order per trip (was hard-coded 50).
+  per_user_item_limit: integer("per_user_item_limit").default(50),
+  // Days before ship_date that a trip stops accepting orders (was env var).
+  trip_cutoff_days: integer("trip_cutoff_days").default(5),
+  // How far a trip may overshoot its cap on the final accepted order.
+  weight_tolerance_kg: real("weight_tolerance_kg").default(5),
+  price_tolerance_thb: real("price_tolerance_thb").default(500),
+  udate: text("udate"),
+});
+
 export const Ships = sqliteTable("Ships", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   type: text("type").notNull(),
@@ -75,8 +88,13 @@ export const Ships = sqliteTable("Ships", {
   courier_name: text("courier_name"),
   origin_id: integer("origin_id").notNull().references(() => Countries.id),
   destination_id: integer("destination_id").notNull().references(() => Countries.id),
+  // Capacity is tracked on three axes. A max of 0/null means "no limit".
   max_cap: real("max_cap").default(0),
   current_cap: real("current_cap").default(0),
+  max_items: integer("max_items").default(0),
+  current_items: integer("current_items").default(0),
+  max_price: real("max_price").default(0),
+  current_price: real("current_price").default(0),
   close_date: text("close_date"),
   status: text("status", { enum: ["open", "closed", "in_transit", "arrived"] }).default('open'),
   cdate: text("cdate").default(sql`CURRENT_TIMESTAMP`),
