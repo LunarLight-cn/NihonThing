@@ -117,7 +117,7 @@ export const AdminProducts: React.FC = () => {
       return res
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'products'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] })
       setIsAddingProduct(false)
       setEditingProductId(null)
     }
@@ -160,7 +160,7 @@ export const AdminProducts: React.FC = () => {
       return res
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'products'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] })
       setIsAddingProduct(false)
       setEditingProductId(null)
     }
