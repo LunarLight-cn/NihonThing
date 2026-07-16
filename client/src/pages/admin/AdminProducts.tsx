@@ -780,50 +780,62 @@ export const AdminProducts: React.FC = () => {
                 <div className="col-span-3 space-y-3">
                   <p className="text-xs text-muted-foreground">{t('admin.product.options_hint')}</p>
                   {productForm.options.map((opt, oi) => (
-                    <div key={oi} className="border border-border rounded-lg p-3 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={opt.name}
-                          placeholder={t('admin.product.option_name_ph')}
-                          onChange={(e) => setProductForm((prev) => ({ ...prev, options: prev.options.map((o, i) => i === oi ? { ...o, name: e.target.value } : o) }))}
-                          className="input-admin flex-1"
-                        />
+                    <div key={oi} className="border border-border rounded-lg p-4 space-y-3">
+                      <div className="flex items-end gap-2">
+                        <div className="flex-1">
+                          <label className="label-admin">{t('admin.product.option_name')}</label>
+                          <input
+                            type="text"
+                            value={opt.name}
+                            placeholder={t('admin.product.option_name_ph')}
+                            onChange={(e) => setProductForm((prev) => ({ ...prev, options: prev.options.map((o, i) => i === oi ? { ...o, name: e.target.value } : o) }))}
+                            className="input-admin"
+                          />
+                        </div>
                         <button
                           type="button"
+                          title={t('admin.product.remove_option')}
                           onClick={() => setProductForm((prev) => ({ ...prev, options: prev.options.filter((_, i) => i !== oi) }))}
-                          className="btn-icon-destructive"
+                          className="btn-icon-destructive mb-1"
                         >
                           <X className="w-4 h-4" />
                         </button>
                       </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        {opt.values.map((val, vi) => (
-                          <span key={vi} className="badge bg-secondary text-secondary-foreground flex items-center gap-1 normal-case">
-                            {val}
-                            <button
-                              type="button"
-                              onClick={() => setProductForm((prev) => ({ ...prev, options: prev.options.map((o, i) => i === oi ? { ...o, values: o.values.filter((_, j) => j !== vi) } : o) }))}
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </span>
-                        ))}
-                        <input
-                          type="text"
-                          placeholder={t('admin.product.add_value_ph')}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault()
-                              const v = (e.target as HTMLInputElement).value.trim()
-                              if (v) {
-                                setProductForm((prev) => ({ ...prev, options: prev.options.map((o, i) => i === oi ? { ...o, values: [...o.values, v] } : o) }))
-                                ;(e.target as HTMLInputElement).value = ''
+
+                      <div>
+                        <label className="label-admin">{t('admin.product.option_values')}</label>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {opt.values.map((val, vi) => (
+                            <span key={vi} className="badge bg-primary/10 text-primary flex items-center gap-1 normal-case text-sm">
+                              {val}
+                              <button
+                                type="button"
+                                onClick={() => setProductForm((prev) => ({ ...prev, options: prev.options.map((o, i) => i === oi ? { ...o, values: o.values.filter((_, j) => j !== vi) } : o) }))}
+                                className="hover:text-destructive"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))}
+                          <input
+                            type="text"
+                            placeholder={t('admin.product.add_value_ph')}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                const v = (e.target as HTMLInputElement).value.trim()
+                                if (v) {
+                                  setProductForm((prev) => ({ ...prev, options: prev.options.map((o, i) => i === oi ? { ...o, values: [...o.values, v] } : o) }))
+                                  ;(e.target as HTMLInputElement).value = ''
+                                }
                               }
-                            }
-                          }}
-                          className="input-admin w-44 text-sm"
-                        />
+                            }}
+                            className="input-admin w-48 text-sm"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1.5">
+                          {opt.values.length === 0 ? t('admin.product.option_values_empty') : t('admin.product.option_values_hint')}
+                        </p>
                       </div>
                     </div>
                   ))}
