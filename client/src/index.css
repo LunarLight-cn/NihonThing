@@ -329,8 +329,17 @@
     @apply flex h-screen bg-muted/30;
   }
 
+  /* Hidden on mobile; the hamburger opens it as a drawer (.is-open). */
   .dash-sidebar {
-    @apply w-64 bg-card border-r border-border flex flex-col md:flex;
+    @apply w-64 bg-card border-r border-border flex-col hidden md:flex;
+  }
+
+  .dash-sidebar.is-open {
+    @apply flex fixed inset-y-0 left-0 z-50 shadow-xl;
+  }
+
+  .dash-backdrop {
+    @apply fixed inset-0 bg-black/40 z-40 md:hidden;
   }
 
   .dash-brand {

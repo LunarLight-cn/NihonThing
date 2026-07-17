@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { LogOut, Menu, Home, Globe } from 'lucide-react'
+import { LogOut, Menu, X, Home, Globe } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
@@ -32,11 +32,13 @@ export const DashboardLayout: React.FC<Props> = ({ brand, mobileTitle, roleLabel
   const { user, logout } = useAuth()
   const location = useLocation()
   const { t, i18n } = useTranslation()
+  // Mobile only: the sidebar becomes a drawer the hamburger opens.
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const renderLink = (item: DashboardNavItem, active: boolean) => {
     const Icon = item.icon
     return (
-      <Link key={item.path} to={item.path} className={`admin-nav-link ${active ? 'is-active' : ''}`}>
+      <Link key={item.path} to={item.path} onClick={() => setMenuOpen(false)} className={`admin-nav-link ${active ? 'is-active' : ''}`}>
         <Icon className={`w-5 h-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
         <span>{item.name}</span>
       </Link>
@@ -45,9 +47,14 @@ export const DashboardLayout: React.FC<Props> = ({ brand, mobileTitle, roleLabel
 
   return (
     <div className="dash-shell">
-      <aside className="dash-sidebar">
+      {menuOpen && <div className="dash-backdrop" onClick={() => setMenuOpen(false)} />}
+
+      <aside className={`dash-sidebar ${menuOpen ? 'is-open' : ''}`}>
         <div className="dash-brand">
-          <Link to="/">{brand}</Link>
+          <Link to="/" className="flex-1">{brand}</Link>
+          <button onClick={() => setMenuOpen(false)} className="p-1 md:hidden" aria-label="Close menu">
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         <div className="dash-nav">
@@ -104,7 +111,7 @@ export const DashboardLayout: React.FC<Props> = ({ brand, mobileTitle, roleLabel
       <main className="dash-main">
         <header className="dash-mobile-header">
           <span className="text-lg font-bold text-primary">{mobileTitle}</span>
-          <button className="p-2">
+          <button onClick={() => setMenuOpen(true)} className="p-2" aria-label="Open menu">
             <Menu className="w-6 h-6" />
           </button>
         </header>
