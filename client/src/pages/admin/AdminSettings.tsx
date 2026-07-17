@@ -11,6 +11,8 @@ interface PlatformSettings {
   trip_cutoff_days: number
   weight_tolerance_kg: number
   price_tolerance_thb: number
+  unpaid_move_days: number
+  overdue_cancel_days: number
 }
 
 // Global platform rules — applies to every trip/order, not just this admin.
@@ -34,7 +36,9 @@ const PlatformSettingsForm: React.FC = () => {
       per_user_item_limit: Number(payload.per_user_item_limit),
       trip_cutoff_days: Number(payload.trip_cutoff_days),
       weight_tolerance_kg: Number(payload.weight_tolerance_kg),
-      price_tolerance_thb: Number(payload.price_tolerance_thb)
+      price_tolerance_thb: Number(payload.price_tolerance_thb),
+      unpaid_move_days: Number(payload.unpaid_move_days),
+      overdue_cancel_days: Number(payload.overdue_cancel_days)
     }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['settings'] })
@@ -52,7 +56,9 @@ const PlatformSettingsForm: React.FC = () => {
     { key: 'per_user_item_limit', label: t('admin.setting.per_user_item_limit'), hint: t('admin.setting.per_user_item_limit_hint'), step: '1' },
     { key: 'trip_cutoff_days', label: t('admin.setting.trip_cutoff_days'), hint: t('admin.setting.trip_cutoff_days_hint'), step: '1' },
     { key: 'weight_tolerance_kg', label: t('admin.setting.weight_tolerance_kg'), hint: t('admin.setting.weight_tolerance_kg_hint'), step: '0.1' },
-    { key: 'price_tolerance_thb', label: t('admin.setting.price_tolerance_thb'), hint: t('admin.setting.price_tolerance_thb_hint'), step: '1' }
+    { key: 'price_tolerance_thb', label: t('admin.setting.price_tolerance_thb'), hint: t('admin.setting.price_tolerance_thb_hint'), step: '1' },
+    { key: 'unpaid_move_days', label: t('admin.setting.unpaid_move_days'), hint: t('admin.setting.unpaid_move_days_hint'), step: '1' },
+    { key: 'overdue_cancel_days', label: t('admin.setting.overdue_cancel_days'), hint: t('admin.setting.overdue_cancel_days_hint'), step: '1' }
   ]
 
   return (

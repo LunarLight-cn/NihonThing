@@ -25,7 +25,7 @@ const UpdateOrderSchema = z.object({
   shipping_fee_jp_th: z.number().optional(),
   shipping_fee_th_th: z.number().optional(),
   grand_total: z.number().optional(),
-  status: z.enum(['pending', 'purchasing', 'arrived_th', 'shipped', 'delivered', 'cancelled']).optional(),
+  status: z.enum(['pending', 'purchasing', 'in_transit', 'arrived', 'local_shipping', 'delivered', 'cancelled']).optional(),
   payment_status: z.enum(['pending_deposit', 'deposit_paid', 'pending_remaining', 'fully_paid']).optional()
 })
 
@@ -105,8 +105,12 @@ const putOrderRoute = createRoute({
 orderRoutes.openapi(putOrderRoute, async (c) => {
   const { id } = c.req.valid('param')
   const data = c.req.valid('json')
-  const updatedOrder = await updateOrder(c.env.nihonthing_db, id, data)
-  return c.json({ success: true, data: updatedOrder })
+  try {
+    const updatedOrder = await updateOrder(c.env.nihonthing_db, id, data)
+    return c.json({ success: true, data: updatedOrder })
+  } catch (err: any) {
+    return c.json({ success: false, message: err.message }, 400)
+  }
 })
 
 export default orderRoutes

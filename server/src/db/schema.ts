@@ -76,6 +76,12 @@ export const Settings = sqliteTable("Settings", {
   // How far a trip may overshoot its cap on the final accepted order.
   weight_tolerance_kg: real("weight_tolerance_kg").default(5),
   price_tolerance_thb: real("price_tolerance_thb").default(500),
+  // An order that has not paid its shipping by this many days before the
+  // trip's ship_date gets moved to the next open trip.
+  unpaid_move_days: integer("unpaid_move_days").default(3),
+  // An order that has sat unpaid for this many days after being moved (or
+  // past its deadline) gets cancelled — never deleted.
+  overdue_cancel_days: integer("overdue_cancel_days").default(14),
   udate: text("udate"),
 });
 
@@ -149,7 +155,9 @@ export const Orders = sqliteTable("Orders", {
   shipping_fee_th_th: real("shipping_fee_th_th"),
   grand_total: real("grand_total"),
   payment_status: text("payment_status", { enum: ["pending_deposit", "deposit_paid", "pending_remaining", "fully_paid"] }),
-  status: text("status", { enum: ["pending", "purchasing", "arrived_th", "shipped", "delivered", "cancelled"] }),
+  // Fulfillment only — money lives in payment_status. in_transit = on the trip
+  // (needs shipping paid first); local_shipping = with the domestic courier.
+  status: text("status", { enum: ["pending", "purchasing", "in_transit", "arrived", "local_shipping", "delivered", "cancelled"] }),
   sender_id: integer("sender_id").references(() => Users.id),
   shipped_date: text("shipped_date"),
   cdate: text("cdate").default(sql`CURRENT_TIMESTAMP`),
