@@ -240,8 +240,9 @@
     "status": {
       "pending": "Pending",
       "purchasing": "Purchasing",
-      "arrived_th": "Arrived in Thailand",
-      "shipped": "Shipped",
+      "in_transit": "On the Way",
+      "arrived": "Arrived",
+      "local_shipping": "Out for Delivery",
       "delivered": "Delivered",
       "cancelled": "Cancelled"
     },

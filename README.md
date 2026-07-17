@@ -301,7 +301,6 @@ erDiagram
 
 ```
 NihonThing/
-├── docs/                              # Documentation & design
 │   ├── REQUIREMENTS.md                # Full platform requirements (PRD)
 │   ├── PLAN.md                        # Development roadmap & milestones
 │   └── DBdesign.md                    # Database schema (DBML for dbdiagram.io)
