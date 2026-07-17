@@ -31,6 +31,12 @@ export const createPurchase = async (d1: D1Database, agentId: number, data: any)
     orderId = orderItem?.order_id ?? null
   }
 
+  // Same rule as claiming: no deposit, no shopping. Checked here too because
+  // the API can be called without ever claiming.
+  if (data.order_item_id) {
+    await assertDepositPaid(db, [data.order_item_id])
+  }
+
   const [newPurchase] = await db.insert(schema.Purchases).values({
     ...data,
     order_id: orderId,
@@ -51,11 +57,25 @@ export const updatePurchase = async (d1: D1Database, id: number, data: any) => {
   return await db.update(schema.Purchases).set(data).where(eq(schema.Purchases.id, id)).returning()
 }
 
+// Before the deposit an order is a wish, not a commitment; nobody should be
+// spending the central account's money on it.
+const assertDepositPaid = async (db: ReturnType<typeof drizzle<typeof schema>>, itemIds: number[]) => {
+  const items = await db.query.Order_Items.findMany({
+    where: inArray(schema.Order_Items.id, itemIds),
+    with: { order: { columns: { payment_status: true } } }
+  })
+  const unpaid = items.some((item) => item.order && !['deposit_paid', 'pending_remaining', 'fully_paid'].includes(item.order.payment_status ?? ''))
+  if (unpaid) {
+    throw new Error('The customer has not paid the deposit on this order yet.')
+  }
+}
+
 // A line is claimed by one agent at a time. The guard in the WHERE clause is
 // what makes it a claim: a second agent's UPDATE matches nothing and returns
 // empty rather than stealing the line.
 export const claimOrderItems = async (d1: D1Database, agentId: number, itemIds: number[]) => {
   const db = drizzle(d1, { schema })
+  await assertDepositPaid(db, itemIds)
   return await db.update(schema.Order_Items)
     .set({ claimed_by: agentId, claimed_at: sql`CURRENT_TIMESTAMP` })
     .where(and(inArray(schema.Order_Items.id, itemIds), isNull(schema.Order_Items.claimed_by)))

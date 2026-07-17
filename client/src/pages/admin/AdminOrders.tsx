@@ -7,6 +7,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { ShoppingCart, Loader2, Truck, X, Eye, MapPin, Receipt, PlaneTakeoff, Ship as ShipIcon, User } from 'lucide-react'
 import { useLocalizedName } from '../../utils/localization'
 import { getImageUrl } from '../../utils/image'
+import { orderStatusBadge, paymentStatusBadge } from '../../utils/status'
 
 interface OrderItem {
   quantity: number
@@ -251,8 +252,8 @@ const AdminOrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = (
         <h3 className="font-bold text-xl font-mono tracking-wide">{order.order_code || `NT-${order.id}`}</h3>
         <p className="text-sm text-muted-foreground">{new Date(order.cdate).toLocaleString()}</p>
         <div className="flex gap-2 mt-3">
-          <span className="badge badge-info">{t(`admin.order.status_${order.status}`)}</span>
-          <span className="badge badge-warning">{t(`admin.order.payment_${order.payment_status}`)}</span>
+          <span className={`badge ${orderStatusBadge(order.status)}`}>{t(`admin.order.status_${order.status}`)}</span>
+          <span className={`badge ${paymentStatusBadge(order.payment_status)}`}>{t(`admin.order.payment_${order.payment_status}`)}</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 mt-6">
@@ -441,7 +442,7 @@ export const AdminOrders: React.FC = () => {
               if (!confirm(t('admin.order.confirm_status_change'))) return
               updateStatusMutation.mutate({ id: row.original.id, status: next })
             }}
-            className="input-inline-select"
+            className={`input-inline-select ${orderStatusBadge(status)}`}
           >
             <option value="pending">{t('admin.order.status_pending')}</option>
             <option value="purchasing">{t('admin.order.status_purchasing')}</option>
@@ -467,7 +468,7 @@ export const AdminOrders: React.FC = () => {
               if (!confirm(t('admin.order.confirm_payment_change'))) return
               updatePaymentStatusMutation.mutate({ id: row.original.id, payment_status: next })
             }}
-            className="input-inline-select"
+            className={`input-inline-select ${paymentStatusBadge(pStatus)}`}
           >
             <option value="pending_deposit">{t('admin.order.payment_pending_deposit')}</option>
             <option value="deposit_paid">{t('admin.order.payment_deposit_paid')}</option>

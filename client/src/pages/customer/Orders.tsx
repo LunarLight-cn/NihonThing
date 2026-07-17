@@ -11,6 +11,7 @@ import {
 import { api } from '../../services/api'
 import { getImageUrl } from '../../utils/image'
 import { useLocalizedName } from '../../utils/localization'
+import { orderStatusBadge, paymentStatusBadge } from '../../utils/status'
 
 interface OrderItem {
   quantity: number
@@ -77,11 +78,6 @@ const badgeClass = (kind: 'ok' | 'warn' | 'muted' | 'info') => ({
   muted: 'badge-muted',
   info: 'badge-info'
 }[kind])
-
-const payBadge = (status: string) =>
-  status === 'fully_paid' ? 'ok' : status === 'pending_deposit' ? 'warn' : 'info'
-const fulfillBadge = (status: string) =>
-  status === 'delivered' ? 'ok' : status === 'cancelled' ? 'muted' : 'info'
 
 // ── Payment modal ──────────────────────────────────────────
 const PaymentModal: React.FC<{
@@ -281,8 +277,8 @@ const OrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = ({ ord
         <p className="text-sm text-muted-foreground">{t('myOrders.placedOn', { date: new Date(order.cdate).toLocaleString() })}</p>
 
         <div className="flex gap-2 mt-3">
-          <span className={`badge ${badgeClass(fulfillBadge(order.status))}`}>{t(`myOrders.status.${order.status}`)}</span>
-          <span className={`badge ${badgeClass(payBadge(order.payment_status))}`}>{t(`myOrders.payment.${order.payment_status}`)}</span>
+          <span className={`badge ${orderStatusBadge(order.status)}`}>{t(`myOrders.status.${order.status}`)}</span>
+          <span className={`badge ${paymentStatusBadge(order.payment_status)}`}>{t(`myOrders.payment.${order.payment_status}`)}</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 mt-6">
@@ -486,8 +482,8 @@ export const Orders: React.FC = () => {
                       )}
                     </div>
                     <div className="flex flex-col items-end gap-1.5">
-                      <span className={`badge ${badgeClass(fulfillBadge(order.status))}`}>{t(`myOrders.status.${order.status}`)}</span>
-                      <span className={`badge ${badgeClass(payBadge(order.payment_status))}`}>{t(`myOrders.payment.${order.payment_status}`)}</span>
+                      <span className={`badge ${orderStatusBadge(order.status)}`}>{t(`myOrders.status.${order.status}`)}</span>
+                      <span className={`badge ${paymentStatusBadge(order.payment_status)}`}>{t(`myOrders.payment.${order.payment_status}`)}</span>
                     </div>
                   </div>
 

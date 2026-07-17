@@ -6,6 +6,7 @@ import { api } from '../../services/api'
 import { useAuth } from '../../contexts/AuthContext'
 import { useLocalizedName } from '../../utils/localization'
 import { getImageUrl } from '../../utils/image'
+import { isDepositPaid, orderStatusBadge, paymentStatusBadge } from '../../utils/status'
 import { PurchaseModal } from './PurchaseModal'
 import type { QueueOrder, QueueItem } from './types'
 
@@ -53,10 +54,12 @@ const ItemRow: React.FC<{
       </div>
 
       {item.is_complete ? (
-        <span className="badge bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
+        <span className="badge badge-success shrink-0">
           <Check className="w-3 h-3 mr-1" />
           {t('agent.queue.complete')}
         </span>
+      ) : !isDepositPaid(order.payment_status) ? (
+        <span className="badge badge-warning shrink-0">{t('agent.queue.awaitingDeposit')}</span>
       ) : !item.claimed_by ? (
         <button onClick={() => claim.mutate(true)} disabled={claim.isPending} className="btn-secondary shrink-0 text-xs px-3 py-1.5">
           {claim.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Hand className="w-3.5 h-3.5 mr-1" />}
@@ -99,12 +102,12 @@ const OrderCard: React.FC<{ order: QueueOrder; onBuy: (o: QueueOrder, i: QueueIt
     <div className="bg-card border border-border rounded-xl p-4">
       <div className="flex flex-wrap justify-between items-start gap-3 mb-3">
         <div className="min-w-0">
-          <h3 className="font-bold text-foreground flex items-center gap-2">
+          <h3 className="font-bold text-foreground flex items-center flex-wrap gap-2">
             {order.order_code || `NT-${order.id}`}
+            <span className={`badge ${orderStatusBadge(order.status)}`}>{t(`admin.order.status_${order.status}`)}</span>
+            <span className={`badge ${paymentStatusBadge(order.payment_status)}`}>{t(`admin.order.payment_${order.payment_status}`)}</span>
             {order.is_fully_purchased && (
-              <span className="badge bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                {t('agent.queue.allBought')}
-              </span>
+              <span className="badge badge-success">{t('agent.queue.allBought')}</span>
             )}
           </h3>
           <p className="text-sm text-muted-foreground">
@@ -147,7 +150,7 @@ const OrderCard: React.FC<{ order: QueueOrder; onBuy: (o: QueueOrder, i: QueueIt
         ))}
       </div>
 
-      {unclaimed.length > 1 && (
+      {unclaimed.length > 1 && isDepositPaid(order.payment_status) && (
         <button onClick={() => claimAll.mutate()} disabled={claimAll.isPending} className="btn-secondary w-full justify-center mt-3 text-sm">
           {claimAll.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Hand className="w-4 h-4 mr-1.5" />}
           {t('agent.queue.claimAll', { count: unclaimed.length })}

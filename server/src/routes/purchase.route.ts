@@ -71,7 +71,13 @@ const postClaimRoute = createRoute({
 purchaseRoutes.openapi(postClaimRoute, async (c) => {
   const user = c.get('user')
   const { item_ids } = c.req.valid('json')
-  const claimed = await claimOrderItems(c.env.nihonthing_db, user.id, item_ids)
+
+  let claimed
+  try {
+    claimed = await claimOrderItems(c.env.nihonthing_db, user.id, item_ids)
+  } catch (err: any) {
+    return c.json({ success: false, message: err.message }, 400)
+  }
 
   if (claimed.length === 0) {
     return c.json({ success: false, message: 'Those lines are already claimed by another agent.' }, 409)
@@ -119,8 +125,12 @@ purchaseRoutes.openapi(postPurchaseRoute, async (c) => {
     actual_cost_thb: data.actual_cost_jpy * exchangeRate
   }
   
-  const newPurchase = await createPurchase(c.env.nihonthing_db, user.id, payload)
-  return c.json({ success: true, data: newPurchase })
+  try {
+    const newPurchase = await createPurchase(c.env.nihonthing_db, user.id, payload)
+    return c.json({ success: true, data: newPurchase })
+  } catch (err: any) {
+    return c.json({ success: false, message: err.message }, 400)
+  }
 })
 
 // PUT /api/purchases/:id
