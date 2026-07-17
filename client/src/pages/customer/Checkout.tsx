@@ -172,7 +172,7 @@ export const Checkout: React.FC = () => {
                         {tr.type === 'sea'
                           ? <ShipIcon className="w-4 h-4 text-primary" />
                           : <PlaneTakeoff className="w-4 h-4 text-primary" />}
-                        {tr.type.charAt(0).toUpperCase() + tr.type.slice(1)}
+                        {tr.type === 'sea' ? t('home.schedule.seaFreight') : t('home.schedule.flight')}
                       </span>
                       <span className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Calendar className="w-3.5 h-3.5" />

@@ -70,9 +70,7 @@ export const TripSchedule: React.FC = () => {
                           ) : (
                             <>
                               <PlaneTakeoff className="w-5 h-5 text-primary shrink-0" />
-                              <span className="truncate">
-                                {trip.type.charAt(0).toUpperCase() + trip.type.slice(1)} {t('home.schedule.flight')}
-                              </span>
+                              <span className="truncate">{t('home.schedule.flight')}</span>
                             </>
                           )}
                         </h3>
