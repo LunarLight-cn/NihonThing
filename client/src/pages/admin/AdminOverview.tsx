@@ -40,12 +40,16 @@ export const AdminOverview: React.FC = () => {
   const totalProducts = products?.length || 0
   const activeTrips = trips?.filter((t: any) => t.status === 'open' || t.status === 'in_transit')?.length || 0
 
-  // Calculate total revenue (rough estimate for now)
+  // Money actually received, not order value: a deposit is 50% of the item
+  // total (see getOrderAmountForPayment), so an order that has only paid its
+  // deposit contributes half, not its full grand total.
   const totalRevenue =
     orders?.reduce((sum: number, order: any) => {
-      // Only count if payment is made
-      if (order.payment_status === 'fully_paid' || order.payment_status === 'deposit_paid') {
-        return sum + (order.grand_total || 0)
+      if (order.payment_status === 'fully_paid') {
+        return sum + (order.grand_total || order.item_price_total || 0)
+      }
+      if (order.payment_status === 'deposit_paid' || order.payment_status === 'pending_remaining') {
+        return sum + (order.item_price_total || 0) * 0.5
       }
       return sum
     }, 0) || 0

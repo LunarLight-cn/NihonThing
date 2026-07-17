@@ -812,6 +812,7 @@
       "claimAll": "Claim all {{count}} remaining lines",
       "claimedBy": "{{name}}",
       "claimFailed": "Could not claim that line.",
+      "awaitingDeposit": "Awaiting deposit",
       "release": "Release claim",
       "buy": "Buy"
     },
