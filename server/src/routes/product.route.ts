@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { authGuard, roleGuard, AuthVariables } from '../middlewares/auth.middleware'
+import { authGuard, roleGuard, adminGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct, getNewArrivals, getTrendingProducts } from '../models/product.model'
 
 const productRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; EXCHANGE_RATE_JPY_THB: string }; Variables: AuthVariables }>()
@@ -178,7 +178,7 @@ const deleteProductRoute = createRoute({
   method: 'delete',
   path: '/{id}',
   tags: ['Products (Admin)'],
-  middleware: [authGuard, roleGuard('agent')] as const,
+  middleware: [authGuard, adminGuard] as const,
   security: [{ Bearer: [] }],
   request: { params: ProductIdParamsSchema },
   responses: { 200: { description: 'Product deleted successfully' } }

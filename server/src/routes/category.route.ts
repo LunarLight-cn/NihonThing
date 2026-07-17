@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { authGuard, roleGuard, AuthVariables } from '../middlewares/auth.middleware'
+import { authGuard, roleGuard, adminGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { getAllCategories, createCategory, updateCategory, deleteCategory } from '../models/category.model'
 
 const categoryRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database }; Variables: AuthVariables }>()
@@ -72,7 +72,7 @@ const deleteCategoryRoute = createRoute({
   method: 'delete',
   path: '/{id}',
   tags: ['Categories (Admin)'],
-  middleware: [authGuard, roleGuard('agent')] as const,
+  middleware: [authGuard, adminGuard] as const,
   security: [{ Bearer: [] }],
   request: { params: CategoryIdParamsSchema },
   responses: { 200: { description: 'Category deleted successfully' } }
