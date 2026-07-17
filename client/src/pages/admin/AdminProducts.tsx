@@ -320,7 +320,7 @@ export const AdminProducts: React.FC = () => {
               amount: row.original.amount?.toString() || '0',
               weight: (row.original as any).weight?.toString() || '0',
               img: row.original.img || [],
-              category_id: (row.original as any).category_id || 1,
+              category_id: (row.original as any).category_id || '',
               status: row.original.status || 'active',
               tag: row.original.tag || '',
               origin_country_id: (row.original as any).origin_country_id || '',
@@ -454,7 +454,9 @@ export const AdminProducts: React.FC = () => {
     amount: '10',
     weight: '0',
     img: [] as string[],
-    category_id: 1,
+    // Empty, not 1: the payload builder drops '' fields, and a hardcoded id
+    // pointed at a category that need not exist.
+    category_id: '' as string | number,
     status: 'active',
     tag: '',
     origin_country_id: '' as string | number,
@@ -532,7 +534,7 @@ export const AdminProducts: React.FC = () => {
                   setProductForm({
                     name_en: '', name_th: '', name_jp: '', desc_en: '', desc_th: '', desc_jp: '',
                     brand_id: '', origin_country_id: '',
-                    price_tentative_jpy: '', price_tentative_thb: '', amount: '10', weight: '0', img: [], category_id: 1, status: 'active', tag: '', shopIds: [], options: []
+                    price_tentative_jpy: '', price_tentative_thb: '', amount: '10', weight: '0', img: [], category_id: '', status: 'active', tag: '', shopIds: [], options: []
                   })
                 } else {
                   setIsAddingProduct(true)
@@ -688,7 +690,7 @@ export const AdminProducts: React.FC = () => {
                   <SearchableSelect
                     options={categories?.map((c) => ({ id: c.id, label: c.name_en })) || []}
                     value={productForm.category_id}
-                    onChange={(val) => setProductForm({ ...productForm, category_id: Number(val) })}
+                    onChange={(val) => setProductForm({ ...productForm, category_id: val ? Number(val) : '' })}
                     placeholder={t('admin.product.search_category')}
                   />
                 </div>

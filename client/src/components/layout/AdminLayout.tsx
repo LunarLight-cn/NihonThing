@@ -1,7 +1,7 @@
 import React from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { LayoutDashboard, Package, Plane, Ticket, Users, Settings, LogOut, Store, Menu, Calendar, Home, MapPin, Globe, ShoppingCart } from 'lucide-react'
+import { LayoutDashboard, Package, Plane, Ticket, Users, Settings, LogOut, Store, Menu, Calendar, Home, MapPin, Globe, ShoppingCart, ClipboardList } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 export const AdminLayout: React.FC = () => {
@@ -59,6 +59,11 @@ export const AdminLayout: React.FC = () => {
               <p className="text-xs text-muted-foreground truncate">Admin</p>
             </div>
           </div>
+          <Link to="/agent" className="admin-nav-link mb-2">
+            <ClipboardList className="w-5 h-5" />
+            <span>{t('nav.agentDashboard')}</span>
+          </Link>
+
           <Link
             to="/"
             className="admin-nav-link mb-2"
