@@ -33,6 +33,10 @@ jobs:
           cache: npm
           cache-dependency-path: server/package-lock.json
       - run: npm ci
+      # Build before touching the database. Migrations have no down step, so a
+      # broken build that got merged anyway must fail here — not after the
+      # schema has already moved ahead of the deployed code.
+      - run: npx wrangler deploy --dry-run --outdir dist --env staging
       # --env staging resolves the nihonthing_db binding to the staging D1.
       - run: npx wrangler d1 migrations apply nihonthing_db --remote --env staging
       - run: npx wrangler deploy --minify --env staging

@@ -33,6 +33,11 @@ jobs:
           cache: npm
           cache-dependency-path: server/package-lock.json
       - run: npm ci
-      # Apply migrations first so the new schema is ready before new code runs.
+      # Build before touching the database. Migrations have no down step, so a
+      # broken build that got merged anyway must fail here — not after the
+      # schema has already moved ahead of the deployed code.
+      - run: npx wrangler deploy --dry-run --outdir dist
+      # Migrations run before the deploy so the new schema is ready when the new
+      # code goes live.
       - run: npx wrangler d1 migrations apply nihonthing_db --remote
       - run: npx wrangler deploy --minify
