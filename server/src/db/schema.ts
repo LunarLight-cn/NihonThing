@@ -165,12 +165,19 @@ export const Order_Items = sqliteTable("Order_Items", {
   quantity: integer("quantity"),
   // Customer's chosen options for this line, e.g. {"Size":"M","Colour":"Black"}
   selected_options: text("selected_options", { mode: 'json' }).$type<Record<string, string>>(),
+  // An agent claims the lines they will shop for. Claiming is per line, not per
+  // order, so two agents can split one order between them.
+  claimed_by: integer("claimed_by").references(() => Users.id),
+  claimed_at: text("claimed_at"),
   missing: integer("missing"),
   udate: text("udate"),
 });
 
 export const Purchases = sqliteTable("Purchases", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  // order_item_id says which line was bought; order_id is kept alongside it so
+  // an order's spend can be summed without walking every line.
+  order_id: integer("order_id").references(() => Orders.id),
   order_item_id: integer("order_item_id").references(() => Order_Items.id),
   product_id: integer("product_id").references(() => Products.id),
   agent_id: integer("agent_id").notNull().references(() => Users.id),
@@ -283,6 +290,7 @@ export const usersRelations = relations(Users, ({ many }) => ({
   purchases: many(Purchases),
   ticketsAsClient: many(Tickets, { relationName: "client_tickets" }),
   ticketsAsAgent: many(Tickets, { relationName: "agent_tickets" }),
+  claimedItems: many(Order_Items, { relationName: "claimed_items" }),
   follows: many(Follows),
 }));
 
@@ -345,16 +353,19 @@ export const ordersRelations = relations(Orders, ({ one, many }) => ({
   address: one(Addresses, { fields: [Orders.address_id], references: [Addresses.id] }),
   items: many(Order_Items),
   payments: many(Payments),
+  purchases: many(Purchases),
 }));
 
 export const orderItemsRelations = relations(Order_Items, ({ one, many }) => ({
   order: one(Orders, { fields: [Order_Items.order_id], references: [Orders.id] }),
   product: one(Products, { fields: [Order_Items.product_id], references: [Products.id] }),
   ticket: one(Tickets, { fields: [Order_Items.ticket_id], references: [Tickets.id] }),
+  claimedBy: one(Users, { fields: [Order_Items.claimed_by], references: [Users.id], relationName: "claimed_items" }),
   purchases: many(Purchases),
 }));
 
 export const purchasesRelations = relations(Purchases, ({ one }) => ({
+  order: one(Orders, { fields: [Purchases.order_id], references: [Orders.id] }),
   orderItem: one(Order_Items, { fields: [Purchases.order_item_id], references: [Order_Items.id] }),
   agent: one(Users, { fields: [Purchases.agent_id], references: [Users.id] }),
 }));

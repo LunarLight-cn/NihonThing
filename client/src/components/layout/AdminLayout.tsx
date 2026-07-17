@@ -1,41 +1,26 @@
 import React from 'react'
-import { Outlet, Link, useLocation, Navigate } from 'react-router-dom'
+import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { LayoutDashboard, Package, Plane, Ticket, Users, Settings, LogOut, Store, Menu, Calendar, Home, MapPin, Globe, ShoppingCart } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import type { UserRole } from '../../types'
-
-const AGENT_HOME = '/admin/orders'
 
 export const AdminLayout: React.FC = () => {
   const { user, logout } = useAuth()
   const location = useLocation()
   const { t, i18n } = useTranslation()
 
-  // Revenue, platform config and user management stay with the admin; an agent
-  // reaching /admin/users could grant themselves admin.
-  const navItems: { name: string; path: string; icon: typeof Package; roles: UserRole[] }[] = [
-    { name: t('admin.nav.overview'), path: '/admin', icon: LayoutDashboard, roles: ['admin'] },
-    { name: t('admin.nav.orders'), path: '/admin/orders', icon: Package, roles: ['admin', 'agent'] },
-    { name: t('admin.nav.trips'), path: '/admin/trips', icon: Plane, roles: ['admin', 'agent'] },
-    { name: t('admin.nav.tickets'), path: '/admin/tickets', icon: Ticket, roles: ['admin', 'agent'] },
-    { name: t('admin.nav.purchases'), path: '/admin/purchases', icon: ShoppingCart, roles: ['admin', 'agent'] },
-    { name: t('admin.nav.catalog'), path: '/admin/products', icon: Store, roles: ['admin', 'agent'] },
-    { name: t('admin.nav.locations'), path: '/admin/locations', icon: MapPin, roles: ['admin', 'agent'] },
-    { name: t('admin.nav.events'), path: '/admin/events', icon: Calendar, roles: ['admin'] },
-    { name: t('admin.nav.users'), path: '/admin/users', icon: Users, roles: ['admin'] },
-    { name: t('admin.nav.settings'), path: '/admin/settings', icon: Settings, roles: ['admin'] }
+  const navItems = [
+    { name: t('admin.nav.overview'), path: '/admin', icon: LayoutDashboard },
+    { name: t('admin.nav.orders'), path: '/admin/orders', icon: Package },
+    { name: t('admin.nav.trips'), path: '/admin/trips', icon: Plane },
+    { name: t('admin.nav.tickets'), path: '/admin/tickets', icon: Ticket },
+    { name: t('admin.nav.purchases'), path: '/admin/purchases', icon: ShoppingCart },
+    { name: t('admin.nav.catalog'), path: '/admin/products', icon: Store },
+    { name: t('admin.nav.locations'), path: '/admin/locations', icon: MapPin },
+    { name: t('admin.nav.events'), path: '/admin/events', icon: Calendar },
+    { name: t('admin.nav.users'), path: '/admin/users', icon: Users },
+    { name: t('admin.nav.settings'), path: '/admin/settings', icon: Settings }
   ]
-
-  const role = user?.role
-  const visibleNavItems = navItems.filter((item) => role && item.roles.includes(role))
-
-  // Hiding a link is not access control: without this, typing the URL still
-  // renders the page (the API would refuse it, but the shell would not).
-  const current = navItems.find((item) => item.path === location.pathname)
-  if (current && role && !current.roles.includes(role)) {
-    return <Navigate to={AGENT_HOME} replace />
-  }
 
   return (
     <div className="flex h-screen bg-muted/30">
@@ -49,7 +34,7 @@ export const AdminLayout: React.FC = () => {
 
         <div className="flex-1 overflow-y-auto py-4">
           <nav className="space-y-1 px-3">
-            {visibleNavItems.map((item) => {
+            {navItems.map((item) => {
               const Icon = item.icon
               const isActive = location.pathname === item.path
               return (
