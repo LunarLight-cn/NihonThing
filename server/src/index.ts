@@ -20,6 +20,7 @@ import locationRoutes from './routes/location.route'
 import uploadRoutes from './routes/upload.route'
 import brandRoutes from './routes/brand.route'
 import settingsRoutes from './routes/settings.route'
+import shippingRoutes from './routes/shipping.route'
 
 const app = new OpenAPIHono()
 
@@ -66,6 +67,7 @@ app.route('/api/locations', locationRoutes)
 app.route('/api/uploads', uploadRoutes)
 app.route('/api/brands', brandRoutes)
 app.route('/api/settings', settingsRoutes)
+app.route('/api/shipping', shippingRoutes)
 
 app.doc('/doc', {
   openapi: '3.0.0',

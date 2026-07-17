@@ -7,7 +7,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { ShoppingCart, Loader2, Truck, X, Eye, MapPin, Receipt, PlaneTakeoff, Ship as ShipIcon, User } from 'lucide-react'
 import { useLocalizedName } from '../../utils/localization'
 import { getImageUrl } from '../../utils/image'
-import { orderStatusBadge, paymentStatusBadge } from '../../utils/status'
+import { orderStatusBadge, paymentStatusBadge, ORDER_STATUSES, PAYMENT_STATUSES } from '../../utils/status'
 
 interface OrderItem {
   quantity: number
@@ -35,7 +35,7 @@ interface Order {
   order_code: string | null
   user_id: number
   trip_id: number
-  status: 'pending' | 'purchasing' | 'arrived_th' | 'shipped' | 'delivered' | 'cancelled'
+  status: (typeof ORDER_STATUSES)[number]
   payment_status: 'pending_deposit' | 'deposit_paid' | 'pending_remaining' | 'fully_paid'
   grand_total: number | null
   item_price_total: number | null
@@ -444,12 +444,9 @@ export const AdminOrders: React.FC = () => {
             }}
             className={`input-inline-select ${orderStatusBadge(status)}`}
           >
-            <option value="pending">{t('admin.order.status_pending')}</option>
-            <option value="purchasing">{t('admin.order.status_purchasing')}</option>
-            <option value="arrived_th">{t('admin.order.status_arrived_th')}</option>
-            <option value="shipped">{t('admin.order.status_shipped')}</option>
-            <option value="delivered">{t('admin.order.status_delivered')}</option>
-            <option value="cancelled">{t('admin.order.status_cancelled')}</option>
+            {ORDER_STATUSES.map((s) => (
+              <option key={s} value={s}>{t(`admin.order.status_${s}`)}</option>
+            ))}
           </select>
         )
       }
@@ -470,10 +467,9 @@ export const AdminOrders: React.FC = () => {
             }}
             className={`input-inline-select ${paymentStatusBadge(pStatus)}`}
           >
-            <option value="pending_deposit">{t('admin.order.payment_pending_deposit')}</option>
-            <option value="deposit_paid">{t('admin.order.payment_deposit_paid')}</option>
-            <option value="pending_remaining">{t('admin.order.payment_pending_remaining')}</option>
-            <option value="fully_paid">{t('admin.order.payment_fully_paid')}</option>
+            {PAYMENT_STATUSES.map((s) => (
+              <option key={s} value={s}>{t(`admin.order.payment_${s}`)}</option>
+            ))}
           </select>
         )
       }
@@ -527,24 +523,12 @@ export const AdminOrders: React.FC = () => {
             {
               columnId: 'status',
               label: t('admin.order.fulfillment_status'),
-              options: [
-                { value: 'pending', label: t('admin.order.status_pending') },
-                { value: 'purchasing', label: t('admin.order.status_purchasing') },
-                { value: 'arrived_th', label: t('admin.order.status_arrived_th') },
-                { value: 'shipped', label: t('admin.order.status_shipped') },
-                { value: 'delivered', label: t('admin.order.status_delivered') },
-                { value: 'cancelled', label: t('admin.order.status_cancelled') }
-              ]
+              options: ORDER_STATUSES.map((s) => ({ value: s, label: t(`admin.order.status_${s}`) }))
             },
             {
               columnId: 'payment_status',
               label: t('admin.order.payment_status'),
-              options: [
-                { value: 'pending_deposit', label: t('admin.order.payment_pending_deposit') },
-                { value: 'deposit_paid', label: t('admin.order.payment_deposit_paid') },
-                { value: 'pending_remaining', label: t('admin.order.payment_pending_remaining') },
-                { value: 'fully_paid', label: t('admin.order.payment_fully_paid') }
-              ]
+              options: PAYMENT_STATUSES.map((s) => ({ value: s, label: t(`admin.order.payment_${s}`) }))
             }
           ]}
         />

@@ -1,5 +1,5 @@
 import React from 'react'
-import { LayoutDashboard, Package, Plane, Ticket, Users, Settings, Store, Calendar, MapPin, ShoppingCart, ClipboardList } from 'lucide-react'
+import { LayoutDashboard, Package, Plane, Ticket, Users, Settings, Store, Calendar, MapPin, ShoppingCart, ClipboardList, Send } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { DashboardLayout } from './DashboardLayout'
 import type { DashboardNavItem } from './DashboardLayout'
@@ -10,6 +10,7 @@ export const AdminLayout: React.FC = () => {
   const navItems: DashboardNavItem[] = [
     { name: t('admin.nav.overview'), path: '/admin', icon: LayoutDashboard },
     { name: t('admin.nav.orders'), path: '/admin/orders', icon: Package },
+    { name: t('admin.nav.shipping'), path: '/admin/shipping', icon: Send },
     { name: t('admin.nav.trips'), path: '/admin/trips', icon: Plane },
     { name: t('admin.nav.tickets'), path: '/admin/tickets', icon: Ticket },
     { name: t('admin.nav.purchases'), path: '/admin/purchases', icon: ShoppingCart },

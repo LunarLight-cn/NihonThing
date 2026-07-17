@@ -8,7 +8,9 @@ const UpdateSettingsSchema = z.object({
   per_user_item_limit: z.number().int().min(1).optional(),
   trip_cutoff_days: z.number().int().min(0).optional(),
   weight_tolerance_kg: z.number().min(0).optional(),
-  price_tolerance_thb: z.number().min(0).optional()
+  price_tolerance_thb: z.number().min(0).optional(),
+  unpaid_move_days: z.number().int().min(0).optional(),
+  overdue_cancel_days: z.number().int().min(0).optional()
 })
 
 // GET /api/settings - Admin only

@@ -61,7 +61,7 @@ interface Order {
 // Human-facing order code; falls back to NT-<id> for rows created before codes existed.
 const orderNo = (order: Order) => order.order_code || `NT-${order.id}`
 
-const STATUS_RANK: Record<string, number> = { pending: 0, purchasing: 1, arrived_th: 2, shipped: 3, delivered: 4 }
+const STATUS_RANK: Record<string, number> = { pending: 0, purchasing: 1, in_transit: 2, arrived: 3, local_shipping: 4, delivered: 5 }
 const PAY_RANK: Record<string, number> = { pending_deposit: 0, deposit_paid: 1, pending_remaining: 2, fully_paid: 3 }
 interface Ticket {
   id: number
@@ -215,19 +215,23 @@ const StatusTimeline: React.FC<{ order: Order }> = ({ order }) => {
     { icon: Banknote, label: t('myOrders.timeline.balancePaid'), done: pr >= 3, date: fmtDate(remaining?.cdate) },
     {
       icon: ArrivedIcon,
-      label: country ? t('myOrders.timeline.arrived', { country }) : t('myOrders.timeline.arrivedGeneric'),
+      label: t('myOrders.timeline.inTransit'),
       sub: t('myOrders.timeline.shippedVia', { type: tripType }),
       done: sr >= 2,
-      date: fmtDate(order.ship?.ship_date)
+      date: fmtDate(order.shipped_date || order.ship?.ship_date)
+    },
+    {
+      icon: MapPin,
+      label: country ? t('myOrders.timeline.arrived', { country }) : t('myOrders.timeline.arrivedGeneric'),
+      done: sr >= 3
     },
     {
       icon: Truck,
       label: t('myOrders.timeline.localDelivery'),
       sub: order.courier_name ? t('myOrders.timeline.localVia', { courier: order.courier_name }) : undefined,
-      done: sr >= 3,
-      date: fmtDate(order.shipped_date)
+      done: sr >= 4
     },
-    { icon: PackageCheck, label: t('myOrders.timeline.delivered'), done: sr >= 4, date: fmtDate(order.deliv_date) }
+    { icon: PackageCheck, label: t('myOrders.timeline.delivered'), done: sr >= 5, date: fmtDate(order.deliv_date) }
   ]
 
   const currentIdx = steps.findIndex((s) => !s.done)

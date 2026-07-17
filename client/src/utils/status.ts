@@ -1,11 +1,15 @@
 // One colour per status, shared by every page that shows one, so admin,
 // agent and customer never disagree about what a status looks like.
 
+export const ORDER_STATUSES = ['pending', 'purchasing', 'in_transit', 'arrived', 'local_shipping', 'delivered', 'cancelled'] as const
+export const PAYMENT_STATUSES = ['pending_deposit', 'deposit_paid', 'pending_remaining', 'fully_paid'] as const
+
 const ORDER_STATUS_BADGE: Record<string, string> = {
   pending: 'badge-muted',
   purchasing: 'badge-info',
-  arrived_th: 'badge-purple',
-  shipped: 'badge-blue',
+  in_transit: 'badge-blue',
+  arrived: 'badge-purple',
+  local_shipping: 'badge-orange',
   delivered: 'badge-success',
   cancelled: 'badge-danger'
 }

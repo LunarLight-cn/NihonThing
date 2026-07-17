@@ -9,6 +9,8 @@ const DEFAULTS = {
   per_user_item_limit: 50,
   trip_cutoff_days: 5,
   weight_tolerance_kg: 5,
+  unpaid_move_days: 3,
+  overdue_cancel_days: 14,
   price_tolerance_thb: 500
 }
 

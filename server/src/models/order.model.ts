@@ -248,7 +248,7 @@ export const getOrderById = async (d1: D1Database, id: number) => {
 // order left the trip permanently fuller than it really was and it could close
 // with slots still free. Weight is recomputed from the order's items because it
 // is not stored on the order itself.
-const releaseTripCapacity = async (
+export const releaseTripCapacity = async (
   db: ReturnType<typeof drizzle<typeof schema>>,
   order: typeof schema.Orders.$inferSelect
 ) => {
@@ -288,6 +288,15 @@ export const updateOrder = async (d1: D1Database, id: number, data: Partial<type
   if (!existing) throw new Error('Order not found')
   if (userId && existing.user_id !== userId) {
     throw new Error('Unauthorized to update this order')
+  }
+
+  // Unpaid goods do not leave the country. The payment_status in this same
+  // update wins over the stored one so both can be set in one call.
+  if (data.status === 'in_transit') {
+    const pay = data.payment_status ?? existing.payment_status
+    if (pay !== 'fully_paid') {
+      throw new Error('Cannot ship: the customer has not paid the shipping fee on this order.')
+    }
   }
 
   const updatedOrders = await db
