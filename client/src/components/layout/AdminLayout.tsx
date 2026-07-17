@@ -1,15 +1,13 @@
 import React from 'react'
-import { Outlet, Link, useLocation } from 'react-router-dom'
-import { useAuth } from '../../contexts/AuthContext'
-import { LayoutDashboard, Package, Plane, Ticket, Users, Settings, LogOut, Store, Menu, Calendar, Home, MapPin, Globe, ShoppingCart, ClipboardList } from 'lucide-react'
+import { LayoutDashboard, Package, Plane, Ticket, Users, Settings, Store, Calendar, MapPin, ShoppingCart, ClipboardList } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { DashboardLayout } from './DashboardLayout'
+import type { DashboardNavItem } from './DashboardLayout'
 
 export const AdminLayout: React.FC = () => {
-  const { user, logout } = useAuth()
-  const location = useLocation()
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
 
-  const navItems = [
+  const navItems: DashboardNavItem[] = [
     { name: t('admin.nav.overview'), path: '/admin', icon: LayoutDashboard },
     { name: t('admin.nav.orders'), path: '/admin/orders', icon: Package },
     { name: t('admin.nav.trips'), path: '/admin/trips', icon: Plane },
@@ -23,110 +21,12 @@ export const AdminLayout: React.FC = () => {
   ]
 
   return (
-    <div className="flex h-screen bg-muted/30">
-      {/* Sidebar */}
-      <aside className="w-64 bg-card border-r border-border flex flex-col md:flex">
-        <div className="h-16 flex items-center px-6 border-b border-border">
-          <Link to="/" className="text-xl font-bold text-primary">
-            NihonThing Admin
-          </Link>
-        </div>
-
-        <div className="flex-1 overflow-y-auto py-4">
-          <nav className="space-y-1 px-3">
-            {navItems.map((item) => {
-              const Icon = item.icon
-              const isActive = location.pathname === item.path
-              return (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  className={`admin-nav-link ${isActive ? 'is-active' : ''}`}
-                >
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                  <span>{item.name}</span>
-                </Link>
-              )
-            })}
-          </nav>
-        </div>
-
-        <div className="p-4 border-t border-border">
-          <div className="flex items-center space-x-3 mb-4 px-3">
-            <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-primary font-bold">{user?.username?.charAt(0).toUpperCase() || 'A'}</div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">{user?.username}</p>
-              <p className="text-xs text-muted-foreground truncate">Admin</p>
-            </div>
-          </div>
-          <Link to="/agent" className="admin-nav-link mb-2">
-            <ClipboardList className="w-5 h-5" />
-            <span>{t('nav.agentDashboard')}</span>
-          </Link>
-
-          <Link
-            to="/"
-            className="admin-nav-link mb-2"
-          >
-            <Home className="w-5 h-5" />
-            <span>Back to Store</span>
-          </Link>
-
-          <div className="group relative mb-2">
-            <button className="flex w-full items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors">
-              <Globe className="w-5 h-5" />
-              <span className="uppercase">{i18n.language}</span>
-            </button>
-            <div className="absolute bottom-full left-0 mb-1 w-full bg-card border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-              <div className="p-2 flex flex-col space-y-1">
-                <button
-                  onClick={() => i18n.changeLanguage('en')}
-                  className={`text-left px-3 py-1.5 text-sm rounded-md hover:bg-secondary ${i18n.language === 'en' ? 'text-primary font-bold bg-primary/10' : ''}`}
-                >
-                  English
-                </button>
-                <button
-                  onClick={() => i18n.changeLanguage('th')}
-                  className={`text-left px-3 py-1.5 text-sm rounded-md hover:bg-secondary ${i18n.language === 'th' ? 'text-primary font-bold bg-primary/10' : ''}`}
-                >
-                  ภาษาไทย
-                </button>
-                <button
-                  onClick={() => i18n.changeLanguage('jp')}
-                  className={`text-left px-3 py-1.5 text-sm rounded-md hover:bg-secondary ${i18n.language === 'jp' ? 'text-primary font-bold bg-primary/10' : ''}`}
-                >
-                  日本語
-                </button>
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={logout}
-            className="flex w-full items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
-          >
-            <LogOut className="w-5 h-5" />
-            <span>{t('admin.logout')}</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile Header */}
-        <header className="h-16 md:hidden flex items-center justify-between px-4 bg-card border-b border-border">
-          <span className="text-lg font-bold text-primary">Admin</span>
-          <button className="p-2">
-            <Menu className="w-6 h-6" />
-          </button>
-        </header>
-
-        {/* Page Content */}
-        <div className="flex-1 overflow-y-auto p-8">
-          <div className="max-w-6xl mx-auto">
-            <Outlet />
-          </div>
-        </div>
-      </main>
-    </div>
+    <DashboardLayout
+      brand="NihonThing Admin"
+      mobileTitle="Admin"
+      roleLabel="Admin"
+      navItems={navItems}
+      crossLinks={[{ name: t('nav.agentDashboard'), path: '/agent', icon: ClipboardList }]}
+    />
   )
 }

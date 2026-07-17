@@ -22,7 +22,11 @@ export const Login: React.FC = () => {
   const { t } = useTranslation()
   const [serverError, setServerError] = useState<string | null>(null)
 
-  const from = location.state?.from?.pathname || '/'
+  // Set when ProtectedRoute bounced them here: that page is where they meant
+  // to go, so it wins over the role's own home.
+  const from = location.state?.from?.pathname as string | undefined
+
+  const homeForRole = (role?: string) => (role === 'admin' ? '/admin' : role === 'agent' ? '/agent' : '/')
 
   const {
     register,
@@ -37,8 +41,9 @@ export const Login: React.FC = () => {
     try {
       const response = await api.post('/auth/login', data)
       if (response.data.success) {
-        login(response.data.data.token, response.data.data.user)
-        navigate(from, { replace: true })
+        const user = response.data.data.user
+        login(response.data.data.token, user)
+        navigate(from || homeForRole(user?.role), { replace: true })
       } else {
         setServerError(response.data.message || 'Login failed')
       }

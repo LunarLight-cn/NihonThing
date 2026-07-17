@@ -310,6 +310,7 @@
   },
   "admin": {
     "logout": "Logout",
+    "backToStore": "Back to Store",
     "nav": {
       "overview": "Overview",
       "orders": "Orders",
