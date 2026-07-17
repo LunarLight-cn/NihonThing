@@ -31,7 +31,7 @@ pnpm-debug.log*
 !.vscode/extensions.json
 .idea/
 
-# Docs
+# Docs are private notes and ideas - never on GitHub.
 .obsidian/
 docs/
 
