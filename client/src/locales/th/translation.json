@@ -135,7 +135,9 @@
     "unitDay": "วัน",
     "unitHour": "ชม.",
     "unitMin": "นาที",
-    "unitSec": "วิ"
+    "unitSec": "วิ",
+    "closesBy": "ปิดรับออเดอร์ {{date}}",
+    "excludesShipping": "* ราคายังไม่รวมค่าเดินทาง คิดเพิ่มหลังซื้อ"
   },
   "cart": {
     "title": "ตะกร้าของคุณ",

@@ -37,9 +37,6 @@ export const CustomerLayout: React.FC = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium text-muted-foreground shrink-0">
-            <Link to="/" className="hover:text-foreground transition-colors">
-              {t('nav.home')}
-            </Link>
             <Link to="/catalog" className="hover:text-foreground transition-colors">
               {t('nav.catalog')}
             </Link>
@@ -147,15 +144,12 @@ export const CustomerLayout: React.FC = () => {
       <div className={`mobile-nav-backdrop ${menuOpen ? 'is-open' : ''}`} onClick={() => setMenuOpen(false)} />
       <nav className={`mobile-nav-drawer ${menuOpen ? 'is-open' : ''}`}>
         <div className="h-16 flex items-center justify-between px-4 border-b border-border">
-          <span className="text-xl font-bold tracking-tight text-primary">NihonThing</span>
+          <Link to="/" onClick={() => setMenuOpen(false)} className="text-xl font-bold tracking-tight text-primary">NihonThing</Link>
           <button onClick={() => setMenuOpen(false)} className="p-2 hover:bg-secondary rounded-full transition-colors">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
         <div className="flex-1 p-3 space-y-1">
-          <Link to="/" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
-            {t('nav.home')}
-          </Link>
           <Link to="/catalog" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
             {t('nav.catalog')}
           </Link>

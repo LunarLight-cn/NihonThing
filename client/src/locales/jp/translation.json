@@ -135,7 +135,9 @@
     "unitDay": "日",
     "unitHour": "時",
     "unitMin": "分",
-    "unitSec": "秒"
+    "unitSec": "秒",
+    "closesBy": "{{date}} 締め切り",
+    "excludesShipping": "※ 送料は含まれません。購入後に加算されます。"
   },
   "cart": {
     "title": "カート",

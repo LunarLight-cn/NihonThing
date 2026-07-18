@@ -135,7 +135,9 @@
     "unitDay": "days",
     "unitHour": "hrs",
     "unitMin": "min",
-    "unitSec": "sec"
+    "unitSec": "sec",
+    "closesBy": "Closes by {{date}}",
+    "excludesShipping": "* Shipping fee not included, added after purchase."
   },
   "cart": {
     "title": "Your Cart",

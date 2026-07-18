@@ -131,7 +131,8 @@ export const ProductDetails: React.FC = () => {
   }
 
   const price = product.price_tentative_thb || product.price_thb || 0
-  const deposit = Math.round(price * 0.5)
+  const deposit = price * 0.5
+  const fmt = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 })
   const images = product.img && product.img.length > 0 ? product.img : []
   const mainSrc = images.length > 0 ? getImageUrl(images[activeImageIndex]) : PLACEHOLDER
   const allChosen = (product.options || []).every((o) => selectedOptions[o.name])
@@ -184,15 +185,16 @@ export const ProductDetails: React.FC = () => {
           </div>
 
           <div className="mb-6">
-            <p className="text-4xl font-bold text-primary">฿{price.toLocaleString()}</p>
+            <p className="text-4xl font-bold text-primary">฿{fmt(price)}</p>
             <p className="text-sm text-muted-foreground mt-1">{t('product.tentativePrice')}</p>
+            <p className="text-sm text-muted-foreground">{t('product.excludesShipping')}</p>
           </div>
 
           {/* Deposit split - our installment, in place of the reference's Klarna row */}
           <div className="flex items-center gap-3 bg-secondary/50 border border-border rounded-xl px-4 py-3 mb-6">
             <Wallet className="w-5 h-5 text-primary shrink-0" />
             <div className="text-sm">
-              <span className="font-semibold text-foreground">{t('product.depositLabel', { amount: deposit.toLocaleString() })}</span>
+              <span className="font-semibold text-foreground">{t('product.depositLabel', { amount: fmt(deposit) })}</span>
               <span className="text-muted-foreground"> {t('product.depositHint')}</span>
             </div>
           </div>
@@ -203,7 +205,9 @@ export const ProductDetails: React.FC = () => {
               <div className="flex items-center justify-between mb-3">
                 <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
                   <Clock className="w-4 h-4 text-primary" />
-                  {t('product.nextTrip')}
+                  {nextTrip.close_date
+                    ? t('product.closesBy', { date: new Date(nextTrip.close_date).toLocaleDateString() })
+                    : t('product.nextTrip')}
                 </span>
                 {nextTrip.fill && (
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
