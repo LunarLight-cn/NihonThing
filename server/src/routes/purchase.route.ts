@@ -1,8 +1,9 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { authGuard, roleGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { getPurchases, createPurchase, updatePurchase, getShoppingQueue, claimOrderItems, releaseOrderItems } from '../models/purchase.model'
+import { getSettings } from '../models/settings.model'
 
-const purchaseRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; EXCHANGE_RATE_JPY_THB: string }; Variables: AuthVariables }>()
+const purchaseRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database }; Variables: AuthVariables }>()
 
 const CreatePurchaseSchema = z.object({
   order_id: z.number().optional(),
@@ -118,7 +119,7 @@ const postPurchaseRoute = createRoute({
 purchaseRoutes.openapi(postPurchaseRoute, async (c) => {
   const user = c.get('user')
   const data = c.req.valid('json')
-  const exchangeRate = parseFloat(c.env.EXCHANGE_RATE_JPY_THB) || 0.25
+  const exchangeRate = (await getSettings(c.env.nihonthing_db)).exchange_rate_jpy_thb || 0.25
   
   const payload = {
     ...data,
@@ -153,7 +154,7 @@ purchaseRoutes.openapi(putPurchaseRoute, async (c) => {
   
   // Calculate new THB if JPY is updated
   if (data.actual_cost_jpy) {
-    const exchangeRate = parseFloat(c.env.EXCHANGE_RATE_JPY_THB) || 0.25
+    const exchangeRate = (await getSettings(c.env.nihonthing_db)).exchange_rate_jpy_thb || 0.25
     ;(data as any).actual_cost_thb = data.actual_cost_jpy * exchangeRate
   }
   

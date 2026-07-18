@@ -13,9 +13,10 @@ interface PlatformSettings {
   price_tolerance_thb: number
   unpaid_move_days: number
   overdue_cancel_days: number
+  exchange_rate_jpy_thb: number
 }
 
-// Global platform rules — applies to every trip/order, not just this admin.
+// Global platform rules - applies to every trip/order, not just this admin.
 const PlatformSettingsForm: React.FC = () => {
   const { t } = useTranslation()
   const qc = useQueryClient()
@@ -38,7 +39,8 @@ const PlatformSettingsForm: React.FC = () => {
       weight_tolerance_kg: Number(payload.weight_tolerance_kg),
       price_tolerance_thb: Number(payload.price_tolerance_thb),
       unpaid_move_days: Number(payload.unpaid_move_days),
-      overdue_cancel_days: Number(payload.overdue_cancel_days)
+      overdue_cancel_days: Number(payload.overdue_cancel_days),
+      exchange_rate_jpy_thb: Number(payload.exchange_rate_jpy_thb)
     }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['settings'] })
@@ -58,7 +60,8 @@ const PlatformSettingsForm: React.FC = () => {
     { key: 'weight_tolerance_kg', label: t('admin.setting.weight_tolerance_kg'), hint: t('admin.setting.weight_tolerance_kg_hint'), step: '0.1' },
     { key: 'price_tolerance_thb', label: t('admin.setting.price_tolerance_thb'), hint: t('admin.setting.price_tolerance_thb_hint'), step: '1' },
     { key: 'unpaid_move_days', label: t('admin.setting.unpaid_move_days'), hint: t('admin.setting.unpaid_move_days_hint'), step: '1' },
-    { key: 'overdue_cancel_days', label: t('admin.setting.overdue_cancel_days'), hint: t('admin.setting.overdue_cancel_days_hint'), step: '1' }
+    { key: 'overdue_cancel_days', label: t('admin.setting.overdue_cancel_days'), hint: t('admin.setting.overdue_cancel_days_hint'), step: '1' },
+    { key: 'exchange_rate_jpy_thb', label: t('admin.setting.exchange_rate_jpy_thb'), hint: t('admin.setting.exchange_rate_jpy_thb_hint'), step: '0.001' }
   ]
 
   return (

@@ -14,6 +14,14 @@ export const Users = sqliteTable("Users", {
   udate: text("udate"),
 });
 
+// Failed-login log for rate limiting. Workers keep no state between requests,
+// so the counter lives here; old rows are pruned lazily on insert.
+export const Login_Attempts = sqliteTable("Login_Attempts", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  email: text("email").notNull(),
+  cdate: text("cdate").default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const Addresses = sqliteTable("Addresses", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   user_id: integer("user_id").notNull().references(() => Users.id),
@@ -80,8 +88,11 @@ export const Settings = sqliteTable("Settings", {
   // trip's ship_date gets moved to the next open trip.
   unpaid_move_days: integer("unpaid_move_days").default(3),
   // An order that has sat unpaid for this many days after being moved (or
-  // past its deadline) gets cancelled — never deleted.
+  // past its deadline) gets cancelled - never deleted.
   overdue_cancel_days: integer("overdue_cancel_days").default(14),
+  // JPY to THB rate used to price purchases and tentative product prices
+  // (was the EXCHANGE_RATE_JPY_THB env var).
+  exchange_rate_jpy_thb: real("exchange_rate_jpy_thb").default(0.25),
   udate: text("udate"),
 });
 
