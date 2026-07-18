@@ -80,7 +80,7 @@ export const TrendingItems: React.FC<Props> = ({ hideViewAll, areaId, title }) =
             {t('home.trending.errorLoading')}
           </div>
         ) : products && products.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {products.map((item) => (
               <div key={item.id} className="product-card group">
                 <Link to={`/product/${item.id}`} className="product-card-img-container">
