@@ -5,6 +5,7 @@ import { DataTable } from '../../components/admin/DataTable'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Plane, Plus, Loader2, Edit2, Save, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useLocalizedName } from '../../utils/localization'
 
 type TripFillAxis = 'items' | 'weight' | 'price'
 interface TripAxis {
@@ -30,8 +31,16 @@ interface Trip {
   fill?: TripAxis | null
 }
 
+interface Country {
+  id: number
+  name_en: string
+  name_th: string | null
+  name_jp: string | null
+}
+
 export const AdminTrips: React.FC = () => {
   const { t } = useTranslation()
+  const localizedName = useLocalizedName()
   const queryClient = useQueryClient()
   const [isAdding, setIsAdding] = useState(false)
   const [editingTripId, setEditingTripId] = useState<number | null>(null)
@@ -42,6 +51,11 @@ export const AdminTrips: React.FC = () => {
       const res = await api.get('/ships')
       return res.data.data as Trip[]
     }
+  })
+
+  const { data: countries } = useQuery({
+    queryKey: ['admin-countries'],
+    queryFn: async () => (await api.get('/locations/countries')).data.data as Country[]
   })
 
   const addTripMutation = useMutation({
@@ -233,15 +247,13 @@ export const AdminTrips: React.FC = () => {
             <div>
               <label className="label-admin">{t('admin.trips.origin')}</label>
               <select value={newTripForm.origin_id} onChange={(e) => setNewTripForm({ ...newTripForm, origin_id: Number(e.target.value) })} className="input-admin">
-                <option value={1}>{t('admin.trips.thailand')}</option>
-                <option value={2}>{t('admin.trips.japan')}</option>
+                {countries?.map((cty) => <option key={cty.id} value={cty.id}>{localizedName(cty)}</option>)}
               </select>
             </div>
             <div>
               <label className="label-admin">{t('admin.trips.destination')}</label>
               <select value={newTripForm.destination_id} onChange={(e) => setNewTripForm({ ...newTripForm, destination_id: Number(e.target.value) })} className="input-admin">
-                <option value={1}>{t('admin.trips.thailand')}</option>
-                <option value={2}>{t('admin.trips.japan')}</option>
+                {countries?.map((cty) => <option key={cty.id} value={cty.id}>{localizedName(cty)}</option>)}
               </select>
             </div>
             <div className="hidden md:block" />
