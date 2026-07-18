@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {
   ShoppingBag, Loader2, MapPin, PlaneTakeoff, Ship as ShipIcon,
@@ -9,6 +9,7 @@ import {
 import { api } from '../../services/api'
 import { useCart } from '../../contexts/CartContext'
 import { getImageUrl } from '../../utils/image'
+import { Confetti } from '../../components/Confetti'
 
 interface Trip {
   id: number
@@ -34,6 +35,7 @@ type Step = 'review' | 'payment' | 'done'
 export const Checkout: React.FC = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const qc = useQueryClient()
   const { items, totalPrice, clearCart } = useCart()
 
   const [step, setStep] = useState<Step>('review')
@@ -69,11 +71,17 @@ export const Checkout: React.FC = () => {
       const res = await api.post('/orders', {
         trip_id: selectedTrip,
         address_id: selectedAddress,
-        items: items.map((i) => ({ type: 'product' as const, id: i.id, quantity: i.quantity }))
+        items: items.map((i) => ({ type: 'product' as const, id: i.id, quantity: i.quantity, options: i.selectedOptions }))
       })
       const newId = res.data.data.id as number
       setOrderId(newId)
       clearCart()
+      // The order took capacity off the trip and sold stock, so every cached
+      // view of those is now wrong: My Orders lacks the new order, and the trip
+      // meters on Home / Checkout still show the old fill.
+      qc.invalidateQueries({ queryKey: ['my-orders'] })
+      qc.invalidateQueries({ queryKey: ['ships'] })
+      qc.invalidateQueries({ queryKey: ['products'] })
       setStep('payment')
       loadQr(newId)
     } catch (e: any) {
@@ -109,6 +117,7 @@ export const Checkout: React.FC = () => {
       await api.post('/payments/slip', form, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
+      qc.invalidateQueries({ queryKey: ['my-orders'] })
       setStep('done')
     } catch (e: any) {
       setError(e.response?.data?.message || t('checkout.slipError'))
@@ -131,6 +140,16 @@ export const Checkout: React.FC = () => {
 
   return (
     <div className="section-container py-8 max-w-5xl">
+      {/* Full-screen loader while the order is being placed */}
+      {placing && (
+        <div className="modal-overlay">
+          <div className="bg-card border border-border rounded-2xl px-8 py-10 flex flex-col items-center gap-4 shadow-xl animate-scale-in">
+            <span className="spinner spinner-lg" />
+            <p className="font-semibold text-foreground">{t('checkout.placing')}</p>
+          </div>
+        </div>
+      )}
+
       <h1 className="text-3xl font-bold text-foreground mb-6">{t('checkout.title')}</h1>
 
       {error && (
@@ -164,7 +183,7 @@ export const Checkout: React.FC = () => {
                         {tr.type === 'sea'
                           ? <ShipIcon className="w-4 h-4 text-primary" />
                           : <PlaneTakeoff className="w-4 h-4 text-primary" />}
-                        {tr.type.charAt(0).toUpperCase() + tr.type.slice(1)}
+                        {tr.type === 'sea' ? t('home.schedule.seaFreight') : t('home.schedule.flight')}
                       </span>
                       <span className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Calendar className="w-3.5 h-3.5" />
@@ -217,10 +236,13 @@ export const Checkout: React.FC = () => {
               <h2 className="font-bold text-lg mb-4">{t('checkout.orderSummary')}</h2>
               <div className="space-y-3 max-h-72 overflow-y-auto">
                 {items.map((item) => (
-                  <div key={item.id} className="flex gap-3">
+                  <div key={item.lineId} className="flex gap-3">
                     <img src={getImageUrl(item.image)} alt={item.name} className="w-14 h-14 object-cover rounded-md border border-border" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium line-clamp-2">{item.name}</p>
+                      {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                        <p className="text-xs text-muted-foreground">{Object.entries(item.selectedOptions).map(([k, v]) => `${k}: ${v}`).join(' · ')}</p>
+                      )}
                       <p className="text-xs text-muted-foreground">x{item.quantity}</p>
                     </div>
                     <p className="text-sm font-semibold text-primary whitespace-nowrap">฿{(item.price_thb * item.quantity).toLocaleString()}</p>
@@ -238,11 +260,9 @@ export const Checkout: React.FC = () => {
               <button
                 onClick={handlePlaceOrder}
                 disabled={!selectedTrip || !selectedAddress || placing}
-                className="btn-primary-lg w-full mt-4 flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-pill btn-pill-primary w-full mt-4 py-3.5 text-base disabled:opacity-50"
               >
-                {placing
-                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{t('checkout.placing')}</>
-                  : t('checkout.placeOrder')}
+                {t('checkout.placeOrder')}
               </button>
             </section>
           </div>
@@ -286,10 +306,10 @@ export const Checkout: React.FC = () => {
                 <button
                   onClick={handleSubmitSlip}
                   disabled={!slipFile || submittingSlip}
-                  className="btn-primary w-full flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn-pill btn-pill-primary w-full py-3"
                 >
                   {submittingSlip
-                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{t('checkout.submitting')}</>
+                    ? <><span className="spinner border-primary-foreground/40 !w-4 !h-4" style={{ borderTopColor: 'hsl(var(--primary-foreground))' }} />{t('checkout.submitting')}</>
                     : t('checkout.submitSlip')}
                 </button>
               </div>
@@ -303,13 +323,14 @@ export const Checkout: React.FC = () => {
       )}
 
       {step === 'done' && (
-        <div className="max-w-md mx-auto text-center py-12 space-y-4">
-          <CheckCircle2 className="w-16 h-16 mx-auto text-emerald-500" />
+        <div className="relative max-w-md mx-auto text-center py-12 space-y-4">
+          <Confetti />
+          <CheckCircle2 className="w-20 h-20 mx-auto text-emerald-500 animate-scale-in" />
           <h2 className="text-2xl font-bold">{t('checkout.doneTitle')}</h2>
           <p className="text-muted-foreground">{t('checkout.doneDesc')}</p>
-          <div className="flex gap-3 justify-center pt-2">
-            <Link to="/orders" className="btn-primary px-6 py-2">{t('checkout.viewOrders')}</Link>
-            <Link to="/catalog" className="btn-secondary px-6">{t('checkout.continueShopping')}</Link>
+          <div className="flex flex-wrap gap-3 justify-center pt-2">
+            <Link to="/orders" className="btn-pill btn-pill-primary px-6">{t('checkout.viewOrders')}</Link>
+            <Link to="/catalog" className="btn-pill btn-pill-outline px-6">{t('checkout.continueShopping')}</Link>
           </div>
         </div>
       )}

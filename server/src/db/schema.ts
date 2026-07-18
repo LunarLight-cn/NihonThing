@@ -14,6 +14,14 @@ export const Users = sqliteTable("Users", {
   udate: text("udate"),
 });
 
+// Failed-login log for rate limiting. Workers keep no state between requests,
+// so the counter lives here; old rows are pruned lazily on insert.
+export const Login_Attempts = sqliteTable("Login_Attempts", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  email: text("email").notNull(),
+  cdate: text("cdate").default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const Addresses = sqliteTable("Addresses", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   user_id: integer("user_id").notNull().references(() => Users.id),
@@ -66,6 +74,28 @@ export const Subdistricts = sqliteTable("Subdistricts", {
   postal_code: text("postal_code").notNull(),
 });
 
+// Global, admin-editable settings. Singleton row (id = 1).
+export const Settings = sqliteTable("Settings", {
+  id: integer("id").primaryKey(),
+  // Max items one user may order per trip (was hard-coded 50).
+  per_user_item_limit: integer("per_user_item_limit").default(50),
+  // Days before ship_date that a trip stops accepting orders (was env var).
+  trip_cutoff_days: integer("trip_cutoff_days").default(5),
+  // How far a trip may overshoot its cap on the final accepted order.
+  weight_tolerance_kg: real("weight_tolerance_kg").default(5),
+  price_tolerance_thb: real("price_tolerance_thb").default(500),
+  // An order that has not paid its shipping by this many days before the
+  // trip's ship_date gets moved to the next open trip.
+  unpaid_move_days: integer("unpaid_move_days").default(3),
+  // An order that has sat unpaid for this many days after being moved (or
+  // past its deadline) gets cancelled - never deleted.
+  overdue_cancel_days: integer("overdue_cancel_days").default(14),
+  // JPY to THB rate used to price purchases and tentative product prices
+  // (was the EXCHANGE_RATE_JPY_THB env var).
+  exchange_rate_jpy_thb: real("exchange_rate_jpy_thb").default(0.25),
+  udate: text("udate"),
+});
+
 export const Ships = sqliteTable("Ships", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   type: text("type").notNull(),
@@ -75,8 +105,13 @@ export const Ships = sqliteTable("Ships", {
   courier_name: text("courier_name"),
   origin_id: integer("origin_id").notNull().references(() => Countries.id),
   destination_id: integer("destination_id").notNull().references(() => Countries.id),
+  // Capacity is tracked on three axes. A max of 0/null means "no limit".
   max_cap: real("max_cap").default(0),
   current_cap: real("current_cap").default(0),
+  max_items: integer("max_items").default(0),
+  current_items: integer("current_items").default(0),
+  max_price: real("max_price").default(0),
+  current_price: real("current_price").default(0),
   close_date: text("close_date"),
   status: text("status", { enum: ["open", "closed", "in_transit", "arrived"] }).default('open'),
   cdate: text("cdate").default(sql`CURRENT_TIMESTAMP`),
@@ -104,6 +139,9 @@ export const Products = sqliteTable("Products", {
   price_tentative_jpy: real("price_tentative_jpy"),
   price_tentative_thb: real("price_tentative_thb"),
   img: text("img", { mode: 'json' }).$type<string[]>(),
+  // Product options (e.g. Size, Colour) — informational choices the customer
+  // selects when ordering. Single price/stock per product (Model A).
+  options: text("options", { mode: 'json' }).$type<{ name: string; values: string[] }[]>(),
   tag: text("tag"),
   amount: integer("amount").default(0),
   weight: real("weight").default(0),
@@ -128,7 +166,9 @@ export const Orders = sqliteTable("Orders", {
   shipping_fee_th_th: real("shipping_fee_th_th"),
   grand_total: real("grand_total"),
   payment_status: text("payment_status", { enum: ["pending_deposit", "deposit_paid", "pending_remaining", "fully_paid"] }),
-  status: text("status", { enum: ["pending", "purchasing", "arrived_th", "shipped", "delivered", "cancelled"] }),
+  // Fulfillment only — money lives in payment_status. in_transit = on the trip
+  // (needs shipping paid first); local_shipping = with the domestic courier.
+  status: text("status", { enum: ["pending", "purchasing", "in_transit", "arrived", "local_shipping", "delivered", "cancelled"] }),
   sender_id: integer("sender_id").references(() => Users.id),
   shipped_date: text("shipped_date"),
   cdate: text("cdate").default(sql`CURRENT_TIMESTAMP`),
@@ -142,12 +182,21 @@ export const Order_Items = sqliteTable("Order_Items", {
   product_id: integer("product_id").references(() => Products.id),
   final_price: real("final_price"),
   quantity: integer("quantity"),
+  // Customer's chosen options for this line, e.g. {"Size":"M","Colour":"Black"}
+  selected_options: text("selected_options", { mode: 'json' }).$type<Record<string, string>>(),
+  // An agent claims the lines they will shop for. Claiming is per line, not per
+  // order, so two agents can split one order between them.
+  claimed_by: integer("claimed_by").references(() => Users.id),
+  claimed_at: text("claimed_at"),
   missing: integer("missing"),
   udate: text("udate"),
 });
 
 export const Purchases = sqliteTable("Purchases", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  // order_item_id says which line was bought; order_id is kept alongside it so
+  // an order's spend can be summed without walking every line.
+  order_id: integer("order_id").references(() => Orders.id),
   order_item_id: integer("order_item_id").references(() => Order_Items.id),
   product_id: integer("product_id").references(() => Products.id),
   agent_id: integer("agent_id").notNull().references(() => Users.id),
@@ -260,6 +309,7 @@ export const usersRelations = relations(Users, ({ many }) => ({
   purchases: many(Purchases),
   ticketsAsClient: many(Tickets, { relationName: "client_tickets" }),
   ticketsAsAgent: many(Tickets, { relationName: "agent_tickets" }),
+  claimedItems: many(Order_Items, { relationName: "claimed_items" }),
   follows: many(Follows),
 }));
 
@@ -322,16 +372,19 @@ export const ordersRelations = relations(Orders, ({ one, many }) => ({
   address: one(Addresses, { fields: [Orders.address_id], references: [Addresses.id] }),
   items: many(Order_Items),
   payments: many(Payments),
+  purchases: many(Purchases),
 }));
 
 export const orderItemsRelations = relations(Order_Items, ({ one, many }) => ({
   order: one(Orders, { fields: [Order_Items.order_id], references: [Orders.id] }),
   product: one(Products, { fields: [Order_Items.product_id], references: [Products.id] }),
   ticket: one(Tickets, { fields: [Order_Items.ticket_id], references: [Tickets.id] }),
+  claimedBy: one(Users, { fields: [Order_Items.claimed_by], references: [Users.id], relationName: "claimed_items" }),
   purchases: many(Purchases),
 }));
 
 export const purchasesRelations = relations(Purchases, ({ one }) => ({
+  order: one(Orders, { fields: [Purchases.order_id], references: [Orders.id] }),
   orderItem: one(Order_Items, { fields: [Purchases.order_item_id], references: [Order_Items.id] }),
   agent: one(Users, { fields: [Purchases.agent_id], references: [Users.id] }),
 }));

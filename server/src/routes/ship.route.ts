@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { authGuard, adminGuard, AuthVariables } from '../middlewares/auth.middleware'
+import { authGuard, roleGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { getShips, createShip, updateShip } from '../models/ship.model'
 
 const shipRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; DEFAULT_TRIP_CUTOFF_DAYS: string }; Variables: AuthVariables }>()
@@ -12,13 +12,18 @@ const CreateShipSchema = z.object({
   courier_name: z.string().optional(),
   origin_id: z.number(),
   destination_id: z.number(),
+  // Capacity caps — 0 or omitted means that axis is unlimited.
   max_cap: z.number().optional(),
+  max_items: z.number().int().optional(),
+  max_price: z.number().optional(),
   close_date: z.string().optional()
 })
 
 const UpdateShipSchema = CreateShipSchema.partial().extend({
   status: z.enum(['open', 'closed', 'in_transit', 'arrived']).optional(),
-  current_cap: z.number().optional()
+  current_cap: z.number().optional(),
+  current_items: z.number().int().optional(),
+  current_price: z.number().optional()
 })
 
 const ShipIdParamsSchema = z.object({
@@ -44,7 +49,7 @@ const postShipRoute = createRoute({
   method: 'post',
   path: '/',
   tags: ['Ships (Admin)'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: { body: { content: { 'application/json': { schema: CreateShipSchema } } } },
   responses: { 201: { description: 'Trip created successfully' } }
@@ -61,7 +66,7 @@ const putShipRoute = createRoute({
   method: 'put',
   path: '/{id}',
   tags: ['Ships (Admin)'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: {
     params: ShipIdParamsSchema,

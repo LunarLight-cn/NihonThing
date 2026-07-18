@@ -31,7 +31,7 @@ pnpm-debug.log*
 !.vscode/extensions.json
 .idea/
 
-# Docs
+# Docs are private notes and ideas - never on GitHub.
 .obsidian/
 docs/
 
@@ -45,3 +45,5 @@ ehthumbs.db
 Thumbs.db
 server/users-seed.sql
 server/base-data-seed.sql
+server/location-seed.sql
+server/staging-location-seed.sql

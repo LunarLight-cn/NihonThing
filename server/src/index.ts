@@ -19,6 +19,8 @@ import categoryRoutes from './routes/category.route'
 import locationRoutes from './routes/location.route'
 import uploadRoutes from './routes/upload.route'
 import brandRoutes from './routes/brand.route'
+import settingsRoutes from './routes/settings.route'
+import shippingRoutes from './routes/shipping.route'
 
 const app = new OpenAPIHono()
 
@@ -29,6 +31,14 @@ app.onError((err, c) => {
   // Check if it's a validation error (Zod) which is safe to return
   if (err.name === 'ZodError' || (err as any).status === 400) {
     return c.json({ success: false, message: err.message }, 400)
+  }
+  // A bad reference is the caller's mistake, not a server fault, and "Internal
+  // Server Error" gives them nothing to act on.
+  if (err.message?.includes('FOREIGN KEY constraint failed')) {
+    return c.json({ success: false, message: 'That request points at a record that does not exist.' }, 400)
+  }
+  if (err.message?.includes('UNIQUE constraint failed')) {
+    return c.json({ success: false, message: 'That value is already taken.' }, 409)
   }
   return c.json({ success: false, message: 'Internal Server Error' }, 500)
 })
@@ -56,6 +66,8 @@ app.route('/api/categories', categoryRoutes)
 app.route('/api/locations', locationRoutes)
 app.route('/api/uploads', uploadRoutes)
 app.route('/api/brands', brandRoutes)
+app.route('/api/settings', settingsRoutes)
+app.route('/api/shipping', shippingRoutes)
 
 app.doc('/doc', {
   openapi: '3.0.0',

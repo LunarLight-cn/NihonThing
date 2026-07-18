@@ -1,6 +1,6 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { setCookie, deleteCookie } from 'hono/cookie'
-import { registerUser, loginUser } from '../services/auth.service'
+import { registerUser, loginUser, TooManyAttemptsError } from '../services/auth.service'
 
 const authRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; JWT_SECRET: string; AUTH_SALT: string } }>()
 
@@ -49,6 +49,9 @@ authRoutes.openapi(loginRoute, async (c) => {
 
     return c.json({ success: true, data: { token, user } })
   } catch (error: any) {
+    if (error instanceof TooManyAttemptsError) {
+      return c.json({ success: false, message: error.message }, 429)
+    }
     return c.json({ success: false, message: error.message }, 401)
   }
 })

@@ -28,6 +28,10 @@ import { AdminUsers } from './pages/admin/AdminUsers'
 import { AdminTickets } from './pages/admin/AdminTickets'
 import { AdminLocations } from './pages/admin/AdminLocations'
 import { AdminPurchases } from './pages/admin/AdminPurchases'
+import { AdminShipping } from './pages/admin/AdminShipping'
+import { AgentLayout } from './components/layout/AgentLayout'
+import { AgentDashboard } from './pages/agent/AgentDashboard'
+import { AgentPurchases } from './pages/agent/AgentPurchases'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -78,12 +82,13 @@ export default function App() {
 
             {/* Admin Dashboard */}
             <Route path="/admin" element={
-              <ProtectedRoute requireAdmin={true}>
+              <ProtectedRoute allowRoles={['admin']}>
                 <AdminLayout />
               </ProtectedRoute>
             }>
               <Route index element={<AdminOverview />} />
               <Route path="orders" element={<AdminOrders />} />
+              <Route path="shipping" element={<AdminShipping />} />
               <Route path="trips" element={<AdminTrips />} />
               <Route path="tickets" element={<AdminTickets />} />
               <Route path="purchases" element={<AdminPurchases />} />
@@ -92,6 +97,21 @@ export default function App() {
               <Route path="locations" element={<AdminLocations />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="settings" element={<AdminSettings />} />
+            </Route>
+
+            {/* Agent Dashboard. The shared pages reuse the admin components
+                rather than being copied; only the shell and the queue differ. */}
+            <Route path="/agent" element={
+              <ProtectedRoute allowRoles={['admin', 'agent']}>
+                <AgentLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<AgentDashboard />} />
+              <Route path="purchases" element={<AgentPurchases />} />
+              <Route path="catalog" element={<AdminProducts />} />
+              <Route path="trips" element={<AdminTrips />} />
+              <Route path="tickets" element={<AdminTickets />} />
+              <Route path="locations" element={<AdminLocations />} />
             </Route>
           </Routes>
         </BrowserRouter>

@@ -83,9 +83,9 @@ export const NewArrivals: React.FC<Props> = ({ hideViewAll }) => {
             {t('home.newArrivals.failedToLoad')}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="hscroll md:grid md:grid-cols-3 lg:grid-cols-6 md:gap-4">
             {products?.map((item) => (
-              <div key={item.id} className="product-card group rounded-lg">
+              <div key={item.id} className="hscroll-item w-[44%] sm:w-[30%] md:w-auto product-card group rounded-lg">
                 <Link to={`/product/${item.id}`} className="product-card-img-container">
                   <img
                     src={(item.img && item.img.length > 0) ? getImageUrl(item.img[0]) : 'https://images.unsplash.com/photo-1582793988951-9aed5509eb97?q=80&w=2942&auto=format&fit=crop'}

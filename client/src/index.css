@@ -151,7 +151,7 @@
   }
 
   .product-card {
-    @apply bg-card rounded-xl overflow-hidden border border-border transition-all duration-300 hover:shadow-xl hover:border-primary/20 flex flex-col;
+    @apply bg-card rounded-2xl overflow-hidden border border-border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary/20 flex flex-col;
   }
 
   .product-card-img-container {
@@ -232,6 +232,33 @@
   .badge-blue    { @apply bg-blue-500/10 text-blue-600 dark:text-blue-400; }
   .badge-orange  { @apply bg-orange-500/10 text-orange-600 dark:text-orange-400; }
 
+  /* ── Progress / Meters ─────────────────────────────────── */
+
+  .progress-track {
+    @apply w-full bg-secondary rounded-full h-2 overflow-hidden;
+  }
+
+  .progress-track-sm {
+    @apply h-1.5;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full transition-all;
+  }
+
+  .progress-fill-primary { @apply bg-primary; }
+  .progress-fill-warning { @apply bg-amber-500; }
+  .progress-fill-muted   { @apply bg-muted-foreground; }
+
+  /* Label on the left, value on the right — used in totals and metric lists */
+  .stat-row {
+    @apply flex justify-between text-sm;
+  }
+
+  .stat-row-label {
+    @apply text-muted-foreground;
+  }
+
   /* ── Feedback States ────────────────────────────────────── */
 
   .loading-center {
@@ -292,10 +319,78 @@
     @apply text-muted-foreground hover:bg-secondary;
   }
 
-  /* ── Admin Layout ───────────────────────────────────────── */
+  /* ── Customer mobile nav ────────────────────────────────── */
+
+  .mobile-nav-link {
+    @apply block px-4 py-2.5 rounded-lg text-sm font-medium text-foreground hover:bg-secondary transition-colors;
+  }
+
+  /* ── Dashboard Layout (admin + agent) ───────────────────── */
 
   .admin-page {
     @apply p-8 max-w-6xl mx-auto space-y-6;
+  }
+
+  .dash-shell {
+    @apply flex h-screen bg-muted/30;
+  }
+
+  /* Hidden on mobile; the hamburger opens it as a drawer (.is-open). */
+  .dash-sidebar {
+    @apply w-64 bg-card border-r border-border flex-col hidden md:flex;
+  }
+
+  .dash-sidebar.is-open {
+    @apply flex fixed inset-y-0 left-0 z-50 shadow-xl;
+  }
+
+  .dash-backdrop {
+    @apply fixed inset-0 bg-black/40 z-40 md:hidden;
+  }
+
+  .dash-brand {
+    @apply h-16 flex items-center px-6 border-b border-border text-xl font-bold text-primary;
+  }
+
+  .dash-nav {
+    @apply flex-1 overflow-y-auto py-4;
+  }
+
+  .dash-footer {
+    @apply p-4 border-t border-border;
+  }
+
+  .dash-avatar {
+    @apply w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-primary font-bold shrink-0;
+  }
+
+  .dash-lang-menu {
+    @apply absolute bottom-full left-0 mb-1 w-full bg-card border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50;
+  }
+
+  .dash-lang-option {
+    @apply text-left px-3 py-1.5 text-sm rounded-md hover:bg-secondary;
+  }
+
+  .dash-lang-option.is-active {
+    @apply text-primary font-bold bg-primary/10;
+  }
+
+  .dash-logout {
+    @apply flex w-full items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors;
+  }
+
+  .dash-main {
+    @apply flex-1 flex flex-col overflow-hidden;
+  }
+
+  .dash-mobile-header {
+    @apply h-16 md:hidden flex items-center justify-between px-4 bg-card border-b border-border;
+  }
+
+  /* No padding here: .admin-page owns the page's own spacing. */
+  .dash-content {
+    @apply flex-1 overflow-y-auto;
   }
 
   .admin-nav-link {
@@ -367,4 +462,146 @@
   .table-td {
     @apply px-6 py-4;
   }
+
+  /* ── Motion & Interaction (Gromuse-style migration) ─────────
+     Structure and motion borrowed from the reference; colors stay
+     on the existing Japanese white/red theme tokens. */
+
+  /* Pill buttons - capsule shape, used across the storefront */
+  .btn-pill {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-pill-primary {
+    @apply bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25 active:scale-[0.98];
+  }
+
+  .btn-pill-outline {
+    @apply border border-border bg-card text-foreground hover:bg-secondary active:scale-[0.98];
+  }
+
+  .btn-pill-accent {
+    @apply bg-accent text-accent-foreground hover:bg-accent/90 active:scale-[0.98];
+  }
+
+  /* Mobile-only horizontal carousel; becomes a normal grid at md+.
+     Pair the container with md:grid + md:grid-cols-*, and give each item its
+     own mobile width plus md:w-auto so the grid takes over on desktop.
+     Scrollbar is hidden - swipe only. */
+  .hscroll {
+    @apply flex gap-4 overflow-x-auto snap-x snap-mandatory pr-4 md:pr-0 md:overflow-visible md:snap-none;
+    scrollbar-width: none;
+  }
+
+  .hscroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hscroll-item {
+    @apply shrink-0 snap-start;
+  }
+
+  /* Soft, liftable product/content card */
+  .card-soft {
+    @apply bg-card border border-border rounded-2xl shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+
+  /* Pill filter chip (selectable) */
+  .chip {
+    @apply inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer whitespace-nowrap;
+  }
+
+  .chip:not(.is-active) {
+    @apply border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground;
+  }
+
+  .chip.is-active {
+    @apply border-primary bg-primary/10 text-primary;
+  }
+
+  /* Dropdown panel that eases down on open (search, language, menus).
+     Toggle .is-open in JS; it slides + fades instead of hard show/hide. */
+  .dropdown-panel {
+    @apply absolute z-50 bg-card border border-border rounded-xl shadow-xl overflow-hidden origin-top;
+    opacity: 0;
+    transform: translateY(-0.75rem) scaleY(0.96);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .dropdown-panel.is-open {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+    pointer-events: auto;
+  }
+
+  /* Dims the page behind an open dropdown, like the reference */
+  .dropdown-backdrop {
+    @apply fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px] opacity-0 pointer-events-none transition-opacity duration-200;
+  }
+
+  .dropdown-backdrop.is-open {
+    @apply opacity-100 pointer-events-auto;
+  }
+
+  /* Spinning ring loader - swaps in while a panel's content loads */
+  .spinner {
+    @apply inline-block rounded-full border-2 border-secondary align-[-0.125em];
+    width: 1.25rem;
+    height: 1.25rem;
+    border-top-color: hsl(var(--primary));
+    animation: nt-spin 0.7s linear infinite;
+  }
+
+  .spinner-lg {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-width: 3px;
+  }
+
+  /* Entrance helpers - drive keyframes defined below */
+  .animate-fade-in { animation: nt-fade-in 0.25s ease-out both; }
+  .animate-slide-down { animation: nt-slide-down 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .animate-scale-in { animation: nt-scale-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+}
+
+/* ── Keyframes (plain CSS so @layer purging keeps them) ───────── */
+@keyframes nt-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes nt-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes nt-slide-down {
+  from { opacity: 0; transform: translateY(-0.5rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Overshoot bounce for success ticks / confirmations */
+@keyframes nt-scale-in {
+  0% { opacity: 0; transform: scale(0.6); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes nt-confetti {
+  0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+  100% { opacity: 0; transform: translateY(120px) rotate(360deg); }
+}
+
+/* Respect users who ask for less motion */
+@media (prefers-reduced-motion: reduce) {
+  .card-soft,
+  .dropdown-panel,
+  .btn-pill,
+  .animate-fade-in,
+  .animate-slide-down,
+  .animate-scale-in {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  .spinner { animation-duration: 0.7s !important; }
 }

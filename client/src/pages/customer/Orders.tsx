@@ -11,12 +11,17 @@ import {
 import { api } from '../../services/api'
 import { getImageUrl } from '../../utils/image'
 import { useLocalizedName } from '../../utils/localization'
+import { orderStatusBadge, paymentStatusBadge } from '../../utils/status'
 
 interface OrderItem {
   quantity: number
+  selected_options?: Record<string, string> | null
   product?: { id: number; name_en?: string; name_th?: string; name_jp?: string; img?: string[] } | null
   ticket?: { id: number; item_name: string; img?: string | string[] } | null
 }
+
+const optionsLine = (o?: Record<string, string> | null) =>
+  o && Object.keys(o).length ? Object.entries(o).map(([k, v]) => `${k}: ${v}`).join(' · ') : ''
 interface OrderAddress {
   fullname: string
   surname: string
@@ -56,7 +61,7 @@ interface Order {
 // Human-facing order code; falls back to NT-<id> for rows created before codes existed.
 const orderNo = (order: Order) => order.order_code || `NT-${order.id}`
 
-const STATUS_RANK: Record<string, number> = { pending: 0, purchasing: 1, arrived_th: 2, shipped: 3, delivered: 4 }
+const STATUS_RANK: Record<string, number> = { pending: 0, purchasing: 1, in_transit: 2, arrived: 3, local_shipping: 4, delivered: 5 }
 const PAY_RANK: Record<string, number> = { pending_deposit: 0, deposit_paid: 1, pending_remaining: 2, fully_paid: 3 }
 interface Ticket {
   id: number
@@ -73,11 +78,6 @@ const badgeClass = (kind: 'ok' | 'warn' | 'muted' | 'info') => ({
   muted: 'badge-muted',
   info: 'badge-info'
 }[kind])
-
-const payBadge = (status: string) =>
-  status === 'fully_paid' ? 'ok' : status === 'pending_deposit' ? 'warn' : 'info'
-const fulfillBadge = (status: string) =>
-  status === 'delivered' ? 'ok' : status === 'cancelled' ? 'muted' : 'info'
 
 // ── Payment modal ──────────────────────────────────────────
 const PaymentModal: React.FC<{
@@ -215,19 +215,23 @@ const StatusTimeline: React.FC<{ order: Order }> = ({ order }) => {
     { icon: Banknote, label: t('myOrders.timeline.balancePaid'), done: pr >= 3, date: fmtDate(remaining?.cdate) },
     {
       icon: ArrivedIcon,
-      label: country ? t('myOrders.timeline.arrived', { country }) : t('myOrders.timeline.arrivedGeneric'),
+      label: t('myOrders.timeline.inTransit'),
       sub: t('myOrders.timeline.shippedVia', { type: tripType }),
       done: sr >= 2,
-      date: fmtDate(order.ship?.ship_date)
+      date: fmtDate(order.shipped_date || order.ship?.ship_date)
+    },
+    {
+      icon: MapPin,
+      label: country ? t('myOrders.timeline.arrived', { country }) : t('myOrders.timeline.arrivedGeneric'),
+      done: sr >= 3
     },
     {
       icon: Truck,
       label: t('myOrders.timeline.localDelivery'),
       sub: order.courier_name ? t('myOrders.timeline.localVia', { courier: order.courier_name }) : undefined,
-      done: sr >= 3,
-      date: fmtDate(order.shipped_date)
+      done: sr >= 4
     },
-    { icon: PackageCheck, label: t('myOrders.timeline.delivered'), done: sr >= 4, date: fmtDate(order.deliv_date) }
+    { icon: PackageCheck, label: t('myOrders.timeline.delivered'), done: sr >= 5, date: fmtDate(order.deliv_date) }
   ]
 
   const currentIdx = steps.findIndex((s) => !s.done)
@@ -277,8 +281,8 @@ const OrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = ({ ord
         <p className="text-sm text-muted-foreground">{t('myOrders.placedOn', { date: new Date(order.cdate).toLocaleString() })}</p>
 
         <div className="flex gap-2 mt-3">
-          <span className={`badge ${badgeClass(fulfillBadge(order.status))}`}>{t(`myOrders.status.${order.status}`)}</span>
-          <span className={`badge ${badgeClass(payBadge(order.payment_status))}`}>{t(`myOrders.payment.${order.payment_status}`)}</span>
+          <span className={`badge ${orderStatusBadge(order.status)}`}>{t(`myOrders.status.${order.status}`)}</span>
+          <span className={`badge ${paymentStatusBadge(order.payment_status)}`}>{t(`myOrders.payment.${order.payment_status}`)}</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 mt-6">
@@ -295,12 +299,15 @@ const OrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = ({ ord
           <h3 className="detail-heading">{t('myOrders.detail.items')}</h3>
           <div className="space-y-2">
             {order.items.map((it, idx) => {
-              const label = it.product ? localizedName(it.product) : (it.ticket?.item_name || '—')
+              const label = it.product ? localizedName(it.product) : (it.ticket?.item_name || '-')
               const img = firstImg(it.product?.img) || firstImg(it.ticket?.img)
               return (
                 <div key={idx} className="flex items-center gap-3">
                   <img src={getImageUrl(img)} alt={label} className="w-12 h-12 object-cover rounded-md border border-border" />
-                  <span className="text-sm flex-1 min-w-0 truncate">{label}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm truncate">{label}</p>
+                    {optionsLine(it.selected_options) && <p className="text-xs text-muted-foreground truncate">{optionsLine(it.selected_options)}</p>}
+                  </div>
                   <span className="text-sm text-muted-foreground">x{it.quantity}</span>
                 </div>
               )
@@ -328,19 +335,19 @@ const OrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = ({ ord
             {/* Local leg */}
             <div className="p-3 space-y-1">
               <p className="font-medium flex items-center gap-1.5"><Truck className="w-4 h-4 text-primary" />{t('myOrders.detail.localLeg')}</p>
-              <div className="flex justify-between text-muted-foreground">
+              <div className="stat-row stat-row-label">
                 <span>{t('myOrders.detail.courier')}</span>
                 <span>{order.courier_name || t('myOrders.detail.notYet')}</span>
               </div>
-              <div className="flex justify-between text-muted-foreground">
+              <div className="stat-row stat-row-label">
                 <span>{t('myOrders.detail.trackingNo')}</span>
                 <span className="font-mono">{order.track_no || t('myOrders.detail.notYet')}</span>
               </div>
-              <div className="flex justify-between text-muted-foreground">
+              <div className="stat-row stat-row-label">
                 <span>{t('myOrders.detail.shippedDate')}</span>
                 <span>{fmtDate(order.shipped_date) || t('myOrders.detail.notYet')}</span>
               </div>
-              <div className="flex justify-between text-muted-foreground">
+              <div className="stat-row stat-row-label">
                 <span>{t('myOrders.detail.deliveredDate')}</span>
                 <span>{fmtDate(order.deliv_date) || t('myOrders.detail.notYet')}</span>
               </div>
@@ -479,20 +486,23 @@ export const Orders: React.FC = () => {
                       )}
                     </div>
                     <div className="flex flex-col items-end gap-1.5">
-                      <span className={`badge ${badgeClass(fulfillBadge(order.status))}`}>{t(`myOrders.status.${order.status}`)}</span>
-                      <span className={`badge ${badgeClass(payBadge(order.payment_status))}`}>{t(`myOrders.payment.${order.payment_status}`)}</span>
+                      <span className={`badge ${orderStatusBadge(order.status)}`}>{t(`myOrders.status.${order.status}`)}</span>
+                      <span className={`badge ${paymentStatusBadge(order.payment_status)}`}>{t(`myOrders.payment.${order.payment_status}`)}</span>
                     </div>
                   </div>
 
                   {/* Items */}
                   <div className="space-y-2 mb-4">
                     {order.items.map((it, idx) => {
-                      const label = it.product ? localizedName(it.product) : (it.ticket?.item_name || '—')
+                      const label = it.product ? localizedName(it.product) : (it.ticket?.item_name || '-')
                       const img = firstImg(it.product?.img) || firstImg(it.ticket?.img)
                       return (
                         <div key={idx} className="flex items-center gap-3">
                           <img src={getImageUrl(img)} alt={label} className="w-11 h-11 object-cover rounded-md border border-border" />
-                          <span className="text-sm flex-1 min-w-0 truncate">{label}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm truncate">{label}</p>
+                            {optionsLine(it.selected_options) && <p className="text-xs text-muted-foreground truncate">{optionsLine(it.selected_options)}</p>}
+                          </div>
                           <span className="text-sm text-muted-foreground">x{it.quantity}</span>
                         </div>
                       )
@@ -566,7 +576,7 @@ export const Orders: React.FC = () => {
                   <div className="flex gap-6 mt-3 text-sm">
                     <div>
                       <p className="text-xs text-muted-foreground">{t('myOrders.request.budget')}</p>
-                      <p className="font-medium">{tk.expected_price ? `¥${tk.expected_price.toLocaleString()}` : '—'}</p>
+                      <p className="font-medium">{tk.expected_price ? `¥${tk.expected_price.toLocaleString()}` : '-'}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">{t('myOrders.request.ourPrice')}</p>

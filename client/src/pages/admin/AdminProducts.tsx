@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { api } from '../../services/api'
+import { api, fetchAllProducts } from '../../services/api'
 import { DataTable } from '../../components/admin/DataTable'
 import { SearchableSelect } from '../../components/admin/SearchableSelect'
 import { SearchableMultiSelect } from '../../components/admin/SearchableMultiSelect'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Package, Tags, Plus, Loader2, Save, X, Image as ImageIcon, Edit2, Trash2 } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
 
 interface Product {
   id: number
@@ -46,6 +47,9 @@ interface Brand {
 export const AdminProducts: React.FC = () => {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
+  // An agent retires a product by setting it inactive; deleting is the admin's.
+  const { user } = useAuth()
+  const canDelete = user?.role !== 'agent'
   const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'brands'>('products')
   const [isAddingProduct, setIsAddingProduct] = useState(false)
   const [isAddingCategory, setIsAddingCategory] = useState(false)
@@ -57,10 +61,7 @@ export const AdminProducts: React.FC = () => {
   // -- Queries --
   const { data: products, isLoading: isLoadingProducts } = useQuery({
     queryKey: ['admin-products'],
-    queryFn: async () => {
-      const res = await api.get('/products')
-      return res.data.data as Product[]
-    }
+    queryFn: async () => await fetchAllProducts<Product>()
   })
 
   const { data: categories, isLoading: isLoadingCategories } = useQuery({
@@ -117,7 +118,11 @@ export const AdminProducts: React.FC = () => {
       return res
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'products'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] })
+      // Customers read the same products under ['products'] (catalog, new
+      // arrivals, trending) and ['product', id] (detail page).
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['product'] })
       setIsAddingProduct(false)
       setEditingProductId(null)
     }
@@ -127,6 +132,10 @@ export const AdminProducts: React.FC = () => {
     mutationFn: ({ id, status }: { id: number; status: string }) => api.put(`/products/${id}`, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] })
+      // Customers read the same products under ['products'] (catalog, new
+      // arrivals, trending) and ['product', id] (detail page).
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['product'] })
     }
   })
 
@@ -160,7 +169,11 @@ export const AdminProducts: React.FC = () => {
       return res
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'products'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] })
+      // Customers read the same products under ['products'] (catalog, new
+      // arrivals, trending) and ['product', id] (detail page).
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      queryClient.invalidateQueries({ queryKey: ['product'] })
       setIsAddingProduct(false)
       setEditingProductId(null)
     }
@@ -304,11 +317,12 @@ export const AdminProducts: React.FC = () => {
               amount: row.original.amount?.toString() || '0',
               weight: (row.original as any).weight?.toString() || '0',
               img: row.original.img || [],
-              category_id: (row.original as any).category_id || 1,
+              category_id: (row.original as any).category_id || '',
               status: row.original.status || 'active',
               tag: row.original.tag || '',
               origin_country_id: (row.original as any).origin_country_id || '',
-              shopIds: []
+              shopIds: [],
+              options: (row.original as any).options || []
             })
             setEditingProductId(row.original.id)
             setSelectedFiles([])
@@ -355,16 +369,18 @@ export const AdminProducts: React.FC = () => {
           >
             <Edit2 className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => {
-              if (window.confirm('Are you sure you want to delete this category?')) {
-                deleteCategoryMutation.mutate(row.original.id)
-              }
-            }}
-            className="btn-icon-destructive"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {canDelete && (
+            <button
+              onClick={() => {
+                if (window.confirm('Are you sure you want to delete this category?')) {
+                  deleteCategoryMutation.mutate(row.original.id)
+                }
+              }}
+              className="btn-icon-destructive"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       )
     }
@@ -404,16 +420,18 @@ export const AdminProducts: React.FC = () => {
           >
             <Edit2 className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => {
-              if (window.confirm('Are you sure you want to delete this brand?')) {
-                deleteBrandMutation.mutate(row.original.id)
-              }
-            }}
-            className="btn-icon-destructive"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {canDelete && (
+            <button
+              onClick={() => {
+                if (window.confirm('Are you sure you want to delete this brand?')) {
+                  deleteBrandMutation.mutate(row.original.id)
+                }
+              }}
+              className="btn-icon-destructive"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       )
     }
@@ -433,11 +451,14 @@ export const AdminProducts: React.FC = () => {
     amount: '10',
     weight: '0',
     img: [] as string[],
-    category_id: 1,
+    // Empty, not 1: the payload builder drops '' fields, and a hardcoded id
+    // pointed at a category that need not exist.
+    category_id: '' as string | number,
     status: 'active',
     tag: '',
     origin_country_id: '' as string | number,
-    shopIds: [] as number[]
+    shopIds: [] as number[],
+    options: [] as { name: string; values: string[] }[]
   })
 
   const [categoryForm, setCategoryForm] = useState({
@@ -510,7 +531,7 @@ export const AdminProducts: React.FC = () => {
                   setProductForm({
                     name_en: '', name_th: '', name_jp: '', desc_en: '', desc_th: '', desc_jp: '',
                     brand_id: '', origin_country_id: '',
-                    price_tentative_jpy: '', price_tentative_thb: '', amount: '10', weight: '0', img: [], category_id: 1, status: 'active', tag: '', shopIds: []
+                    price_tentative_jpy: '', price_tentative_thb: '', amount: '10', weight: '0', img: [], category_id: '', status: 'active', tag: '', shopIds: [], options: []
                   })
                 } else {
                   setIsAddingProduct(true)
@@ -666,7 +687,7 @@ export const AdminProducts: React.FC = () => {
                   <SearchableSelect
                     options={categories?.map((c) => ({ id: c.id, label: c.name_en })) || []}
                     value={productForm.category_id}
-                    onChange={(val) => setProductForm({ ...productForm, category_id: Number(val) })}
+                    onChange={(val) => setProductForm({ ...productForm, category_id: val ? Number(val) : '' })}
                     placeholder={t('admin.product.search_category')}
                   />
                 </div>
@@ -772,6 +793,78 @@ export const AdminProducts: React.FC = () => {
                       ))}
                     </div>
                   )}
+                </div>
+
+                <div className="form-section-divider">{t('admin.product.options_title')}</div>
+                <div className="col-span-3 space-y-3">
+                  <p className="text-xs text-muted-foreground">{t('admin.product.options_hint')}</p>
+                  {productForm.options.map((opt, oi) => (
+                    <div key={oi} className="border border-border rounded-lg p-4 space-y-3">
+                      <div className="flex items-end gap-2">
+                        <div className="flex-1">
+                          <label className="label-admin">{t('admin.product.option_name')}</label>
+                          <input
+                            type="text"
+                            value={opt.name}
+                            placeholder={t('admin.product.option_name_ph')}
+                            onChange={(e) => setProductForm((prev) => ({ ...prev, options: prev.options.map((o, i) => i === oi ? { ...o, name: e.target.value } : o) }))}
+                            className="input-admin"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          title={t('admin.product.remove_option')}
+                          onClick={() => setProductForm((prev) => ({ ...prev, options: prev.options.filter((_, i) => i !== oi) }))}
+                          className="btn-icon-destructive mb-1"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div>
+                        <label className="label-admin">{t('admin.product.option_values')}</label>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {opt.values.map((val, vi) => (
+                            <span key={vi} className="badge bg-primary/10 text-primary flex items-center gap-1 normal-case text-sm">
+                              {val}
+                              <button
+                                type="button"
+                                onClick={() => setProductForm((prev) => ({ ...prev, options: prev.options.map((o, i) => i === oi ? { ...o, values: o.values.filter((_, j) => j !== vi) } : o) }))}
+                                className="hover:text-destructive"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))}
+                          <input
+                            type="text"
+                            placeholder={t('admin.product.add_value_ph')}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                const v = (e.target as HTMLInputElement).value.trim()
+                                if (v) {
+                                  setProductForm((prev) => ({ ...prev, options: prev.options.map((o, i) => i === oi ? { ...o, values: [...o.values, v] } : o) }))
+                                  ;(e.target as HTMLInputElement).value = ''
+                                }
+                              }
+                            }}
+                            className="input-admin w-48 text-sm"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1.5">
+                          {opt.values.length === 0 ? t('admin.product.option_values_empty') : t('admin.product.option_values_hint')}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setProductForm((prev) => ({ ...prev, options: [...prev.options, { name: '', values: [] }] }))}
+                    className="btn-secondary text-sm w-fit"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />{t('admin.product.add_option')}
+                  </button>
                 </div>
               </div>
               <div className="flex justify-end">

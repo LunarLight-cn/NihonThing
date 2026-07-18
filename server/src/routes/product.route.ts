@@ -1,8 +1,9 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { authGuard, adminGuard, AuthVariables } from '../middlewares/auth.middleware'
+import { authGuard, roleGuard, adminGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct, getNewArrivals, getTrendingProducts } from '../models/product.model'
+import { getSettings } from '../models/settings.model'
 
-const productRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; EXCHANGE_RATE_JPY_THB: string }; Variables: AuthVariables }>()
+const productRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database }; Variables: AuthVariables }>()
 
 // Schema for Creating a Product
 const CreateProductSchema = z.object({
@@ -18,6 +19,7 @@ const CreateProductSchema = z.object({
   price_tentative_jpy: z.number().optional(),
   price_tentative_thb: z.number().optional(),
   img: z.array(z.string()).optional(),
+  options: z.array(z.object({ name: z.string().min(1), values: z.array(z.string().min(1)).min(1) })).optional(),
   tag: z.string().optional(),
   weight: z.number().optional(),
   status: z.enum(['active', 'inactive', 'out_of_stock']).optional()
@@ -108,7 +110,7 @@ const postProductRoute = createRoute({
   method: 'post',
   path: '/',
   tags: ['Products (Admin)'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: { body: { content: { 'application/json': { schema: CreateProductSchema } } } },
   responses: { 201: { description: 'Product created successfully' } }
@@ -116,7 +118,7 @@ const postProductRoute = createRoute({
 
 productRoutes.openapi(postProductRoute, async (c) => {
   const data = c.req.valid('json')
-  const exchangeRate = parseFloat(c.env.EXCHANGE_RATE_JPY_THB) || 0.25
+  const exchangeRate = (await getSettings(c.env.nihonthing_db)).exchange_rate_jpy_thb || 0.25
   
   const payload = {
     ...data,
@@ -132,7 +134,7 @@ const putProductRoute = createRoute({
   method: 'put',
   path: '/{id}',
   tags: ['Products (Admin)'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: {
     params: ProductIdParamsSchema,
@@ -144,7 +146,7 @@ const putProductRoute = createRoute({
 productRoutes.openapi(putProductRoute, async (c) => {
   const { id } = c.req.valid('param')
   const data = c.req.valid('json')
-  const exchangeRate = parseFloat(c.env.EXCHANGE_RATE_JPY_THB) || 0.25
+  const exchangeRate = (await getSettings(c.env.nihonthing_db)).exchange_rate_jpy_thb || 0.25
   
   const payload = {
     ...data,

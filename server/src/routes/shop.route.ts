@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { authGuard, adminGuard, AuthVariables } from '../middlewares/auth.middleware'
+import { authGuard, roleGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { getAllShops, getShopById, createShop, updateShop, deleteShop } from '../models/shop.model'
 
 const shopRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database }; Variables: AuthVariables }>()
@@ -52,7 +52,7 @@ const postShopRoute = createRoute({
   method: 'post',
   path: '/',
   tags: ['Shops'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: { body: { content: { 'application/json': { schema: CreateShopSchema } } } },
   responses: { 201: { description: 'Shop created successfully' } }
@@ -69,7 +69,7 @@ const putShopRoute = createRoute({
   method: 'put',
   path: '/{id}',
   tags: ['Shops'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: {
     params: ShopIdParamsSchema,

@@ -15,3 +15,18 @@ api.interceptors.request.use((config) => {
   }
   return config
 })
+
+// GET /products is paginated (default limit 20); walk every page so catalog
+// pages that filter client-side see the whole store.
+export const fetchAllProducts = async <T = unknown>(params: Record<string, unknown> = {}): Promise<T[]> => {
+  const all: T[] = []
+  let page = 1
+  let totalPages = 1
+  do {
+    const res = await api.get('/products', { params: { ...params, page, limit: 100 } })
+    all.push(...res.data.data)
+    totalPages = res.data.meta?.totalPages ?? 1
+    page++
+  } while (page <= totalPages)
+  return all
+}

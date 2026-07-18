@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { authGuard, adminGuard, AuthVariables } from '../middlewares/auth.middleware'
+import { authGuard, roleGuard, adminGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { getAllCategories, createCategory, updateCategory, deleteCategory } from '../models/category.model'
 
 const categoryRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database }; Variables: AuthVariables }>()
@@ -34,7 +34,7 @@ const postCategoryRoute = createRoute({
   method: 'post',
   path: '/',
   tags: ['Categories (Admin)'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: { body: { content: { 'application/json': { schema: CreateCategorySchema } } } },
   responses: { 201: { description: 'Category created successfully' } }
@@ -51,7 +51,7 @@ const putCategoryRoute = createRoute({
   method: 'put',
   path: '/{id}',
   tags: ['Categories (Admin)'],
-  middleware: [authGuard, adminGuard] as const,
+  middleware: [authGuard, roleGuard('agent')] as const,
   security: [{ Bearer: [] }],
   request: {
     params: CategoryIdParamsSchema,

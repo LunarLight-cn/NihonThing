@@ -36,6 +36,48 @@
       "when": 1784024447754,
       "tag": "0004_chemical_juggernaut",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1784130153366,
+      "tag": "0005_slimy_big_bertha",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1784200411987,
+      "tag": "0006_sad_tempest",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1784202191214,
+      "tag": "0007_backfill_trip_capacity",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1784221149803,
+      "tag": "0008_complex_sleeper",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1784276182963,
+      "tag": "0009_condemned_mac_gargan",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1784360028239,
+      "tag": "0010_polite_outlaw_kid",
+      "breakpoints": true
     }
   ]
 }

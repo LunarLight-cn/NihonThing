@@ -50,7 +50,7 @@ export const CartSidebar: React.FC = () => {
           ) : (
             items.map((item) => (
               <div
-                key={item.id}
+                key={item.lineId}
                 className="flex space-x-4 border border-border p-3 rounded-lg bg-background"
               >
                 <img
@@ -62,18 +62,23 @@ export const CartSidebar: React.FC = () => {
                   <div>
                     <h3 className="font-semibold text-sm line-clamp-2">{item.name}</h3>
                     <p className="text-xs text-muted-foreground">{item.brand}</p>
+                    {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {Object.entries(item.selectedOptions).map(([k, v]) => `${k}: ${v}`).join(' · ')}
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center space-x-2 bg-secondary rounded-md">
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() => updateQuantity(item.lineId, item.quantity - 1)}
                         className="p-1 hover:text-primary transition-colors"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
                       <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() => updateQuantity(item.lineId, item.quantity + 1)}
                         className="p-1 hover:text-primary transition-colors"
                       >
                         <Plus className="w-3 h-3" />
