@@ -1,7 +1,7 @@
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { api } from '../../services/api'
+import { api, fetchAllProducts } from '../../services/api'
 import { Package, ShoppingCart, Plane, DollarSign, Loader2 } from 'lucide-react'
 import { DataTable } from '../../components/admin/DataTable'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -19,10 +19,7 @@ export const AdminOverview: React.FC = () => {
 
   const { data: products, isLoading: isLoadingProducts } = useQuery({
     queryKey: ['admin-products'],
-    queryFn: async () => {
-      const res = await api.get('/products')
-      return res.data.data
-    }
+    queryFn: async () => await fetchAllProducts()
   })
 
   const { data: trips, isLoading: isLoadingTrips } = useQuery({

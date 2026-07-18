@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Loader2, AlertCircle, ShoppingBag, Filter, SlidersHorizontal, Search, X } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { api } from '../../services/api'
+import { api, fetchAllProducts } from '../../services/api'
 import { useCart } from '../../contexts/CartContext'
 import { useTranslation } from 'react-i18next'
 import { useLocalizedName } from '../../utils/localization'
@@ -54,11 +54,11 @@ export const Catalog: React.FC = () => {
   const { data: products, isLoading, error } = useQuery({
     queryKey: ['products', 'catalog', selectedCollection],
     queryFn: async () => {
-      let endpoint = '/products'
-      if (selectedCollection === 'new-arrivals') endpoint = '/products/new-arrivals'
-      else if (selectedCollection === 'trending') endpoint = '/products/trending'
-      const res = await api.get(endpoint)
-      return res.data.data as Product[]
+      if (selectedCollection === 'new-arrivals' || selectedCollection === 'trending') {
+        const res = await api.get(`/products/${selectedCollection}`)
+        return res.data.data as Product[]
+      }
+      return await fetchAllProducts<Product>()
     }
   })
 
