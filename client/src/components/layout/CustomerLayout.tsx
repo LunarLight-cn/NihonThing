@@ -21,8 +21,8 @@ export const CustomerLayout: React.FC = () => {
 
       {/* Navbar */}
       <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
-        <div className="section-container h-16 flex items-center justify-between">
-          <div className="flex items-center">
+        <div className="section-container h-16 flex items-center justify-between gap-6">
+          <div className="flex items-center shrink-0">
             <button
               onClick={() => setMenuOpen(true)}
               className="md:hidden p-2 -ml-2 mr-1 hover:bg-secondary rounded-full transition-colors"
