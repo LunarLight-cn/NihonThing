@@ -478,4 +478,129 @@
   .table-td {
     @apply px-6 py-4;
   }
+
+  /* ── Motion & Interaction (Gromuse-style migration) ─────────
+     Structure and motion borrowed from the reference; colors stay
+     on the existing Japanese white/red theme tokens. */
+
+  /* Pill buttons - capsule shape, used across the storefront */
+  .btn-pill {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-pill-primary {
+    @apply bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25 active:scale-[0.98];
+  }
+
+  .btn-pill-outline {
+    @apply border border-border bg-card text-foreground hover:bg-secondary active:scale-[0.98];
+  }
+
+  .btn-pill-accent {
+    @apply bg-accent text-accent-foreground hover:bg-accent/90 active:scale-[0.98];
+  }
+
+  /* Soft, liftable product/content card */
+  .card-soft {
+    @apply bg-card border border-border rounded-2xl shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+
+  /* Pill filter chip (selectable) */
+  .chip {
+    @apply inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer whitespace-nowrap;
+  }
+
+  .chip:not(.is-active) {
+    @apply border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground;
+  }
+
+  .chip.is-active {
+    @apply border-primary bg-primary/10 text-primary;
+  }
+
+  /* Dropdown panel that eases down on open (search, language, menus).
+     Toggle .is-open in JS; it slides + fades instead of hard show/hide. */
+  .dropdown-panel {
+    @apply absolute z-50 bg-card border border-border rounded-xl shadow-xl overflow-hidden origin-top;
+    opacity: 0;
+    transform: translateY(-0.5rem) scaleY(0.98);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .dropdown-panel.is-open {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+    pointer-events: auto;
+  }
+
+  /* Dims the page behind an open dropdown, like the reference */
+  .dropdown-backdrop {
+    @apply fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px] opacity-0 pointer-events-none transition-opacity duration-200;
+  }
+
+  .dropdown-backdrop.is-open {
+    @apply opacity-100 pointer-events-auto;
+  }
+
+  /* Spinning ring loader - swaps in while a panel's content loads */
+  .spinner {
+    @apply inline-block rounded-full border-2 border-secondary align-[-0.125em];
+    width: 1.25rem;
+    height: 1.25rem;
+    border-top-color: hsl(var(--primary));
+    animation: nt-spin 0.7s linear infinite;
+  }
+
+  .spinner-lg {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-width: 3px;
+  }
+
+  /* Entrance helpers - drive keyframes defined below */
+  .animate-fade-in { animation: nt-fade-in 0.25s ease-out both; }
+  .animate-slide-down { animation: nt-slide-down 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .animate-scale-in { animation: nt-scale-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+}
+
+/* ── Keyframes (plain CSS so @layer purging keeps them) ───────── */
+@keyframes nt-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes nt-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes nt-slide-down {
+  from { opacity: 0; transform: translateY(-0.5rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Overshoot bounce for success ticks / confirmations */
+@keyframes nt-scale-in {
+  0% { opacity: 0; transform: scale(0.6); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes nt-confetti {
+  0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+  100% { opacity: 0; transform: translateY(120px) rotate(360deg); }
+}
+
+/* Respect users who ask for less motion */
+@media (prefers-reduced-motion: reduce) {
+  .card-soft,
+  .dropdown-panel,
+  .btn-pill,
+  .animate-fade-in,
+  .animate-slide-down,
+  .animate-scale-in {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  .spinner { animation-duration: 0.7s !important; }
 }
