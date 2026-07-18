@@ -40,8 +40,12 @@ shippingRoutes.openapi(adminPost('/trips/{id}/depart', 'Trip departed; paid orde
 
 shippingRoutes.openapi(adminPost('/trips/{id}/arrive', 'Trip arrived; orders await local courier'), async (c) => {
   const { id } = c.req.valid('param')
-  const result = await arriveTrip(c.env.nihonthing_db, id)
-  return c.json({ success: true, data: result })
+  try {
+    const result = await arriveTrip(c.env.nihonthing_db, id)
+    return c.json({ success: true, data: result })
+  } catch (err: any) {
+    return c.json({ success: false, message: err.message }, 400)
+  }
 })
 
 shippingRoutes.openapi(adminPost('/move-unpaid', 'Unpaid orders moved to the next trip'), async (c) => {

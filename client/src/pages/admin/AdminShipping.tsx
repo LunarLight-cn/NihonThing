@@ -129,7 +129,7 @@ export const AdminShipping: React.FC = () => {
                 <div className="flex items-center gap-2 font-bold text-foreground">
                   {trip.type === 'sea' ? <ShipIcon className="w-5 h-5 text-primary" /> : <PlaneTakeoff className="w-5 h-5 text-primary" />}
                   {t('admin.shipping.tripLabel', { id: trip.id, date: fmtDate(trip.ship_date) })}
-                  <span className={`badge ${trip.status === 'in_transit' ? 'badge-blue' : trip.status === 'open' ? 'badge-success' : 'badge-muted'}`}>
+                  <span className={`badge ${trip.status === 'in_transit' ? 'badge-blue' : trip.status === 'arrived' ? 'badge-purple' : trip.status === 'open' ? 'badge-success' : 'badge-muted'}`}>
                     {t(`admin.trips.status_${trip.status}`)}
                   </span>
                 </div>
@@ -138,7 +138,7 @@ export const AdminShipping: React.FC = () => {
                   <span className="text-sm text-muted-foreground">
                     {t('admin.shipping.counts', { ready: trip.ready_count, unpaid: trip.unpaid_count, shipped: trip.shipped_count })}
                   </span>
-                  {trip.status !== 'in_transit' ? (
+                  {trip.status === 'open' || trip.status === 'closed' ? (
                     <button
                       onClick={() =>
                         confirmThen(
@@ -153,7 +153,7 @@ export const AdminShipping: React.FC = () => {
                       <Send className="w-4 h-4 mr-1.5" />
                       {t('admin.shipping.depart')}
                     </button>
-                  ) : (
+                  ) : trip.status === 'in_transit' ? (
                     <button
                       onClick={() =>
                         confirmThen(
@@ -168,7 +168,7 @@ export const AdminShipping: React.FC = () => {
                       <Anchor className="w-4 h-4 mr-1.5" />
                       {t('admin.shipping.arrive')}
                     </button>
-                  )}
+                  ) : null}
                 </div>
               </div>
 
