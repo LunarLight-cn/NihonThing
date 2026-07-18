@@ -1,32 +1,25 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Outlet, Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
 import { CartSidebar } from './CartSidebar'
 import { NavSearch } from './NavSearch'
-import { ShoppingBag, User, LogOut, Menu, X, Globe, ChevronDown } from 'lucide-react'
+import { ShoppingBag, User, LogOut, Menu, X, Globe } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-
-// The caret spins while the panel eases open, then settles into a chevron that
-// points up when open, down when closed.
-const AnimatedCaret: React.FC<{ open: boolean }> = ({ open }) => {
-  const [spinning, setSpinning] = useState(false)
-  useEffect(() => {
-    if (!open) { setSpinning(false); return }
-    setSpinning(true)
-    const id = setTimeout(() => setSpinning(false), 300)
-    return () => clearTimeout(id)
-  }, [open])
-  if (spinning) return <span className="spinner !w-3.5 !h-3.5 !border-2" />
-  return <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
-}
 
 export const CustomerLayout: React.FC = () => {
   const { user, logout } = useAuth()
   const { totalItems, setIsCartOpen } = useCart()
   const { t, i18n } = useTranslation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [menuSpin, setMenuSpin] = useState(false)
   const [deskMenu, setDeskMenu] = useState<'lang' | 'user' | null>(null)
+
+  const openMenu = () => {
+    setMenuOpen(true)
+    setMenuSpin(true)
+    setTimeout(() => setMenuSpin(false), 300)
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -36,17 +29,32 @@ export const CustomerLayout: React.FC = () => {
       {/* Navbar */}
       <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="section-container h-16 flex items-center justify-between gap-6">
-          <div className="flex items-center shrink-0">
+          <div className="flex items-center shrink-0 relative">
             <button
-              onClick={() => setMenuOpen(true)}
+              onClick={() => (menuOpen ? setMenuOpen(false) : openMenu())}
               className="md:hidden p-2 -ml-2 mr-1 hover:bg-secondary rounded-full transition-colors"
               aria-label="Menu"
             >
-              <Menu className="w-6 h-6" />
+              {menuSpin ? <span className="spinner !w-6 !h-6" /> : menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
             <Link to="/" className="flex items-center space-x-2">
               <span className="text-2xl font-bold tracking-tight text-primary">NihonThing</span>
             </Link>
+
+            {/* Mobile menu - eases down from the button like the profile dropdown */}
+            <div className={`md:hidden dropdown-panel left-0 top-full mt-2 w-60 ${menuOpen ? 'is-open' : ''}`}>
+              <div className="p-2">
+                <Link to="/catalog" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
+                  {t('nav.catalog')}
+                </Link>
+                <span className="block px-4 py-2.5 text-sm font-medium text-muted-foreground/50 cursor-not-allowed" title="Coming soon">
+                  {t('nav.chat')}
+                </span>
+                <Link to="/support" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
+                  {t('nav.support')}
+                </Link>
+              </div>
+            </div>
           </div>
 
           {/* Desktop Navigation */}
@@ -69,14 +77,13 @@ export const CustomerLayout: React.FC = () => {
 
           {/* User Actions */}
           <div className="flex items-center space-x-4">
-            <div className="hidden md:block relative pt-1 pb-1">
+            <div className="block relative pt-1 pb-1">
               <button
                 onClick={() => setDeskMenu(deskMenu === 'lang' ? null : 'lang')}
                 className="flex items-center gap-1 p-2 text-muted-foreground hover:text-primary hover:bg-secondary rounded-full transition-colors"
               >
                 <Globe className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase">{i18n.language}</span>
-                <AnimatedCaret open={deskMenu === 'lang'} />
               </button>
               <div className={`dropdown-panel top-full right-0 mt-1 w-32 ${deskMenu === 'lang' ? 'is-open' : ''}`}>
                 <div className="p-2 flex flex-col space-y-1">
@@ -108,7 +115,6 @@ export const CustomerLayout: React.FC = () => {
                   className="flex items-center gap-1 p-2 hover:bg-secondary rounded-full transition-colors"
                 >
                   <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-primary font-bold">{user.username?.charAt(0).toUpperCase()}</div>
-                  <AnimatedCaret open={deskMenu === 'user'} />
                 </button>
                 <div className={`dropdown-panel right-0 mt-2 w-48 ${deskMenu === 'user' ? 'is-open' : ''}`}>
                   <div className="p-4 border-b border-border">
@@ -156,39 +162,8 @@ export const CustomerLayout: React.FC = () => {
 
       </header>
 
-      {/* Mobile Nav Drawer */}
-      <div className={`mobile-nav-backdrop ${menuOpen ? 'is-open' : ''}`} onClick={() => setMenuOpen(false)} />
-      <nav className={`mobile-nav-drawer ${menuOpen ? 'is-open' : ''}`}>
-        <div className="h-16 flex items-center justify-between px-4 border-b border-border">
-          <Link to="/" onClick={() => setMenuOpen(false)} className="text-xl font-bold tracking-tight text-primary">NihonThing</Link>
-          <button onClick={() => setMenuOpen(false)} className="p-2 hover:bg-secondary rounded-full transition-colors">
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
-        <div className="flex-1 p-3 space-y-1">
-          <Link to="/catalog" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
-            {t('nav.catalog')}
-          </Link>
-          <span className="block px-4 py-2.5 text-sm font-medium text-muted-foreground/50 cursor-not-allowed" title="Coming soon">
-            {t('nav.chat')}
-          </span>
-          <Link to="/support" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
-            {t('nav.support')}
-          </Link>
-        </div>
-        <div className="p-3 border-t border-border flex items-center gap-2">
-          <Globe className="w-4 h-4 text-muted-foreground shrink-0 ml-1" />
-          {(['en', 'th', 'jp'] as const).map((lng) => (
-            <button
-              key={lng}
-              onClick={() => i18n.changeLanguage(lng)}
-              className={`filter-btn ${i18n.language === lng ? 'is-active' : ''}`}
-            >
-              {lng === 'en' ? 'English' : lng === 'th' ? 'ไทย' : '日本語'}
-            </button>
-          ))}
-        </div>
-      </nav>
+      {/* Closes the mobile menu when tapping elsewhere */}
+      {menuOpen && <div className="md:hidden fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />}
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col">
