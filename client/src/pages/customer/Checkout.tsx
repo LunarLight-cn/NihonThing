@@ -9,6 +9,7 @@ import {
 import { api } from '../../services/api'
 import { useCart } from '../../contexts/CartContext'
 import { getImageUrl } from '../../utils/image'
+import { Confetti } from '../../components/Confetti'
 
 interface Trip {
   id: number
@@ -139,6 +140,16 @@ export const Checkout: React.FC = () => {
 
   return (
     <div className="section-container py-8 max-w-5xl">
+      {/* Full-screen loader while the order is being placed */}
+      {placing && (
+        <div className="modal-overlay">
+          <div className="bg-card border border-border rounded-2xl px-8 py-10 flex flex-col items-center gap-4 shadow-xl animate-scale-in">
+            <span className="spinner spinner-lg" />
+            <p className="font-semibold text-foreground">{t('checkout.placing')}</p>
+          </div>
+        </div>
+      )}
+
       <h1 className="text-3xl font-bold text-foreground mb-6">{t('checkout.title')}</h1>
 
       {error && (
@@ -249,11 +260,9 @@ export const Checkout: React.FC = () => {
               <button
                 onClick={handlePlaceOrder}
                 disabled={!selectedTrip || !selectedAddress || placing}
-                className="btn-primary-lg w-full mt-4 flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-pill btn-pill-primary w-full mt-4 py-3.5 text-base disabled:opacity-50"
               >
-                {placing
-                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{t('checkout.placing')}</>
-                  : t('checkout.placeOrder')}
+                {t('checkout.placeOrder')}
               </button>
             </section>
           </div>
@@ -297,10 +306,10 @@ export const Checkout: React.FC = () => {
                 <button
                   onClick={handleSubmitSlip}
                   disabled={!slipFile || submittingSlip}
-                  className="btn-primary w-full flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn-pill btn-pill-primary w-full py-3"
                 >
                   {submittingSlip
-                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{t('checkout.submitting')}</>
+                    ? <><span className="spinner border-primary-foreground/40 !w-4 !h-4" style={{ borderTopColor: 'hsl(var(--primary-foreground))' }} />{t('checkout.submitting')}</>
                     : t('checkout.submitSlip')}
                 </button>
               </div>
@@ -314,13 +323,14 @@ export const Checkout: React.FC = () => {
       )}
 
       {step === 'done' && (
-        <div className="max-w-md mx-auto text-center py-12 space-y-4">
-          <CheckCircle2 className="w-16 h-16 mx-auto text-emerald-500" />
+        <div className="relative max-w-md mx-auto text-center py-12 space-y-4">
+          <Confetti />
+          <CheckCircle2 className="w-20 h-20 mx-auto text-emerald-500 animate-scale-in" />
           <h2 className="text-2xl font-bold">{t('checkout.doneTitle')}</h2>
           <p className="text-muted-foreground">{t('checkout.doneDesc')}</p>
-          <div className="flex gap-3 justify-center pt-2">
-            <Link to="/orders" className="btn-primary px-6 py-2">{t('checkout.viewOrders')}</Link>
-            <Link to="/catalog" className="btn-secondary px-6">{t('checkout.continueShopping')}</Link>
+          <div className="flex flex-wrap gap-3 justify-center pt-2">
+            <Link to="/orders" className="btn-pill btn-pill-primary px-6">{t('checkout.viewOrders')}</Link>
+            <Link to="/catalog" className="btn-pill btn-pill-outline px-6">{t('checkout.continueShopping')}</Link>
           </div>
         </div>
       )}
