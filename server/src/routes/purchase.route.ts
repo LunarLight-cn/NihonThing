@@ -126,7 +126,7 @@ purchaseRoutes.openapi(postPurchaseRoute, async (c) => {
   }
   
   try {
-    const newPurchase = await createPurchase(c.env.nihonthing_db, user.id, payload)
+    const newPurchase = await createPurchase(c.env.nihonthing_db, user.id, payload, user.role === 'admin')
     return c.json({ success: true, data: newPurchase })
   } catch (err: any) {
     return c.json({ success: false, message: err.message }, 400)

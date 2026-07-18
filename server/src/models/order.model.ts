@@ -306,9 +306,13 @@ export const updateOrder = async (d1: D1Database, id: number, data: Partial<type
     .returning()
 
   // Only on the transition into cancelled, so re-saving a cancelled order does
-  // not release the same capacity twice.
+  // not release the same capacity twice. Claims come off too - a cancelled
+  // line must not stay on an agent's shopping list.
   if (data.status === 'cancelled' && existing.status !== 'cancelled') {
     await releaseTripCapacity(db, existing)
+    await db.update(schema.Order_Items)
+      .set({ claimed_by: null, claimed_at: null })
+      .where(eq(schema.Order_Items.order_id, id))
   }
 
   return updatedOrders[0]
