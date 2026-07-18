@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ShieldCheck, ArrowLeft, Truck, Loader2, AlertCircle, MapPin } from 'lucide-react'
+import { ShieldCheck, ArrowLeft, Truck, Loader2, AlertCircle, MapPin, Wallet, Clock, Package } from 'lucide-react'
 import { useCart } from '../../contexts/CartContext'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../../services/api'
@@ -35,6 +35,52 @@ interface Product {
   origin_country: LocalizedRef | null
 }
 
+interface Trip {
+  id: number
+  type: string
+  ship_date: string
+  close_date: string | null
+  status: string
+  is_closed: boolean
+  fill: { percent: number } | null
+}
+
+const PLACEHOLDER = 'https://images.unsplash.com/photo-1582793988951-9aed5509eb97?q=80&w=2942&auto=format&fit=crop'
+
+// Live countdown to a shipping trip's close date - the product page's urgency
+// cue, standing in for the reference's per-item timer.
+const Countdown: React.FC<{ target: string }> = ({ target }) => {
+  const { t } = useTranslation()
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  const diff = Math.max(0, new Date(target).getTime() - now)
+  const d = Math.floor(diff / 86_400_000)
+  const h = Math.floor((diff % 86_400_000) / 3_600_000)
+  const m = Math.floor((diff % 3_600_000) / 60_000)
+  const s = Math.floor((diff % 60_000) / 1000)
+  const units: [number, string][] = [
+    [d, t('product.unitDay')],
+    [h, t('product.unitHour')],
+    [m, t('product.unitMin')],
+    [s, t('product.unitSec')]
+  ]
+
+  return (
+    <div className="flex gap-2">
+      {units.map(([val, label], i) => (
+        <div key={i} className="flex flex-col items-center bg-card border border-border rounded-lg px-3 py-1.5 min-w-[3rem]">
+          <span className="text-lg font-bold text-primary tabular-nums">{String(val).padStart(2, '0')}</span>
+          <span className="text-[10px] uppercase text-muted-foreground">{label}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const { addItem } = useCart()
@@ -44,164 +90,196 @@ export const ProductDetails: React.FC = () => {
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
 
-  const {
-    data: product,
-    isLoading,
-    error
-  } = useQuery({
+  const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', id],
-    queryFn: async () => {
-      const res = await api.get(`/products/${id}`)
-      return res.data.data as Product
-    },
+    queryFn: async () => (await api.get(`/products/${id}`)).data.data as Product,
     enabled: !!id
   })
 
+  // Soonest trip still taking orders - drives the countdown and fill meter.
+  const { data: nextTrip } = useQuery({
+    queryKey: ['next-trip'],
+    queryFn: async () => {
+      const trips = (await api.get('/ships')).data.data as Trip[]
+      return trips
+        .filter((tr) => !tr.is_closed && tr.status === 'open')
+        .sort((a, b) => new Date(a.ship_date).getTime() - new Date(b.ship_date).getTime())[0] ?? null
+    }
+  })
+
+  if (isLoading) {
+    return (
+      <div className="section-container loading-center">
+        <Loader2 className="w-12 h-12 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (error || !product) {
+    return (
+      <div className="section-container py-20 text-center">
+        <div className="card-soft p-12 max-w-lg mx-auto">
+          <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">{t('product.notFound')}</h2>
+          <Link to="/catalog" className="text-primary hover:underline font-medium inline-flex items-center mt-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            {t('product.back')}
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  const price = product.price_tentative_thb || product.price_thb || 0
+  const deposit = Math.round(price * 0.5)
+  const images = product.img && product.img.length > 0 ? product.img : []
+  const mainSrc = images.length > 0 ? getImageUrl(images[activeImageIndex]) : PLACEHOLDER
+  const allChosen = (product.options || []).every((o) => selectedOptions[o.name])
+  const outOfStock = product.status === 'out_of_stock'
+
   return (
-    <div className="section-container">
-      <Link
-        to="/catalog"
-        className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors mb-8"
-      >
+    <div className="section-container py-8">
+      <Link to="/catalog" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors mb-6">
         <ArrowLeft className="w-4 h-4 mr-2" />
         {t('product.back')}
       </Link>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 bg-card border border-border rounded-2xl p-6 lg:p-12 shadow-sm">
-        {isLoading ? (
-          <div className="col-span-2 flex justify-center py-20">
-            <Loader2 className="w-12 h-12 animate-spin text-primary" />
-          </div>
-        ) : error || !product ? (
-          <div className="container mx-auto px-4 py-20 text-center">
-            <div className="bg-card border border-border rounded-xl p-12 max-w-lg mx-auto shadow-sm">
-              <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2">{t('product.notFound')}</h2>
-              <Link
-                to="/catalog"
-                className="text-primary hover:underline font-medium inline-flex items-center mt-4"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                {t('product.back')}
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Product Image */}
-            <div className="rounded-xl overflow-hidden bg-secondary relative">
-              {product.origin_country && (
-                <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm text-foreground text-xs font-bold px-3 py-1.5 rounded-full border border-border shadow-sm z-10 flex items-center space-x-1">
-                  <MapPin className="w-3 h-3 text-primary" />
-                  <span>{product.origin_country && getName(product.origin_country)}</span>
-                </div>
-              )}
-              <img
-                src={(product.img && product.img.length > 0) ? getImageUrl(product.img[activeImageIndex]) : 'https://images.unsplash.com/photo-1582793988951-9aed5509eb97?q=80&w=2942&auto=format&fit=crop'}
-                alt={getName(product)}
-                className="w-full h-full object-cover aspect-square hover:scale-105 transition-transform duration-500"
-              />
-            </div>
-            
-            {product.img && product.img.length > 1 && (
-              <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
-                {product.img.map((url, idx) => (
-                  <button 
-                    key={idx} 
-                    onClick={() => setActiveImageIndex(idx)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-colors ${activeImageIndex === idx ? 'border-primary' : 'border-transparent hover:border-primary/50'}`}
-                  >
-                    <img src={getImageUrl(url)} alt={`Thumbnail ${idx}`} className="w-full h-full object-cover" />
-                  </button>
-                ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-14 animate-fade-in">
+        {/* Gallery */}
+        <div>
+          <div className="group relative rounded-2xl overflow-hidden bg-secondary aspect-square">
+            {product.origin_country && (
+              <div className="absolute top-4 right-4 z-10 bg-background/80 backdrop-blur-sm text-foreground text-xs font-bold px-3 py-1.5 rounded-full border border-border shadow-sm flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-primary" />
+                <span>{getName(product.origin_country)}</span>
               </div>
             )}
-            
-            
+            <img
+              src={mainSrc}
+              alt={getName(product)}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+          </div>
 
-            {/* Product Info */}
-            <div className="flex flex-col">
-              <div className="mb-6">
-                {product.brand && <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">{getName(product.brand)}</p>}
-                <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight">{getName(product)}</h1>
+          {images.length > 1 && (
+            <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+              {images.map((url, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveImageIndex(idx)}
+                  className={`shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${activeImageIndex === idx ? 'border-primary' : 'border-transparent hover:border-primary/50'}`}
+                >
+                  <img src={getImageUrl(url)} alt={`${getName(product)} ${idx + 1}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Info */}
+        <div className="flex flex-col">
+          <div className="mb-5">
+            {product.brand && <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">{getName(product.brand)}</p>}
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">{getName(product)}</h1>
+          </div>
+
+          <div className="mb-6">
+            <p className="text-4xl font-bold text-primary">฿{price.toLocaleString()}</p>
+            <p className="text-sm text-muted-foreground mt-1">{t('product.tentativePrice')}</p>
+          </div>
+
+          {/* Deposit split - our installment, in place of the reference's Klarna row */}
+          <div className="flex items-center gap-3 bg-secondary/50 border border-border rounded-xl px-4 py-3 mb-6">
+            <Wallet className="w-5 h-5 text-primary shrink-0" />
+            <div className="text-sm">
+              <span className="font-semibold text-foreground">{t('product.depositLabel', { amount: deposit.toLocaleString() })}</span>
+              <span className="text-muted-foreground"> {t('product.depositHint')}</span>
+            </div>
+          </div>
+
+          {/* Next trip: countdown + how full it is (real social proof from capacity) */}
+          {nextTrip && (
+            <div className="card-soft p-4 mb-6 hover:translate-y-0 hover:shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                  <Clock className="w-4 h-4 text-primary" />
+                  {t('product.nextTrip')}
+                </span>
+                {nextTrip.fill && (
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Package className="w-3.5 h-3.5" />
+                    {t('product.filling', { pct: Math.round(nextTrip.fill.percent) })}
+                  </span>
+                )}
               </div>
-
-              <div className="mb-8">
-                <p className="text-4xl font-bold text-primary mb-1">฿{(product.price_tentative_thb || product.price_thb || 0).toLocaleString()}</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  {t('product.tentativePrice')}
-                </p>
-              </div>
-
-              <p className="text-foreground leading-relaxed mb-8">{getDesc(product) || t('product.noDesc')}</p>
-
-              {/* Options (size, colour, ...) */}
-              {product.options && product.options.length > 0 && (
-                <div className="space-y-4 mb-8">
-                  {product.options.map((opt) => (
-                    <div key={opt.name}>
-                      <p className="text-sm font-semibold mb-2">{opt.name}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {opt.values.map((val) => {
-                          const active = selectedOptions[opt.name] === val
-                          return (
-                            <button
-                              key={val}
-                              type="button"
-                              onClick={() => setSelectedOptions((prev) => ({ ...prev, [opt.name]: val }))}
-                              className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${active ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:border-primary/50'}`}
-                            >
-                              {val}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  ))}
+              {nextTrip.close_date && <Countdown target={nextTrip.close_date} />}
+              {nextTrip.fill && (
+                <div className="progress-track mt-3">
+                  <div
+                    className={`progress-fill ${nextTrip.fill.percent >= 80 ? 'progress-fill-warning' : 'progress-fill-primary'}`}
+                    style={{ width: `${Math.max(nextTrip.fill.percent, 2)}%` }}
+                  />
                 </div>
               )}
-
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <ShieldCheck className="w-5 h-5 text-primary mr-3" />
-                  {t('product.authentic')}
-                </div>
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Truck className="w-5 h-5 text-primary mr-3" />
-                  {t('product.delivery')}
-                </div>
-              </div>
-
-              {(() => {
-                const allChosen = (product.options || []).every((o) => selectedOptions[o.name])
-                const outOfStock = product.status === 'out_of_stock'
-                return (
-                  <>
-                    <button
-                      onClick={() =>
-                        addItem({
-                          id: product.id,
-                          name: getName(product),
-                          brand: (product.brand && getName(product.brand)) || t('product.noBrand'),
-                          price_thb: product.price_tentative_thb || product.price_thb || 0,
-                          image: (product.img && product.img.length > 0) ? getImageUrl(product.img[0]) : '',
-                          selectedOptions: (product.options && product.options.length > 0) ? selectedOptions : undefined
-                        })
-                      }
-                      className="btn-primary-lg"
-                      disabled={outOfStock || !allChosen}
-                    >
-                      {outOfStock ? t('product.outOfStock') : t('product.addToCart')}
-                    </button>
-                    {!outOfStock && !allChosen && (
-                      <p className="text-sm text-muted-foreground mt-2 text-center">{t('product.selectOptions')}</p>
-                    )}
-                  </>
-                )
-              })()}
             </div>
-          </>
-        )}
+          )}
+
+          <p className="text-foreground leading-relaxed mb-6">{getDesc(product) || t('product.noDesc')}</p>
+
+          {/* Options as chips */}
+          {product.options && product.options.length > 0 && (
+            <div className="space-y-4 mb-6">
+              {product.options.map((opt) => (
+                <div key={opt.name}>
+                  <p className="text-sm font-semibold mb-2">{opt.name}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {opt.values.map((val) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setSelectedOptions((prev) => ({ ...prev, [opt.name]: val }))}
+                        className={`chip ${selectedOptions[opt.name] === val ? 'is-active' : ''}`}
+                      >
+                        {val}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="space-y-3 mb-6">
+            <div className="flex items-center text-sm text-muted-foreground">
+              <ShieldCheck className="w-5 h-5 text-primary mr-3" />
+              {t('product.authentic')}
+            </div>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Truck className="w-5 h-5 text-primary mr-3" />
+              {t('product.delivery')}
+            </div>
+          </div>
+
+          <button
+            onClick={() =>
+              addItem({
+                id: product.id,
+                name: getName(product),
+                brand: (product.brand && getName(product.brand)) || t('product.noBrand'),
+                price_thb: price,
+                image: images.length > 0 ? getImageUrl(images[0]) : '',
+                selectedOptions: (product.options && product.options.length > 0) ? selectedOptions : undefined
+              })
+            }
+            className="btn-pill btn-pill-primary w-full py-3.5 text-base"
+            disabled={outOfStock || !allChosen}
+          >
+            {outOfStock ? t('product.outOfStock') : t('product.addToCart')}
+          </button>
+          {!outOfStock && !allChosen && (
+            <p className="text-sm text-muted-foreground mt-2 text-center">{t('product.selectOptions')}</p>
+          )}
+        </div>
       </div>
     </div>
   )

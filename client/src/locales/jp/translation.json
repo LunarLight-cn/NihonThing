@@ -124,7 +124,15 @@
     "outOfStock": "在庫切れ",
     "tentativePrice": "※ 暫定価格です。実際の店頭価格により変動する場合があります。",
     "notFound": "商品が見つからないか、読み込みに失敗しました。",
-    "selectOptions": "先にすべてのオプションを選択してください。"
+    "selectOptions": "先にすべてのオプションを選択してください。",
+    "depositLabel": "手付金 ฿{{amount}}",
+    "depositHint": "を先に、残りは発送前に。",
+    "nextTrip": "次の配送便",
+    "filling": "{{pct}}% 予約済み",
+    "unitDay": "日",
+    "unitHour": "時",
+    "unitMin": "分",
+    "unitSec": "秒"
   },
   "cart": {
     "title": "カート",

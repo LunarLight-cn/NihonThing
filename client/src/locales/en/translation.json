@@ -124,7 +124,15 @@
     "outOfStock": "Out of Stock",
     "tentativePrice": "* Tentative price, subject to change based on actual store price.",
     "notFound": "Product not found or failed to load.",
-    "selectOptions": "Please select all options first."
+    "selectOptions": "Please select all options first.",
+    "depositLabel": "Pay ฿{{amount}} deposit",
+    "depositHint": "now, and the rest before it ships.",
+    "nextTrip": "Next shipping trip",
+    "filling": "{{pct}}% reserved",
+    "unitDay": "days",
+    "unitHour": "hrs",
+    "unitMin": "min",
+    "unitSec": "sec"
   },
   "cart": {
     "title": "Your Cart",
