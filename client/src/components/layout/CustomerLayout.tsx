@@ -19,11 +19,11 @@ export const CustomerLayout: React.FC = () => {
         <div className="section-container h-16 flex items-center justify-between">
           <div className="flex items-center">
             <button
-              onClick={() => setMenuOpen(!menuOpen)}
+              onClick={() => setMenuOpen(true)}
               className="md:hidden p-2 -ml-2 mr-1 hover:bg-secondary rounded-full transition-colors"
               aria-label="Menu"
             >
-              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              <Menu className="w-6 h-6" />
             </button>
             <Link to="/" className="flex items-center space-x-2">
               <span className="text-2xl font-bold tracking-tight text-primary">NihonThing</span>
@@ -134,38 +134,44 @@ export const CustomerLayout: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        {menuOpen && (
-          <nav className="md:hidden border-t border-border bg-background">
-            <div className="section-container py-3 flex flex-col gap-1 text-sm font-medium">
-              <Link to="/" onClick={() => setMenuOpen(false)} className="px-3 py-2 rounded-md hover:bg-secondary">
-                {t('nav.home')}
-              </Link>
-              <Link to="/catalog" onClick={() => setMenuOpen(false)} className="px-3 py-2 rounded-md hover:bg-secondary">
-                {t('nav.catalog')}
-              </Link>
-              <span className="px-3 py-2 text-muted-foreground/50 cursor-not-allowed" title="Coming soon">
-                {t('nav.chat')}
-              </span>
-              <Link to="/support" onClick={() => setMenuOpen(false)} className="px-3 py-2 rounded-md hover:bg-secondary">
-                {t('nav.support')}
-              </Link>
-              <div className="flex items-center gap-2 px-3 pt-2 mt-1 border-t border-border">
-                <Globe className="w-4 h-4 text-muted-foreground" />
-                {(['en', 'th', 'jp'] as const).map((lng) => (
-                  <button
-                    key={lng}
-                    onClick={() => i18n.changeLanguage(lng)}
-                    className={`filter-btn ${i18n.language === lng ? 'is-active' : ''}`}
-                  >
-                    {lng === 'en' ? 'English' : lng === 'th' ? 'ไทย' : '日本語'}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </nav>
-        )}
       </header>
+
+      {/* Mobile Nav Drawer */}
+      <div className={`mobile-nav-backdrop ${menuOpen ? 'is-open' : ''}`} onClick={() => setMenuOpen(false)} />
+      <nav className={`mobile-nav-drawer ${menuOpen ? 'is-open' : ''}`}>
+        <div className="h-16 flex items-center justify-between px-4 border-b border-border">
+          <span className="text-xl font-bold tracking-tight text-primary">NihonThing</span>
+          <button onClick={() => setMenuOpen(false)} className="p-2 hover:bg-secondary rounded-full transition-colors">
+            <X className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </div>
+        <div className="flex-1 p-3 space-y-1">
+          <Link to="/" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
+            {t('nav.home')}
+          </Link>
+          <Link to="/catalog" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
+            {t('nav.catalog')}
+          </Link>
+          <span className="block px-4 py-2.5 text-sm font-medium text-muted-foreground/50 cursor-not-allowed" title="Coming soon">
+            {t('nav.chat')}
+          </span>
+          <Link to="/support" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
+            {t('nav.support')}
+          </Link>
+        </div>
+        <div className="p-3 border-t border-border flex items-center gap-2">
+          <Globe className="w-4 h-4 text-muted-foreground shrink-0 ml-1" />
+          {(['en', 'th', 'jp'] as const).map((lng) => (
+            <button
+              key={lng}
+              onClick={() => i18n.changeLanguage(lng)}
+              className={`filter-btn ${i18n.language === lng ? 'is-active' : ''}`}
+            >
+              {lng === 'en' ? 'English' : lng === 'th' ? 'ไทย' : '日本語'}
+            </button>
+          ))}
+        </div>
+      </nav>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col">
