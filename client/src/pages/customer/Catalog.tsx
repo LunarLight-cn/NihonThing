@@ -79,7 +79,9 @@ export const Catalog: React.FC = () => {
     if (selectedBrand && brandName !== selectedBrand) return false
     if (search) {
       const q = search.toLowerCase()
-      return (p.name?.toLowerCase().includes(q) || p.name_th?.toLowerCase().includes(q) || brandName.toLowerCase().includes(q))
+      const hay = [getName(p), (p as { name_en?: string }).name_en, p.name_th, p.name_jp, brandName]
+        .filter(Boolean).join(' ').toLowerCase()
+      return hay.includes(q)
     }
     return true
   })
