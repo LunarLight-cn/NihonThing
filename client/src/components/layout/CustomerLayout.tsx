@@ -1,24 +1,34 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Outlet, Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
 import { CartSidebar } from './CartSidebar'
-import { ShoppingBag, User, LogOut, Menu, Globe } from 'lucide-react'
+import { ShoppingBag, User, LogOut, Menu, X, Globe } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 export const CustomerLayout: React.FC = () => {
   const { user, logout } = useAuth()
   const { totalItems, setIsCartOpen } = useCart()
   const { t, i18n } = useTranslation()
+  const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       {/* Navbar */}
       <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="section-container h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold tracking-tight text-primary">NihonThing</span>
-          </Link>
+          <div className="flex items-center">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="md:hidden p-2 -ml-2 mr-1 hover:bg-secondary rounded-full transition-colors"
+              aria-label="Menu"
+            >
+              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+            <Link to="/" className="flex items-center space-x-2">
+              <span className="text-2xl font-bold tracking-tight text-primary">NihonThing</span>
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-muted-foreground">
@@ -43,7 +53,7 @@ export const CustomerLayout: React.FC = () => {
                 <Globe className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase">{i18n.language}</span>
               </button>
-              <div className="absolute top-full right-0 mt-1 w-32 bg-card border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+              <div className="absolute top-full right-0 mt-1 w-32 bg-card border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-50">
                 <div className="p-2 flex flex-col space-y-1">
                   <button
                     onClick={() => i18n.changeLanguage('en')}
@@ -80,7 +90,7 @@ export const CustomerLayout: React.FC = () => {
                 <button className="flex items-center space-x-2 p-2 hover:bg-secondary rounded-full transition-colors">
                   <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-primary font-bold">{user.username?.charAt(0).toUpperCase()}</div>
                 </button>
-                <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all">
                   <div className="p-4 border-b border-border">
                     <p className="text-sm font-medium truncate">{user.username}</p>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
@@ -115,18 +125,46 @@ export const CustomerLayout: React.FC = () => {
             ) : (
               <Link
                 to="/login"
-                className="hidden md:flex items-center space-x-1 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                className="flex items-center space-x-1 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
               >
                 <User className="w-4 h-4" />
                 <span className="text-sm font-medium">{t('nav.signIn')}</span>
               </Link>
             )}
-
-            <button className="md:hidden p-2">
-              <Menu className="w-6 h-6" />
-            </button>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {menuOpen && (
+          <nav className="md:hidden border-t border-border bg-background">
+            <div className="section-container py-3 flex flex-col gap-1 text-sm font-medium">
+              <Link to="/" onClick={() => setMenuOpen(false)} className="px-3 py-2 rounded-md hover:bg-secondary">
+                {t('nav.home')}
+              </Link>
+              <Link to="/catalog" onClick={() => setMenuOpen(false)} className="px-3 py-2 rounded-md hover:bg-secondary">
+                {t('nav.catalog')}
+              </Link>
+              <span className="px-3 py-2 text-muted-foreground/50 cursor-not-allowed" title="Coming soon">
+                {t('nav.chat')}
+              </span>
+              <Link to="/support" onClick={() => setMenuOpen(false)} className="px-3 py-2 rounded-md hover:bg-secondary">
+                {t('nav.support')}
+              </Link>
+              <div className="flex items-center gap-2 px-3 pt-2 mt-1 border-t border-border">
+                <Globe className="w-4 h-4 text-muted-foreground" />
+                {(['en', 'th', 'jp'] as const).map((lng) => (
+                  <button
+                    key={lng}
+                    onClick={() => i18n.changeLanguage(lng)}
+                    className={`filter-btn ${i18n.language === lng ? 'is-active' : ''}`}
+                  >
+                    {lng === 'en' ? 'English' : lng === 'th' ? 'ไทย' : '日本語'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </nav>
+        )}
       </header>
 
       {/* Main Content */}
