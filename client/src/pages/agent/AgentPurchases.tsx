@@ -44,7 +44,7 @@ export const AgentPurchases: React.FC = () => {
       id: 'order',
       header: t('agent.purchases.order'),
       cell: ({ row }) => (
-        <span className="font-mono text-xs">{row.original.order?.order_code || (row.original.order_id ? `NT-${row.original.order_id}` : '—')}</span>
+        <span className="font-mono text-xs">{row.original.order?.order_code || (row.original.order_id ? `NT-${row.original.order_id}` : '-')}</span>
       )
     },
     {
@@ -52,7 +52,7 @@ export const AgentPurchases: React.FC = () => {
       header: t('agent.purchases.item'),
       cell: ({ row }) => {
         const product = row.original.orderItem?.product
-        return <span>{product ? localizedName(product) : '—'}</span>
+        return <span>{product ? localizedName(product) : '-'}</span>
       }
     },
     { accessorKey: 'quantity', header: t('agent.purchases.quantity') },
@@ -69,14 +69,14 @@ export const AgentPurchases: React.FC = () => {
     {
       accessorKey: 'shop_name',
       header: t('agent.purchases.shop'),
-      cell: ({ row }) => row.original.shop_name || '—'
+      cell: ({ row }) => row.original.shop_name || '-'
     },
     {
       id: 'receipt',
       header: t('agent.purchases.receipt'),
       cell: ({ row }) => {
         const imgs = row.original.receipt_img || []
-        if (imgs.length === 0) return <span className="text-muted-foreground">—</span>
+        if (imgs.length === 0) return <span className="text-muted-foreground">-</span>
         return (
           <a href={getImageUrl(imgs[0])} target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center text-xs">
             <Receipt className="w-3.5 h-3.5 mr-1" />

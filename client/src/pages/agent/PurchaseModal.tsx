@@ -27,7 +27,7 @@ export const PurchaseModal: React.FC<Props> = ({ order, item, onClose }) => {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const name = item.product ? localizedName(item.product) : item.ticket?.item_name || '—'
+  const name = item.product ? localizedName(item.product) : item.ticket?.item_name || '-'
 
   const save = useMutation({
     mutationFn: async () => {
