@@ -79,8 +79,14 @@ export const Catalog: React.FC = () => {
     if (selectedBrand && brandName !== selectedBrand) return false
     if (search) {
       const q = search.toLowerCase()
-      const hay = [getName(p), (p as { name_en?: string }).name_en, p.name_th, p.name_jp, brandName]
-        .filter(Boolean).join(' ').toLowerCase()
+      const cat = p.category
+      const parts = [
+        getName(p), (p as { name_en?: string }).name_en, p.name_th, p.name_jp,
+        brandName, p.brand?.name_en, p.brand?.name_th, p.brand?.name_jp,
+        p.tag,
+        cat ? getName(cat) : '', cat?.name_en, cat?.name_th, cat?.name_jp
+      ]
+      const hay = parts.filter(Boolean).join(' ').toLowerCase()
       return hay.includes(q)
     }
     return true

@@ -7,12 +7,17 @@ import { fetchAllProducts } from '../../services/api'
 import { useLocalizedName } from '../../utils/localization'
 import { getImageUrl } from '../../utils/image'
 
-interface SearchProduct {
+interface LocRef {
   id: number
   name_en: string
   name_th: string | null
   name_jp: string | null
-  brand: { id: number; name_en: string; name_th: string | null; name_jp: string | null } | null
+}
+
+interface SearchProduct extends LocRef {
+  brand: LocRef | null
+  category: LocRef | null
+  tag: string | null
   price_tentative_thb: number | null
   price_thb: number | null
   img: string[] | null
@@ -54,8 +59,13 @@ export const NavSearch: React.FC = () => {
   const results = (products || [])
     .filter((p) => {
       if (!q) return true
-      const brand = p.brand ? getName(p.brand).toLowerCase() : ''
-      return getName(p).toLowerCase().includes(q) || brand.includes(q)
+      const parts = [
+        getName(p), p.name_en, p.name_th, p.name_jp,
+        p.brand && getName(p.brand), p.brand?.name_en, p.brand?.name_th, p.brand?.name_jp,
+        p.tag,
+        p.category && getName(p.category), p.category?.name_en, p.category?.name_th, p.category?.name_jp
+      ]
+      return parts.filter(Boolean).join(' ').toLowerCase().includes(q)
     })
     .slice(0, MAX_RESULTS)
 
