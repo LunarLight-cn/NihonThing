@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Loader2, AlertCircle, ShoppingBag, Filter, SlidersHorizontal, Search, X } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { api } from '../../services/api'
+import { api, fetchAllProducts } from '../../services/api'
 import { useCart } from '../../contexts/CartContext'
 import { useTranslation } from 'react-i18next'
 import { useLocalizedName } from '../../utils/localization'
@@ -54,11 +54,11 @@ export const Catalog: React.FC = () => {
   const { data: products, isLoading, error } = useQuery({
     queryKey: ['products', 'catalog', selectedCollection],
     queryFn: async () => {
-      let endpoint = '/products'
-      if (selectedCollection === 'new-arrivals') endpoint = '/products/new-arrivals'
-      else if (selectedCollection === 'trending') endpoint = '/products/trending'
-      const res = await api.get(endpoint)
-      return res.data.data as Product[]
+      if (selectedCollection === 'new-arrivals' || selectedCollection === 'trending') {
+        const res = await api.get(`/products/${selectedCollection}`)
+        return res.data.data as Product[]
+      }
+      return await fetchAllProducts<Product>()
     }
   })
 
@@ -79,7 +79,15 @@ export const Catalog: React.FC = () => {
     if (selectedBrand && brandName !== selectedBrand) return false
     if (search) {
       const q = search.toLowerCase()
-      return (p.name?.toLowerCase().includes(q) || p.name_th?.toLowerCase().includes(q) || brandName.toLowerCase().includes(q))
+      const cat = p.category
+      const parts = [
+        getName(p), (p as { name_en?: string }).name_en, p.name_th, p.name_jp,
+        brandName, p.brand?.name_en, p.brand?.name_th, p.brand?.name_jp,
+        p.tag,
+        cat ? getName(cat) : '', cat?.name_en, cat?.name_th, cat?.name_jp
+      ]
+      const hay = parts.filter(Boolean).join(' ').toLowerCase()
+      return hay.includes(q)
     }
     return true
   })
@@ -103,6 +111,20 @@ export const Catalog: React.FC = () => {
   return (
     <div className="py-8">
       <div className="section-container">
+        {/* Hero banner - rounded asymmetric panel, Japanese red on washi white */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground mb-8 animate-fade-in">
+          <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-primary-foreground/10" />
+          <div className="absolute -right-4 bottom-0 w-40 h-40 rounded-full bg-primary-foreground/10" />
+          <div className="relative px-6 py-8 sm:px-10 sm:py-10 max-w-xl">
+            <p className="text-xs font-semibold uppercase tracking-widest opacity-80 mb-2">{t('catalog.heroKicker')}</p>
+            <h2 className="text-2xl sm:text-3xl font-bold leading-tight mb-3">{t('catalog.heroTitle')}</h2>
+            <p className="text-sm opacity-90 mb-5 max-w-md">{t('catalog.heroSubtitle')}</p>
+            <button onClick={() => handleCollectionChange('new-arrivals')} className="btn-pill btn-pill-outline bg-primary-foreground/15 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/25">
+              {t('home.newArrivals.title')}
+            </button>
+          </div>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters - Desktop */}
           <aside className="hidden lg:block w-64 shrink-0">

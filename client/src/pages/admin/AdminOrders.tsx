@@ -169,7 +169,7 @@ const ShippingEditModal: React.FC<{ order: Order; onClose: () => void }> = ({ or
   )
 }
 
-// Capacity of the next trip to depart — how close it is to closing on each axis.
+// Capacity of the next trip to depart - how close it is to closing on each axis.
 const NextTripCapacity: React.FC = () => {
   const { t } = useTranslation()
   const { data: trips } = useQuery({
@@ -238,7 +238,7 @@ const NextTripCapacity: React.FC = () => {
   )
 }
 
-// Full order detail for admin/agent — everything needed to fulfil the order.
+// Full order detail for admin/agent - everything needed to fulfil the order.
 const AdminOrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = ({ order, onClose }) => {
   const { t } = useTranslation()
   const localizedName = useLocalizedName()
@@ -265,12 +265,12 @@ const AdminOrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = (
               <p className="text-sm text-muted-foreground">{order.user?.email}</p>
             </section>
 
-            {/* Items — what the agent must buy */}
+            {/* Items - what the agent must buy */}
             <section className="mt-5">
               <h4 className="detail-heading"><ShoppingCart className="w-4 h-4" />{t('admin.order.items')}</h4>
               <div className="space-y-2">
                 {(order.items || []).map((it, idx) => {
-                  const label = it.product ? localizedName(it.product) : (it.ticket?.item_name || '—')
+                  const label = it.product ? localizedName(it.product) : (it.ticket?.item_name || '-')
                   const img = firstImg(it.product?.img) || firstImg(it.ticket?.img)
                   return (
                     <div key={idx} className="flex items-center gap-3 border border-border rounded-lg p-2">
@@ -300,10 +300,10 @@ const AdminOrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = (
                     {order.ship.type} · {fmtDate(order.ship.ship_date)}
                   </p>
                 )}
-                <div className="stat-row stat-row-label"><span>{t('admin.order.courier')}</span><span>{order.courier_name || '—'}</span></div>
-                <div className="stat-row stat-row-label"><span>{t('admin.order.tracking_no')}</span><span className="font-mono">{order.track_no || '—'}</span></div>
-                <div className="stat-row stat-row-label"><span>{t('admin.order.shipped_date')}</span><span>{fmtDate(order.shipped_date) || '—'}</span></div>
-                <div className="stat-row stat-row-label"><span>{t('admin.order.deliv_date')}</span><span>{fmtDate(order.deliv_date) || '—'}</span></div>
+                <div className="stat-row stat-row-label"><span>{t('admin.order.courier')}</span><span>{order.courier_name || '-'}</span></div>
+                <div className="stat-row stat-row-label"><span>{t('admin.order.tracking_no')}</span><span className="font-mono">{order.track_no || '-'}</span></div>
+                <div className="stat-row stat-row-label"><span>{t('admin.order.shipped_date')}</span><span>{fmtDate(order.shipped_date) || '-'}</span></div>
+                <div className="stat-row stat-row-label"><span>{t('admin.order.deliv_date')}</span><span>{fmtDate(order.deliv_date) || '-'}</span></div>
               </div>
             </section>
 
@@ -316,21 +316,21 @@ const AdminOrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = (
                   <p>{order.address.address_line}</p>
                   <p>Tel: {order.address.tel}</p>
                 </div>
-              ) : <p className="text-sm text-muted-foreground">—</p>}
+              ) : <p className="text-sm text-muted-foreground">-</p>}
             </section>
 
             {/* Totals */}
             <section className="mt-5 border-t border-border pt-3 space-y-1.5">
               <div className="stat-row"><span className="stat-row-label">{t('admin.order.items_total')}</span><span>฿{(order.item_price_total || 0).toLocaleString()}</span></div>
-              <div className="stat-row"><span className="stat-row-label">{t('admin.order.shipping_fee')}</span><span>{shipFee > 0 ? `฿${shipFee.toLocaleString()}` : '—'}</span></div>
-              <div className="stat-row font-bold"><span>{t('admin.order.grand_total_calc')}</span><span className="text-primary">{order.grand_total ? `฿${order.grand_total.toLocaleString()}` : '—'}</span></div>
+              <div className="stat-row"><span className="stat-row-label">{t('admin.order.shipping_fee')}</span><span>{shipFee > 0 ? `฿${shipFee.toLocaleString()}` : '-'}</span></div>
+              <div className="stat-row font-bold"><span>{t('admin.order.grand_total_calc')}</span><span className="text-primary">{order.grand_total ? `฿${order.grand_total.toLocaleString()}` : '-'}</span></div>
             </section>
 
             {/* Payments */}
             <section className="mt-5">
               <h4 className="detail-heading"><Receipt className="w-4 h-4" />{t('admin.order.payments')}</h4>
               {(order.payments || []).length === 0 ? (
-                <p className="text-sm text-muted-foreground">—</p>
+                <p className="text-sm text-muted-foreground">-</p>
               ) : (
                 <div className="space-y-2">
                   {(order.payments || []).map((p) => (
@@ -412,9 +412,9 @@ export const AdminOrders: React.FC = () => {
       accessorFn: (row) => (row.items || []).map((i) => i.product ? (i.product.name_en || '') : (i.ticket?.item_name || '')).join(' '),
       cell: ({ row }) => {
         const its = row.original.items || []
-        if (its.length === 0) return <span className="text-muted-foreground">—</span>
+        if (its.length === 0) return <span className="text-muted-foreground">-</span>
         const first = its[0]
-        const label = first.product ? localizedName(first.product) : (first.ticket?.item_name || '—')
+        const label = first.product ? localizedName(first.product) : (first.ticket?.item_name || '-')
         return (
           <span className="text-sm">
             <span className="line-clamp-1 max-w-[220px]">{label}</span>

@@ -17,23 +17,37 @@ export const getPurchases = async (d1: D1Database, agentId?: number) => {
   })
 }
 
-export const createPurchase = async (d1: D1Database, agentId: number, data: any) => {
+export const createPurchase = async (d1: D1Database, agentId: number, data: any, isAdmin = false) => {
   const db = drizzle(d1, { schema })
 
   // order_item_id is what makes a purchase reportable: it ties the money spent
   // to the line it was spent on. Derive order_id from it so an order's spend
   // can be summed without walking every line.
   let orderId = data.order_id ?? null
-  if (data.order_item_id && !orderId) {
-    const orderItem = await db.query.Order_Items.findFirst({
-      where: eq(schema.Order_Items.id, data.order_item_id)
-    })
-    orderId = orderItem?.order_id ?? null
-  }
-
-  // Same rule as claiming: no deposit, no shopping. Checked here too because
-  // the API can be called without ever claiming.
   if (data.order_item_id) {
+    const orderItem = await db.query.Order_Items.findFirst({
+      where: eq(schema.Order_Items.id, data.order_item_id),
+      with: { purchases: true }
+    })
+    if (!orderItem) {
+      throw new Error('Order item not found.')
+    }
+    orderId = orderId ?? orderItem.order_id
+
+    // The claim guard only protects the claim UPDATE itself; the purchase API
+    // must enforce it too or a direct call walks straight past it.
+    if (orderItem.claimed_by && orderItem.claimed_by !== agentId && !isAdmin) {
+      throw new Error('This line is claimed by another agent.')
+    }
+
+    const boughtQty = orderItem.purchases.reduce((sum, p) => sum + (p.quantity || 0), 0)
+    const remaining = (orderItem.quantity || 0) - boughtQty
+    if (data.quantity > remaining) {
+      throw new Error(`Quantity exceeds what is left to buy (${remaining} remaining).`)
+    }
+
+    // Same rule as claiming: no deposit, no shopping. Checked here too because
+    // the API can be called without ever claiming.
     await assertDepositPaid(db, [data.order_item_id])
   }
 

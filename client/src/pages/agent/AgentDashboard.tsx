@@ -10,7 +10,7 @@ import { isDepositPaid, orderStatusBadge, paymentStatusBadge } from '../../utils
 import { PurchaseModal } from './PurchaseModal'
 import type { QueueOrder, QueueItem } from './types'
 
-const fmtDate = (d?: string | null) => (d ? new Date(d).toLocaleDateString() : '—')
+const fmtDate = (d?: string | null) => (d ? new Date(d).toLocaleDateString() : '-')
 
 const ItemRow: React.FC<{
   order: QueueOrder
@@ -29,7 +29,7 @@ const ItemRow: React.FC<{
     onError: (e: any) => alert(e.response?.data?.message || t('agent.queue.claimFailed'))
   })
 
-  const name = item.product ? localizedName(item.product) : item.ticket?.item_name || '—'
+  const name = item.product ? localizedName(item.product) : item.ticket?.item_name || '-'
   const img = item.product?.img?.[0] || item.ticket?.img
   const mine = item.claimed_by === user?.id
   const options = item.selected_options

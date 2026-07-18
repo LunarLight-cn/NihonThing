@@ -11,7 +11,8 @@
     "chat": "Chat",
     "logout": "Logout",
     "support": "Support",
-    "settings": "Settings"
+    "settings": "Settings",
+    "language": "Language"
   },
   "footer": {
     "description": "Your premium gateway to exclusive Japanese goods, delivered straight to your door.",
@@ -109,7 +110,10 @@
     "clearFilters": "Clear all filters",
     "sortBy": "Sort by:",
     "recommended": "Recommended",
-    "errorLoading": "Failed to load products"
+    "errorLoading": "Failed to load products",
+    "heroKicker": "Straight from Japan",
+    "heroTitle": "Shop authentic Japanese goods",
+    "heroSubtitle": "Browse the catalog or request anything you cannot find. We buy it in Japan and ship it to your door."
   },
   "product": {
     "back": "Back to Catalog",
@@ -124,7 +128,17 @@
     "outOfStock": "Out of Stock",
     "tentativePrice": "* Tentative price, subject to change based on actual store price.",
     "notFound": "Product not found or failed to load.",
-    "selectOptions": "Please select all options first."
+    "selectOptions": "Please select all options first.",
+    "depositLabel": "Pay ฿{{amount}} deposit",
+    "depositHint": "now, and the rest before it ships.",
+    "nextTrip": "Next shipping trip",
+    "filling": "{{pct}}% reserved",
+    "unitDay": "days",
+    "unitHour": "hrs",
+    "unitMin": "min",
+    "unitSec": "sec",
+    "closesBy": "Closes by {{date}}",
+    "excludesShipping": "* Shipping fee not included, added after purchase."
   },
   "cart": {
     "title": "Your Cart",
@@ -240,8 +254,9 @@
     "status": {
       "pending": "Pending",
       "purchasing": "Purchasing",
-      "arrived_th": "Arrived in Thailand",
-      "shipped": "Shipped",
+      "in_transit": "On the Way",
+      "arrived": "Arrived",
+      "local_shipping": "Out for Delivery",
       "delivered": "Delivered",
       "cancelled": "Cancelled"
     },
@@ -384,7 +399,7 @@
       "search_brands": "Search brands...",
       "search_shops": "Search shops...",
       "options_title": "Options",
-      "options_hint": "Choices the customer must pick when ordering — e.g. an option named \"Size\" with values S, M, L. Leave empty if the product has no choices.",
+      "options_hint": "Choices the customer must pick when ordering - e.g. an option named \"Size\" with values S, M, L. Leave empty if the product has no choices.",
       "option_name": "Option name",
       "option_name_ph": "e.g. Size, Colour",
       "option_values": "Values",
@@ -396,27 +411,17 @@
     },
     "purchases": {
       "purchases_title": "Purchases",
-      "id": "ID",
       "date": "Date",
+      "agent": "Agent",
+      "order": "Order",
       "product": "Product",
-      "product_id": "Product ID",
       "quantity": "Quantity",
       "cost_jpy": "Cost (JPY)",
       "cost_thb": "Cost (THB)",
-      "total_cost_jpy": "Total Cost (JPY)",
       "shop": "Shop",
-      "shop_name": "Shop Name",
-      "shop_name_placeholder": "Enter shop name",
-      "receipt_images": "Receipt Images",
       "slips": "Slips",
-      "add_purchase": "Add Purchase",
-      "new_purchase": "New Purchase",
-      "save": "Save",
-      "saving": "Saving...",
-      "cancel": "Cancel",
-      "loading_purchases": "Loading purchases...",
-      "no_purchases": "No purchases yet.",
-      "search_product_restock": "Search product to restock..."
+      "total_spent": "Total spent",
+      "search": "Search by shop..."
     },
     "users": {
       "users_title": "Users",
@@ -623,7 +628,7 @@
       "unpaid_move_days": "Move unpaid orders (days before departure)",
       "unpaid_move_days_hint": "Orders that have not paid shipping by this many days before the trip departs get moved to the next trip.",
       "overdue_cancel_days": "Cancel overdue orders (days)",
-      "overdue_cancel_days_hint": "Orders left unpaid this many days past their deadline are cancelled — never deleted.",
+      "overdue_cancel_days_hint": "Orders left unpaid this many days past their deadline are cancelled - never deleted.",
       "saved": "Saved",
       "profile_info": "Profile Information",
       "username": "Username",
@@ -635,7 +640,9 @@
       "current_password": "Current Password",
       "new_password": "New Password",
       "confirm_new_password": "Confirm New Password",
-      "update_password": "Update Password"
+      "update_password": "Update Password",
+      "exchange_rate_jpy_thb": "Exchange rate (JPY to THB)",
+      "exchange_rate_jpy_thb_hint": "Used to convert yen prices and purchase costs to baht."
     },
     "ticket": {
       "id": "ID",
@@ -685,8 +692,6 @@
       "flight": "Flight",
       "sea_freight": "Sea Freight",
       "origin": "Origin Country",
-      "thailand": "Thailand",
-      "japan": "Japan",
       "destination": "Destination Country",
       "max_cap": "Max Weight (kg)",
       "max_items": "Max Items",

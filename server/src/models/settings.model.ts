@@ -11,7 +11,8 @@ const DEFAULTS = {
   weight_tolerance_kg: 5,
   unpaid_move_days: 3,
   overdue_cancel_days: 14,
-  price_tolerance_thb: 500
+  price_tolerance_thb: 500,
+  exchange_rate_jpy_thb: 0.25
 }
 
 export type Settings = typeof schema.Settings.$inferSelect

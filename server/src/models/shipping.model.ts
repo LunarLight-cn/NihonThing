@@ -13,7 +13,7 @@ export const getShippingBoard = async (d1: D1Database) => {
   const settings = await getSettings(d1)
 
   const trips = await db.query.Ships.findMany({
-    where: inArray(schema.Ships.status, ['open', 'closed', 'in_transit']),
+    where: inArray(schema.Ships.status, ['open', 'closed', 'in_transit', 'arrived']),
     orderBy: (s, { asc }) => [asc(s.ship_date)]
   })
 
@@ -174,7 +174,7 @@ export const cancelOverdueOrders = async (d1: D1Database) => {
 }
 
 // A trip departs: it goes in_transit and takes its paid orders with it.
-// Unpaid ones stay behind for the move/cancel rules — goods that are not
+// Unpaid ones stay behind for the move/cancel rules - goods that are not
 // paid for do not leave the country.
 export const departTrip = async (d1: D1Database, tripId: number) => {
   const db = drizzle(d1, { schema })
@@ -204,7 +204,13 @@ export const departTrip = async (d1: D1Database, tripId: number) => {
 export const arriveTrip = async (d1: D1Database, tripId: number) => {
   const db = drizzle(d1, { schema })
 
-  await db.update(schema.Ships).set({ status: 'arrived' }).where(eq(schema.Ships.id, tripId))
+  const updated = await db.update(schema.Ships)
+    .set({ status: 'arrived' })
+    .where(and(eq(schema.Ships.id, tripId), eq(schema.Ships.status, 'in_transit')))
+    .returning()
+  if (updated.length === 0) {
+    throw new Error('This trip has not departed yet.')
+  }
   const arrived = await db.update(schema.Orders)
     .set({ status: 'arrived', udate: sql`CURRENT_TIMESTAMP` })
     .where(and(eq(schema.Orders.trip_id, tripId), eq(schema.Orders.status, 'in_transit')))

@@ -10,7 +10,8 @@ const UpdateSettingsSchema = z.object({
   weight_tolerance_kg: z.number().min(0).optional(),
   price_tolerance_thb: z.number().min(0).optional(),
   unpaid_move_days: z.number().int().min(0).optional(),
-  overdue_cancel_days: z.number().int().min(0).optional()
+  overdue_cancel_days: z.number().int().min(0).optional(),
+  exchange_rate_jpy_thb: z.number().positive().optional()
 })
 
 // GET /api/settings - Admin only

@@ -46,7 +46,7 @@ export const TripSchedule: React.FC = () => {
             {t('home.schedule.errorLoading')}
           </div>
         ) : data && data.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="hscroll md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {data.map((trip) => {
               const isFull = trip.is_closed || trip.status === 'closed'
               // Show how full the trip is on whichever axis is closest to
@@ -56,7 +56,7 @@ export const TripSchedule: React.FC = () => {
               return (
                 <div
                   key={trip.id}
-                  className={`bg-card border rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${isFull ? 'border-border/50 opacity-75' : 'border-border'}`}
+                  className={`hscroll-item w-[72%] sm:w-[55%] md:w-auto bg-card border rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${isFull ? 'border-border/50 opacity-75' : 'border-border'}`}
                 >
                   <div className="p-4">
                     <div className="flex justify-between items-start gap-3 mb-3">
@@ -70,9 +70,7 @@ export const TripSchedule: React.FC = () => {
                           ) : (
                             <>
                               <PlaneTakeoff className="w-5 h-5 text-primary shrink-0" />
-                              <span className="truncate">
-                                {trip.type.charAt(0).toUpperCase() + trip.type.slice(1)} {t('home.schedule.flight')}
-                              </span>
+                              <span className="truncate">{t('home.schedule.flight')}</span>
                             </>
                           )}
                         </h3>

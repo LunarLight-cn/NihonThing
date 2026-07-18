@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { api } from '../../services/api'
+import { api, fetchAllProducts } from '../../services/api'
 import { DataTable } from '../../components/admin/DataTable'
 import { SearchableSelect } from '../../components/admin/SearchableSelect'
 import { SearchableMultiSelect } from '../../components/admin/SearchableMultiSelect'
@@ -61,10 +61,7 @@ export const AdminProducts: React.FC = () => {
   // -- Queries --
   const { data: products, isLoading: isLoadingProducts } = useQuery({
     queryKey: ['admin-products'],
-    queryFn: async () => {
-      const res = await api.get('/products')
-      return res.data.data as Product[]
-    }
+    queryFn: async () => await fetchAllProducts<Product>()
   })
 
   const { data: categories, isLoading: isLoadingCategories } = useQuery({

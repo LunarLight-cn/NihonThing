@@ -1,8 +1,9 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { authGuard, roleGuard, adminGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct, getNewArrivals, getTrendingProducts } from '../models/product.model'
+import { getSettings } from '../models/settings.model'
 
-const productRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; EXCHANGE_RATE_JPY_THB: string }; Variables: AuthVariables }>()
+const productRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database }; Variables: AuthVariables }>()
 
 // Schema for Creating a Product
 const CreateProductSchema = z.object({
@@ -117,7 +118,7 @@ const postProductRoute = createRoute({
 
 productRoutes.openapi(postProductRoute, async (c) => {
   const data = c.req.valid('json')
-  const exchangeRate = parseFloat(c.env.EXCHANGE_RATE_JPY_THB) || 0.25
+  const exchangeRate = (await getSettings(c.env.nihonthing_db)).exchange_rate_jpy_thb || 0.25
   
   const payload = {
     ...data,
@@ -145,7 +146,7 @@ const putProductRoute = createRoute({
 productRoutes.openapi(putProductRoute, async (c) => {
   const { id } = c.req.valid('param')
   const data = c.req.valid('json')
-  const exchangeRate = parseFloat(c.env.EXCHANGE_RATE_JPY_THB) || 0.25
+  const exchangeRate = (await getSettings(c.env.nihonthing_db)).exchange_rate_jpy_thb || 0.25
   
   const payload = {
     ...data,

@@ -299,7 +299,7 @@ const OrderDetailModal: React.FC<{ order: Order; onClose: () => void }> = ({ ord
           <h3 className="detail-heading">{t('myOrders.detail.items')}</h3>
           <div className="space-y-2">
             {order.items.map((it, idx) => {
-              const label = it.product ? localizedName(it.product) : (it.ticket?.item_name || '—')
+              const label = it.product ? localizedName(it.product) : (it.ticket?.item_name || '-')
               const img = firstImg(it.product?.img) || firstImg(it.ticket?.img)
               return (
                 <div key={idx} className="flex items-center gap-3">
@@ -494,7 +494,7 @@ export const Orders: React.FC = () => {
                   {/* Items */}
                   <div className="space-y-2 mb-4">
                     {order.items.map((it, idx) => {
-                      const label = it.product ? localizedName(it.product) : (it.ticket?.item_name || '—')
+                      const label = it.product ? localizedName(it.product) : (it.ticket?.item_name || '-')
                       const img = firstImg(it.product?.img) || firstImg(it.ticket?.img)
                       return (
                         <div key={idx} className="flex items-center gap-3">
@@ -576,7 +576,7 @@ export const Orders: React.FC = () => {
                   <div className="flex gap-6 mt-3 text-sm">
                     <div>
                       <p className="text-xs text-muted-foreground">{t('myOrders.request.budget')}</p>
-                      <p className="font-medium">{tk.expected_price ? `¥${tk.expected_price.toLocaleString()}` : '—'}</p>
+                      <p className="font-medium">{tk.expected_price ? `¥${tk.expected_price.toLocaleString()}` : '-'}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">{t('myOrders.request.ourPrice')}</p>
