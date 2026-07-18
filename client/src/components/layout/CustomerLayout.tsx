@@ -1,11 +1,25 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Outlet, Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
 import { CartSidebar } from './CartSidebar'
 import { NavSearch } from './NavSearch'
-import { ShoppingBag, User, LogOut, Menu, X, Globe } from 'lucide-react'
+import { ShoppingBag, User, LogOut, Menu, X, Globe, ChevronDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+
+// The caret spins while the panel eases open, then settles into a chevron that
+// points up when open, down when closed.
+const AnimatedCaret: React.FC<{ open: boolean }> = ({ open }) => {
+  const [spinning, setSpinning] = useState(false)
+  useEffect(() => {
+    if (!open) { setSpinning(false); return }
+    setSpinning(true)
+    const id = setTimeout(() => setSpinning(false), 300)
+    return () => clearTimeout(id)
+  }, [open])
+  if (spinning) return <span className="spinner !w-3.5 !h-3.5 !border-2" />
+  return <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+}
 
 export const CustomerLayout: React.FC = () => {
   const { user, logout } = useAuth()
@@ -58,10 +72,11 @@ export const CustomerLayout: React.FC = () => {
             <div className="hidden md:block relative pt-1 pb-1">
               <button
                 onClick={() => setDeskMenu(deskMenu === 'lang' ? null : 'lang')}
-                className="flex items-center space-x-1 p-2 text-muted-foreground hover:text-primary hover:bg-secondary rounded-full transition-colors"
+                className="flex items-center gap-1 p-2 text-muted-foreground hover:text-primary hover:bg-secondary rounded-full transition-colors"
               >
                 <Globe className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase">{i18n.language}</span>
+                <AnimatedCaret open={deskMenu === 'lang'} />
               </button>
               <div className={`dropdown-panel top-full right-0 mt-1 w-32 ${deskMenu === 'lang' ? 'is-open' : ''}`}>
                 <div className="p-2 flex flex-col space-y-1">
@@ -90,9 +105,10 @@ export const CustomerLayout: React.FC = () => {
               <div className="relative">
                 <button
                   onClick={() => setDeskMenu(deskMenu === 'user' ? null : 'user')}
-                  className="flex items-center space-x-2 p-2 hover:bg-secondary rounded-full transition-colors"
+                  className="flex items-center gap-1 p-2 hover:bg-secondary rounded-full transition-colors"
                 >
                   <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-primary font-bold">{user.username?.charAt(0).toUpperCase()}</div>
+                  <AnimatedCaret open={deskMenu === 'user'} />
                 </button>
                 <div className={`dropdown-panel right-0 mt-2 w-48 ${deskMenu === 'user' ? 'is-open' : ''}`}>
                   <div className="p-4 border-b border-border">
