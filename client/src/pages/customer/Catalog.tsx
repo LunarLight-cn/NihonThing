@@ -103,6 +103,20 @@ export const Catalog: React.FC = () => {
   return (
     <div className="py-8">
       <div className="section-container">
+        {/* Hero banner - rounded asymmetric panel, Japanese red on washi white */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground mb-8 animate-fade-in">
+          <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-primary-foreground/10" />
+          <div className="absolute -right-4 bottom-0 w-40 h-40 rounded-full bg-primary-foreground/10" />
+          <div className="relative px-6 py-8 sm:px-10 sm:py-10 max-w-xl">
+            <p className="text-xs font-semibold uppercase tracking-widest opacity-80 mb-2">{t('catalog.heroKicker')}</p>
+            <h2 className="text-2xl sm:text-3xl font-bold leading-tight mb-3">{t('catalog.heroTitle')}</h2>
+            <p className="text-sm opacity-90 mb-5 max-w-md">{t('catalog.heroSubtitle')}</p>
+            <button onClick={() => handleCollectionChange('new-arrivals')} className="btn-pill btn-pill-outline bg-primary-foreground/15 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/25">
+              {t('home.newArrivals.title')}
+            </button>
+          </div>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters - Desktop */}
           <aside className="hidden lg:block w-64 shrink-0">

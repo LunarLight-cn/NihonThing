@@ -109,7 +109,10 @@
     "clearFilters": "Clear all filters",
     "sortBy": "Sort by:",
     "recommended": "Recommended",
-    "errorLoading": "Failed to load products"
+    "errorLoading": "Failed to load products",
+    "heroKicker": "Straight from Japan",
+    "heroTitle": "Shop authentic Japanese goods",
+    "heroSubtitle": "Browse the catalog or request anything you cannot find. We buy it in Japan and ship it to your door."
   },
   "product": {
     "back": "Back to Catalog",

@@ -3,6 +3,7 @@ import { Outlet, Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
 import { CartSidebar } from './CartSidebar'
+import { NavSearch } from './NavSearch'
 import { ShoppingBag, User, LogOut, Menu, X, Globe } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
@@ -35,7 +36,7 @@ export const CustomerLayout: React.FC = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-muted-foreground">
+          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium text-muted-foreground shrink-0">
             <Link to="/" className="hover:text-foreground transition-colors">
               {t('nav.home')}
             </Link>
@@ -49,6 +50,11 @@ export const CustomerLayout: React.FC = () => {
               {t('nav.support')}
             </Link>
           </nav>
+
+          {/* Search - desktop, center */}
+          <div className="hidden lg:flex flex-1 justify-center px-6">
+            <NavSearch />
+          </div>
 
           {/* User Actions */}
           <div className="flex items-center space-x-4">

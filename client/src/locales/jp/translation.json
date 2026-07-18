@@ -109,7 +109,10 @@
     "clearFilters": "絞り込みをクリア",
     "sortBy": "並び替え:",
     "recommended": "おすすめ",
-    "errorLoading": "商品の読み込みに失敗しました"
+    "errorLoading": "商品の読み込みに失敗しました",
+    "heroKicker": "日本から直送",
+    "heroTitle": "本物の日本商品をお買い物",
+    "heroSubtitle": "カタログから選ぶか、見つからない商品はリクエスト。日本で購入してご自宅までお届けします。"
   },
   "product": {
     "back": "商品一覧に戻る",
