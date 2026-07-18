@@ -11,9 +11,13 @@ export const CustomerLayout: React.FC = () => {
   const { totalItems, setIsCartOpen } = useCart()
   const { t, i18n } = useTranslation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [deskMenu, setDeskMenu] = useState<'lang' | 'user' | null>(null)
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
+      {/* Closes an open desktop dropdown when clicking anywhere else */}
+      {deskMenu && <div className="fixed inset-0 z-40" onClick={() => setDeskMenu(null)} />}
+
       {/* Navbar */}
       <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="section-container h-16 flex items-center justify-between">
@@ -48,31 +52,25 @@ export const CustomerLayout: React.FC = () => {
 
           {/* User Actions */}
           <div className="flex items-center space-x-4">
-            <div className="hidden md:flex group relative pt-1 pb-1">
-              <button className="flex items-center space-x-1 p-2 text-muted-foreground hover:text-primary hover:bg-secondary rounded-full transition-colors">
+            <div className="hidden md:block relative pt-1 pb-1">
+              <button
+                onClick={() => setDeskMenu(deskMenu === 'lang' ? null : 'lang')}
+                className="flex items-center space-x-1 p-2 text-muted-foreground hover:text-primary hover:bg-secondary rounded-full transition-colors"
+              >
                 <Globe className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase">{i18n.language}</span>
               </button>
-              <div className="absolute top-full right-0 mt-1 w-32 bg-card border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-50">
+              <div className={`dropdown-panel top-full right-0 mt-1 w-32 ${deskMenu === 'lang' ? 'is-open' : ''}`}>
                 <div className="p-2 flex flex-col space-y-1">
-                  <button
-                    onClick={() => i18n.changeLanguage('en')}
-                    className={`filter-btn ${i18n.language === 'en' ? 'is-active' : ''}`}
-                  >
-                    English
-                  </button>
-                  <button
-                    onClick={() => i18n.changeLanguage('th')}
-                    className={`filter-btn ${i18n.language === 'th' ? 'is-active' : ''}`}
-                  >
-                    ภาษาไทย
-                  </button>
-                  <button
-                    onClick={() => i18n.changeLanguage('jp')}
-                    className={`filter-btn ${i18n.language === 'jp' ? 'is-active' : ''}`}
-                  >
-                    日本語
-                  </button>
+                  {(['en', 'th', 'jp'] as const).map((lng) => (
+                    <button
+                      key={lng}
+                      onClick={() => { i18n.changeLanguage(lng); setDeskMenu(null) }}
+                      className={`filter-btn ${i18n.language === lng ? 'is-active' : ''}`}
+                    >
+                      {lng === 'en' ? 'English' : lng === 'th' ? 'ภาษาไทย' : '日本語'}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -86,34 +84,37 @@ export const CustomerLayout: React.FC = () => {
             </button>
 
             {user ? (
-              <div className="group relative">
-                <button className="flex items-center space-x-2 p-2 hover:bg-secondary rounded-full transition-colors">
+              <div className="relative">
+                <button
+                  onClick={() => setDeskMenu(deskMenu === 'user' ? null : 'user')}
+                  className="flex items-center space-x-2 p-2 hover:bg-secondary rounded-full transition-colors"
+                >
                   <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-primary font-bold">{user.username?.charAt(0).toUpperCase()}</div>
                 </button>
-                <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all">
+                <div className={`dropdown-panel right-0 mt-2 w-48 ${deskMenu === 'user' ? 'is-open' : ''}`}>
                   <div className="p-4 border-b border-border">
                     <p className="text-sm font-medium truncate">{user.username}</p>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
                   <div className="p-2">
-                    <Link to="/settings" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md">
+                    <Link to="/settings" onClick={() => setDeskMenu(null)} className="block px-4 py-2 text-sm hover:bg-secondary rounded-md">
                       {t('nav.settings')}
                     </Link>
-                    <Link to="/orders" className="block px-4 py-2 text-sm hover:bg-secondary rounded-md">
+                    <Link to="/orders" onClick={() => setDeskMenu(null)} className="block px-4 py-2 text-sm hover:bg-secondary rounded-md">
                       {t('nav.myOrders')}
                     </Link>
                     {user.role === 'admin' && (
-                      <Link to="/admin" className="block px-4 py-2 text-sm text-primary hover:bg-secondary rounded-md">
+                      <Link to="/admin" onClick={() => setDeskMenu(null)} className="block px-4 py-2 text-sm text-primary hover:bg-secondary rounded-md">
                         {t('nav.adminDashboard')}
                       </Link>
                     )}
                     {user.role === 'agent' && (
-                      <Link to="/agent" className="block px-4 py-2 text-sm text-primary hover:bg-secondary rounded-md">
+                      <Link to="/agent" onClick={() => setDeskMenu(null)} className="block px-4 py-2 text-sm text-primary hover:bg-secondary rounded-md">
                         {t('nav.agentDashboard')}
                       </Link>
                     )}
                     <button
-                      onClick={logout}
+                      onClick={() => { setDeskMenu(null); logout() }}
                       className="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-secondary rounded-md flex items-center"
                     >
                       <LogOut className="w-4 h-4 mr-2" />
