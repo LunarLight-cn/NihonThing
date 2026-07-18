@@ -4,6 +4,7 @@ import { MapPin, Store, Map as MapIcon, Loader2, Plus, Edit2 } from 'lucide-reac
 import { api } from '../../services/api'
 import { ShoppingAreasMap } from '../../components/home/ShoppingAreasMap'
 import { useTranslation } from 'react-i18next'
+import { useLocalizedName } from '../../utils/localization'
 
 interface Area {
   id: number
@@ -26,6 +27,7 @@ interface Shop {
 
 export const AdminLocations: React.FC = () => {
   const { t } = useTranslation()
+  const localizedName = useLocalizedName()
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<'map' | 'shops' | 'areas'>('map')
 
@@ -190,7 +192,7 @@ export const AdminLocations: React.FC = () => {
 
   const getAreaName = (areaId: number) => {
     const area = areas?.find((a) => a.id === areaId)
-    return area ? area.name_en : 'Unknown'
+    return area ? localizedName(area) : '-'
   }
 
   return (
@@ -452,7 +454,7 @@ export const AdminLocations: React.FC = () => {
                         key={area.id}
                         value={area.id}
                       >
-                        {area.name_en}
+                        {localizedName(area)}
                       </option>
                     ))}
                   </select>
