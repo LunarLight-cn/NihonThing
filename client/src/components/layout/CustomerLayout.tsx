@@ -102,6 +102,7 @@ export const CustomerLayout: React.FC = () => {
 
             <button
               onClick={() => setIsCartOpen(true)}
+              aria-label={t('cart.title')}
               className="p-2 hover:bg-secondary rounded-full transition-colors relative"
             >
               <ShoppingBag className="w-5 h-5 text-foreground" />
