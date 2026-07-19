@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {
   ShoppingBag, Loader2, MapPin, PlaneTakeoff, Ship as ShipIcon,
-  Calendar, CheckCircle2, QrCode, Upload, AlertCircle, Plus, ScrollText, X
+  Calendar, CheckCircle2, QrCode, Upload, AlertCircle, Plus, ScrollText
 } from 'lucide-react'
 import { api } from '../../services/api'
 import { useCart } from '../../contexts/CartContext'
@@ -46,7 +46,7 @@ export const Checkout: React.FC = () => {
   const [selectedAddress, setSelectedAddress] = useState<number | null>(null)
   const [placing, setPlacing] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [showAddressModal, setShowAddressModal] = useState(false)
+  const [showAddrForm, setShowAddrForm] = useState(false)
   const [showTosModal, setShowTosModal] = useState(false)
 
   // Terms gate: the acceptance is remembered per account, so the popup only
@@ -231,14 +231,6 @@ export const Checkout: React.FC = () => {
               </h2>
               {addrLoading ? (
                 <div className="flex justify-center p-6"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
-              ) : (addresses || []).length === 0 ? (
-                <div className="text-sm text-muted-foreground space-y-3">
-                  <p>{t('checkout.noAddresses')}</p>
-                  <button onClick={() => setShowAddressModal(true)} className="btn-pill btn-pill-primary text-sm">
-                    <Plus className="w-4 h-4" />
-                    {t('checkout.addAddress')}
-                  </button>
-                </div>
               ) : (
                 <div className="space-y-2">
                   {(addresses || []).map((addr) => (
@@ -255,10 +247,28 @@ export const Checkout: React.FC = () => {
                       <p className="text-sm text-muted-foreground">Tel: {addr.tel}</p>
                     </button>
                   ))}
-                  <button onClick={() => setShowAddressModal(true)} className="inline-flex items-center gap-1 text-sm text-primary hover:underline pt-1">
-                    <Plus className="w-3.5 h-3.5" />
-                    {t('checkout.addAddress')}
-                  </button>
+
+                  {(addresses || []).length === 0 && !showAddrForm && (
+                    <p className="text-sm text-muted-foreground">{t('checkout.noAddresses')}</p>
+                  )}
+
+                  {/* The add form expands inline, right here - no jump to Settings */}
+                  {showAddrForm ? (
+                    <div className="border border-border rounded-xl p-4 mt-2 bg-secondary/20">
+                      <AddressManager
+                        hideHeader
+                        hideList
+                        defaultOpen
+                        onSaved={() => { setShowAddrForm(false); qc.invalidateQueries({ queryKey: ['my-addresses'] }) }}
+                        onCancel={() => setShowAddrForm(false)}
+                      />
+                    </div>
+                  ) : (
+                    <button onClick={() => setShowAddrForm(true)} className="inline-flex items-center gap-1 text-sm text-primary hover:underline pt-1">
+                      <Plus className="w-3.5 h-3.5" />
+                      {t('checkout.addAddress')}
+                    </button>
+                  )}
                 </div>
               )}
             </section>
@@ -370,20 +380,6 @@ export const Checkout: React.FC = () => {
         </div>
       )}
 
-      {/* Add-address modal - the full manager, so no bouncing off to Settings */}
-      {showAddressModal && (
-        <div className="modal-scrim" onClick={() => { setShowAddressModal(false); qc.invalidateQueries({ queryKey: ['my-addresses'] }) }}>
-          <div className="modal-card max-w-2xl" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => { setShowAddressModal(false); qc.invalidateQueries({ queryKey: ['my-addresses'] }) }}
-              className="modal-close"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <AddressManager />
-          </div>
-        </div>
-      )}
 
       {/* First-order terms gate */}
       {showTosModal && (

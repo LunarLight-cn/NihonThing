@@ -858,7 +858,8 @@
     "noAddresses": "住所がありません。上から追加してください。",
     "editAddress": "住所を編集",
     "newAddress": "新しい住所",
-    "deleteConfirm": "この住所を削除しますか？"
+    "deleteConfirm": "この住所を削除しますか？",
+    "cancel": "キャンセル"
   },
   "agent": {
     "nav": {

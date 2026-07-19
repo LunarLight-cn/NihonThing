@@ -858,7 +858,8 @@
     "noAddresses": "No addresses found. Add one above.",
     "editAddress": "Edit Address",
     "newAddress": "New Address",
-    "deleteConfirm": "Are you sure you want to delete this address?"
+    "deleteConfirm": "Are you sure you want to delete this address?",
+    "cancel": "Cancel"
   },
   "agent": {
     "nav": {
