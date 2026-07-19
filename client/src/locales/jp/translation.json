@@ -11,8 +11,7 @@
     "chat": "チャット",
     "logout": "ログアウト",
     "support": "サポート",
-    "settings": "設定",
-    "language": "言語"
+    "settings": "設定"
   },
   "footer": {
     "description": "日本の特別な商品を、あなたの玄関先までお届けします。",
@@ -444,7 +443,8 @@
       "confirm_delete_user": "このユーザーを削除しますか？元に戻せません。",
       "alert_update_role_fail": "権限の変更に失敗しました。",
       "alert_update_status_fail": "ステータスの変更に失敗しました。",
-      "alert_delete_user_fail": "ユーザーの削除に失敗しました。"
+      "alert_delete_user_fail": "ユーザーの削除に失敗しました。",
+      "you": "自分"
     },
     "components": {
       "showing_rows": "{{total}}件中{{count}}件を表示",

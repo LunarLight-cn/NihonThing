@@ -11,8 +11,7 @@
     "chat": "Chat",
     "logout": "Logout",
     "support": "Support",
-    "settings": "Settings",
-    "language": "Language"
+    "settings": "Settings"
   },
   "footer": {
     "description": "Your premium gateway to exclusive Japanese goods, delivered straight to your door.",
@@ -444,7 +443,8 @@
       "confirm_delete_user": "Delete this user? This cannot be undone.",
       "alert_update_role_fail": "Failed to update role.",
       "alert_update_status_fail": "Failed to update status.",
-      "alert_delete_user_fail": "Failed to delete user."
+      "alert_delete_user_fail": "Failed to delete user.",
+      "you": "You"
     },
     "components": {
       "showing_rows": "Showing {{count}} of {{total}} rows",

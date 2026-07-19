@@ -5,6 +5,7 @@ import { DataTable } from '../../components/admin/DataTable'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Users, Loader2, ShieldAlert, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '../../contexts/AuthContext'
 import type { UserRole } from '../../types'
 
 interface UserData {
@@ -18,6 +19,7 @@ interface UserData {
 
 export const AdminUsers: React.FC = () => {
   const { t } = useTranslation()
+  const { user: me } = useAuth()
   const queryClient = useQueryClient()
 
   const { data: users, isLoading } = useQuery({
@@ -83,22 +85,33 @@ export const AdminUsers: React.FC = () => {
     {
       accessorKey: 'status',
       header: t('admin.users.status'),
-      cell: ({ row }) => (
-        <select
-          value={row.original.status || 'active'}
-          onChange={(e) => updateStatusMutation.mutate({ id: row.original.id, status: e.target.value })}
-          className="input-inline-select"
-        >
-          <option value="active">{t('admin.users.status_active')}</option>
-          <option value="inactive">{t('admin.users.status_inactive')}</option>
-        </select>
-      )
+      cell: ({ row }) => {
+        if (row.original.id === me?.id) {
+          return <span className="badge badge-success">{t('admin.users.status_active')}</span>
+        }
+        return (
+          <select
+            value={row.original.status || 'active'}
+            onChange={(e) => updateStatusMutation.mutate({ id: row.original.id, status: e.target.value })}
+            className="input-inline-select"
+          >
+            <option value="active">{t('admin.users.status_active')}</option>
+            <option value="inactive">{t('admin.users.status_inactive')}</option>
+          </select>
+        )
+      }
     },
     {
       id: 'actions',
       header: t('admin.users.actions'),
       cell: ({ row }) => {
         const user = row.original
+
+        // The server refuses self role/status/delete anyway - showing the
+        // controls on your own row just invites the error.
+        if (user.id === me?.id) {
+          return <span className="text-xs text-muted-foreground">{t('admin.users.you')}</span>
+        }
 
         return (
           <div className="flex items-center space-x-3">
