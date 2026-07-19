@@ -208,15 +208,19 @@ export const AddressManager: React.FC<AddressManagerProps> = ({ hideHeader, hide
       {isFormOpen ? (
         <form
           onSubmit={handleSubmit}
-          className="card-panel space-y-4 bg-secondary/50 p-6 rounded-lg relative"
+          /* Plain when embedded (the parent already provides the card), a
+             self-contained card on the standalone Settings page. */
+          className={hideHeader ? 'space-y-4 relative' : 'card-panel space-y-4 bg-secondary/50 p-6 rounded-lg relative'}
         >
-          <button
-            type="button"
-            onClick={() => setIsFormOpen(false)}
-            className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {!hideHeader && (
+            <button
+              type="button"
+              onClick={() => setIsFormOpen(false)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
 
           <h3 className="font-bold text-lg mb-4">{editingId ? t('settings.editAddress') : t('settings.newAddress')}</h3>
 
