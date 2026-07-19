@@ -109,9 +109,10 @@ export const Checkout: React.FC = () => {
     setSubmittingSlip(true)
     setError(null)
     try {
+      // No amount field: the server derives what the order owes and verifies
+      // the slip against that.
       const form = new FormData()
       form.append('order_id', String(orderId))
-      form.append('amount', String(qr.amount))
       form.append('payment_type', 'deposit')
       form.append('file', slipFile)
       await api.post('/payments/slip', form, {
