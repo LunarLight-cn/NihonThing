@@ -6,13 +6,14 @@ import { getSettings } from '../models/settings.model'
 const purchaseRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database }; Variables: AuthVariables }>()
 
 const CreatePurchaseSchema = z.object({
-  order_id: z.number().optional(),
-  order_item_id: z.number().optional(),
-  product_id: z.number().optional(),
-  quantity: z.number(),
-  actual_cost_jpy: z.number(),
+  order_id: z.number().int().optional(),
+  order_item_id: z.number().int().optional(),
+  product_id: z.number().int().optional(),
+  // Negative numbers would silently unwind bought-quantity and spend math.
+  quantity: z.number().int().positive(),
+  actual_cost_jpy: z.number().nonnegative(),
   shop_name: z.string().optional(),
-  receipt_img: z.array(z.string().url()).optional()
+  receipt_img: z.array(z.string()).optional()
 })
 
 const UpdatePurchaseSchema = CreatePurchaseSchema.partial()
@@ -149,17 +150,22 @@ const putPurchaseRoute = createRoute({
 })
 
 purchaseRoutes.openapi(putPurchaseRoute, async (c) => {
+  const user = c.get('user')
   const { id } = c.req.valid('param')
   const data = c.req.valid('json')
-  
+
   // Calculate new THB if JPY is updated
   if (data.actual_cost_jpy) {
     const exchangeRate = (await getSettings(c.env.nihonthing_db)).exchange_rate_jpy_thb || 0.25
     ;(data as any).actual_cost_thb = data.actual_cost_jpy * exchangeRate
   }
-  
-  const updatedPurchase = await updatePurchase(c.env.nihonthing_db, parseInt(id), data)
-  return c.json({ success: true, data: updatedPurchase[0] })
+
+  try {
+    const updatedPurchase = await updatePurchase(c.env.nihonthing_db, parseInt(id), data, user.id, user.role === 'admin')
+    return c.json({ success: true, data: updatedPurchase[0] })
+  } catch (err: any) {
+    return c.json({ success: false, message: err.message }, 400)
+  }
 })
 
 export default purchaseRoutes
