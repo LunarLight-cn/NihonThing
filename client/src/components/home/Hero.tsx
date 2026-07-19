@@ -32,9 +32,13 @@ export const Hero: React.FC = () => {
       {/* Abstract Zen background element */}
       <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-primary/5 blur-3xl" />
       <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-accent/5 blur-3xl" />
+      {/* Oversized kanji watermark - the Japanese identity cue */}
+      <span aria-hidden="true" className="absolute -right-8 top-1/2 -translate-y-1/2 text-[16rem] lg:text-[24rem] font-bold leading-none text-primary/5 select-none pointer-events-none">
+        日本
+      </span>
 
       <div className="section-container relative z-10">
-        <div className="max-w-3xl">
+        <div className="max-w-3xl animate-fade-in">
           {isLoading ? (
             <div className="badge-pill bg-primary/10 text-primary mb-6">
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -52,25 +56,21 @@ export const Hero: React.FC = () => {
             </div>
           )}
 
-          <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-foreground leading-tight mb-6">
+          <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.05] mb-6">
             {t('hero.title1')} <br />
             <span className="text-primary">{t('hero.title2')}</span>
+            {/* hanko-style full stop */}
+            <span aria-hidden="true" className="inline-block w-3 h-3 lg:w-4 lg:h-4 ml-2 rounded-full bg-primary align-baseline" />
           </h1>
 
           <p className="text-lg text-muted-foreground mb-8 max-w-xl">{t('hero.subtitle')}</p>
 
           <div className="flex flex-wrap items-center gap-4">
-            <Link
-              to="/catalog"
-              className="px-6 py-3 bg-primary text-primary-foreground font-medium rounded-md hover:bg-primary/90 transition-all flex items-center space-x-2 shadow-lg shadow-primary/20"
-            >
+            <Link to="/catalog" className="btn-pill btn-pill-primary px-7 py-3 text-base shadow-lg shadow-primary/20">
               <span>{t('hero.explore')}</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link
-              to="/request"
-              className="px-6 py-3 bg-card text-foreground border border-border font-medium rounded-md hover:bg-secondary transition-all"
-            >
+            <Link to="/request" className="btn-pill btn-pill-outline px-7 py-3 text-base">
               {t('hero.request')}
             </Link>
           </div>
