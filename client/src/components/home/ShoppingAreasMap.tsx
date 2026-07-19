@@ -81,6 +81,7 @@ interface Area {
   name_en: string
   name_jp: string | null
   map_location: string | null
+  status?: 'active' | 'inactive'
   shopCount?: number
   productCount?: number
 }
@@ -93,7 +94,9 @@ export const ShoppingAreasMap: React.FC = () => {
     queryKey: ['areas'],
     queryFn: async () => {
       const res = await api.get('/areas')
-      return res.data.data as Area[]
+      // Inactive areas are an admin bookkeeping state - the public map only
+      // shows what is actually open.
+      return (res.data.data as Area[]).filter((a) => a.status !== 'inactive')
     }
   })
 

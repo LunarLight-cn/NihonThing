@@ -96,16 +96,17 @@ export const ProductDetails: React.FC = () => {
     enabled: !!id
   })
 
-  // Soonest trip still taking orders - drives the countdown and fill meter.
-  const { data: nextTrip } = useQuery({
-    queryKey: ['next-trip'],
-    queryFn: async () => {
-      const trips = (await api.get('/ships')).data.data as Trip[]
-      return trips
-        .filter((tr) => !tr.is_closed && tr.status === 'open')
-        .sort((a, b) => new Date(a.ship_date).getTime() - new Date(b.ship_date).getTime())[0] ?? null
-    }
+  // Shares the ['ships'] cache with Home and Checkout so ordering (which
+  // invalidates that key) refreshes the countdown and fill meter here too.
+  const { data: trips } = useQuery({
+    queryKey: ['ships'],
+    queryFn: async () => (await api.get('/ships')).data.data as Trip[]
   })
+
+  // Soonest trip still taking orders - drives the countdown and fill meter.
+  const nextTrip = (trips || [])
+    .filter((tr) => !tr.is_closed && tr.status === 'open')
+    .sort((a, b) => new Date(a.ship_date).getTime() - new Date(b.ship_date).getTime())[0] ?? null
 
   if (isLoading) {
     return (
@@ -136,7 +137,9 @@ export const ProductDetails: React.FC = () => {
   const images = product.img && product.img.length > 0 ? product.img : []
   const mainSrc = images.length > 0 ? getImageUrl(images[activeImageIndex]) : PLACEHOLDER
   const allChosen = (product.options || []).every((o) => selectedOptions[o.name])
-  const outOfStock = product.status === 'out_of_stock'
+  // Inactive is hidden from the catalog but reachable by direct URL - treat it
+  // like out of stock so the order button stays off (the server rejects too).
+  const outOfStock = product.status !== 'active'
 
   return (
     <div className="section-container py-8">
