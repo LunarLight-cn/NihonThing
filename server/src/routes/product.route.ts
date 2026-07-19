@@ -16,12 +16,12 @@ const CreateProductSchema = z.object({
   desc_jp: z.string().optional(),
   brand_id: z.number().optional(),
   origin_country_id: z.number().optional(),
-  price_tentative_jpy: z.number().optional(),
-  price_tentative_thb: z.number().optional(),
+  price_tentative_jpy: z.number().nonnegative().optional(),
+  price_tentative_thb: z.number().nonnegative().optional(),
   img: z.array(z.string()).optional(),
   options: z.array(z.object({ name: z.string().min(1), values: z.array(z.string().min(1)).min(1) })).optional(),
   tag: z.string().optional(),
-  weight: z.number().optional(),
+  weight: z.number().nonnegative().optional(),
   status: z.enum(['active', 'inactive', 'out_of_stock']).optional()
 })
 
