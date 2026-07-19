@@ -301,6 +301,10 @@ export const Checkout: React.FC = () => {
                 <p className="text-xs text-muted-foreground">{t('checkout.shippingNote')}</p>
               </div>
               <p className="text-xs text-muted-foreground italic mt-4">{t('checkout.tentativeNote')}</p>
+              <div className="flex items-start gap-2 mt-3 text-xs font-medium text-destructive bg-destructive/5 rounded-lg px-3 py-2">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                <span>{t('checkout.noRefundNote')}</span>
+              </div>
               <button
                 onClick={onPlaceOrderClick}
                 disabled={!selectedTrip || !selectedAddress || placing}
