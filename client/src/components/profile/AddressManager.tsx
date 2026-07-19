@@ -21,13 +21,23 @@ interface Location {
   name_en: string
 }
 
-export const AddressManager: React.FC = () => {
+interface AddressManagerProps {
+  // Checkout embeds this as an inline add form: no header, no list, form open
+  // from the start, and a callback to close/refresh the parent on save.
+  hideHeader?: boolean
+  hideList?: boolean
+  defaultOpen?: boolean
+  onSaved?: () => void
+  onCancel?: () => void
+}
+
+export const AddressManager: React.FC<AddressManagerProps> = ({ hideHeader, hideList, defaultOpen, onSaved, onCancel }) => {
   const { t, i18n } = useTranslation()
   const isEn = i18n.language === 'en'
 
   const [addresses, setAddresses] = useState<Address[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isFormOpen, setIsFormOpen] = useState(!!defaultOpen)
   const [editingId, setEditingId] = useState<number | null>(null)
 
   const [formData, setFormData] = useState({
@@ -162,6 +172,7 @@ export const AddressManager: React.FC = () => {
       }
       setIsFormOpen(false)
       fetchAddresses()
+      onSaved?.()
     } catch (error: any) {
       alert(error.response?.data?.message || 'Failed to save address')
     }
@@ -177,33 +188,39 @@ export const AddressManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center border-b border-border pb-4">
-        <h2 className="text-xl font-bold flex items-center">
-          <MapPin className="w-5 h-5 mr-2 text-primary" />
-          {t('settings.manageAddresses')}
-        </h2>
-        {!isFormOpen && (
-          <button
-            onClick={handleAddNew}
-            className="btn-primary text-sm px-4 py-2 flex items-center"
-          >
-            <Plus className="w-4 h-4 mr-1" /> {t('settings.addAddress')}
-          </button>
-        )}
-      </div>
+      {!hideHeader && (
+        <div className="flex justify-between items-center border-b border-border pb-4">
+          <h2 className="text-xl font-bold flex items-center">
+            <MapPin className="w-5 h-5 mr-2 text-primary" />
+            {t('settings.manageAddresses')}
+          </h2>
+          {!isFormOpen && (
+            <button
+              onClick={handleAddNew}
+              className="btn-primary text-sm px-4 py-2 flex items-center"
+            >
+              <Plus className="w-4 h-4 mr-1" /> {t('settings.addAddress')}
+            </button>
+          )}
+        </div>
+      )}
 
       {isFormOpen ? (
         <form
           onSubmit={handleSubmit}
-          className="card-panel space-y-4 bg-secondary/50 p-6 rounded-lg relative"
+          /* Plain when embedded (the parent already provides the card), a
+             self-contained card on the standalone Settings page. */
+          className={hideHeader ? 'space-y-4 relative' : 'card-panel space-y-4 bg-secondary/50 p-6 rounded-lg relative'}
         >
-          <button
-            type="button"
-            onClick={() => setIsFormOpen(false)}
-            className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {!hideHeader && (
+            <button
+              type="button"
+              onClick={() => setIsFormOpen(false)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
 
           <h3 className="font-bold text-lg mb-4">{editingId ? t('settings.editAddress') : t('settings.newAddress')}</h3>
 
@@ -323,7 +340,16 @@ export const AddressManager: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex justify-end pt-4">
+          <div className="flex justify-end gap-2 pt-4">
+            {(onCancel || !hideList) && (
+              <button
+                type="button"
+                onClick={() => { setIsFormOpen(false); onCancel?.() }}
+                className="btn-secondary px-6"
+              >
+                {t('settings.cancel') || 'Cancel'}
+              </button>
+            )}
             <button
               type="submit"
               className="btn-primary px-8"
@@ -332,7 +358,7 @@ export const AddressManager: React.FC = () => {
             </button>
           </div>
         </form>
-      ) : (
+      ) : hideList ? null : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {addresses.length === 0 ? (
             <div className="col-span-2 text-center py-8 text-muted-foreground border-2 border-dashed border-border rounded-lg">{t('settings.noAddresses') || 'No addresses found. Add one above.'}</div>

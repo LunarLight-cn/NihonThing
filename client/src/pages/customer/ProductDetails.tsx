@@ -96,16 +96,17 @@ export const ProductDetails: React.FC = () => {
     enabled: !!id
   })
 
-  // Soonest trip still taking orders - drives the countdown and fill meter.
-  const { data: nextTrip } = useQuery({
-    queryKey: ['next-trip'],
-    queryFn: async () => {
-      const trips = (await api.get('/ships')).data.data as Trip[]
-      return trips
-        .filter((tr) => !tr.is_closed && tr.status === 'open')
-        .sort((a, b) => new Date(a.ship_date).getTime() - new Date(b.ship_date).getTime())[0] ?? null
-    }
+  // Shares the ['ships'] cache with Home and Checkout so ordering (which
+  // invalidates that key) refreshes the countdown and fill meter here too.
+  const { data: trips } = useQuery({
+    queryKey: ['ships'],
+    queryFn: async () => (await api.get('/ships')).data.data as Trip[]
   })
+
+  // Soonest trip still taking orders - drives the countdown and fill meter.
+  const nextTrip = (trips || [])
+    .filter((tr) => !tr.is_closed && tr.status === 'open')
+    .sort((a, b) => new Date(a.ship_date).getTime() - new Date(b.ship_date).getTime())[0] ?? null
 
   if (isLoading) {
     return (
@@ -136,7 +137,9 @@ export const ProductDetails: React.FC = () => {
   const images = product.img && product.img.length > 0 ? product.img : []
   const mainSrc = images.length > 0 ? getImageUrl(images[activeImageIndex]) : PLACEHOLDER
   const allChosen = (product.options || []).every((o) => selectedOptions[o.name])
-  const outOfStock = product.status === 'out_of_stock'
+  // Inactive is hidden from the catalog but reachable by direct URL - treat it
+  // like out of stock so the order button stays off (the server rejects too).
+  const outOfStock = product.status !== 'active'
 
   return (
     <div className="section-container py-8">
@@ -148,7 +151,7 @@ export const ProductDetails: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-14 animate-fade-in">
         {/* Gallery */}
         <div>
-          <div className="group relative rounded-2xl overflow-hidden bg-secondary aspect-square">
+          <div className="group relative rounded-3xl overflow-hidden bg-secondary aspect-square">
             {product.origin_country && (
               <div className="absolute top-4 right-4 z-10 bg-background/80 backdrop-blur-sm text-foreground text-xs font-bold px-3 py-1.5 rounded-full border border-border shadow-sm flex items-center gap-1">
                 <MapPin className="w-3 h-3 text-primary" />
@@ -168,7 +171,7 @@ export const ProductDetails: React.FC = () => {
                 <button
                   key={idx}
                   onClick={() => setActiveImageIndex(idx)}
-                  className={`shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${activeImageIndex === idx ? 'border-primary' : 'border-transparent hover:border-primary/50'}`}
+                  className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-colors ${activeImageIndex === idx ? 'border-primary' : 'border-transparent hover:border-primary/50'}`}
                 >
                   <img src={getImageUrl(url)} alt={`${getName(product)} ${idx + 1}`} className="w-full h-full object-cover" />
                 </button>
@@ -191,7 +194,7 @@ export const ProductDetails: React.FC = () => {
           </div>
 
           {/* Deposit split - our installment, in place of the reference's Klarna row */}
-          <div className="flex items-center gap-3 bg-secondary/50 border border-border rounded-xl px-4 py-3 mb-6">
+          <div className="flex items-center gap-3 bg-secondary/50 rounded-2xl px-4 py-3 mb-6">
             <Wallet className="w-5 h-5 text-primary shrink-0" />
             <div className="text-sm">
               <span className="font-semibold text-foreground">{t('product.depositLabel', { amount: fmt(deposit) })}</span>

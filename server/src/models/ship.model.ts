@@ -13,13 +13,13 @@ const axisPercent = (current: number | null, max: number | null) => {
   return Math.min(100, Math.round((Number(current || 0) / m) * 100))
 }
 
-export const getShips = async (d1: D1Database, defaultCutoffDays: number) => {
+export const getShips = async (d1: D1Database) => {
   const db = drizzle(d1, { schema })
   const settings = await getSettings(d1)
   const ships = await db.query.Ships.findMany()
 
   const now = new Date()
-  const cutoffDays = settings.trip_cutoff_days ?? defaultCutoffDays
+  const cutoffDays = settings.trip_cutoff_days ?? 5
 
   return ships.map(ship => {
     let cutoffDate = new Date(ship.ship_date)

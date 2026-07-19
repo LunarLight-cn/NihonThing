@@ -71,7 +71,7 @@ export const CustomerLayout: React.FC = () => {
           </nav>
 
           {/* Search - desktop, center */}
-          <div className="hidden lg:flex flex-1 justify-center px-6">
+          <div className="hidden md:flex flex-1 justify-center px-4 lg:px-6">
             <NavSearch />
           </div>
 
@@ -102,6 +102,7 @@ export const CustomerLayout: React.FC = () => {
 
             <button
               onClick={() => setIsCartOpen(true)}
+              aria-label={t('cart.title')}
               className="p-2 hover:bg-secondary rounded-full transition-colors relative"
             >
               <ShoppingBag className="w-5 h-5 text-foreground" />
@@ -151,7 +152,7 @@ export const CustomerLayout: React.FC = () => {
             ) : (
               <Link
                 to="/login"
-                className="flex items-center space-x-1 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                className="flex items-center space-x-1 px-4 py-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 active:scale-[0.98] transition-all"
               >
                 <User className="w-4 h-4" />
                 <span className="text-sm font-medium">{t('nav.signIn')}</span>
@@ -170,15 +171,17 @@ export const CustomerLayout: React.FC = () => {
         <Outlet />
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border bg-card py-12 mt-12">
-        <div className="section-container grid grid-cols-1 md:grid-cols-4 gap-8">
+      {/* Footer - airy, headings as small caps, no heavy card background */}
+      <footer className="border-t border-border/60 py-16 mt-16">
+        <div className="section-container grid grid-cols-1 md:grid-cols-4 gap-10">
           <div>
-            <h3 className="font-bold text-lg text-primary mb-4">NihonThing</h3>
-            <p className="text-sm text-muted-foreground">{t('footer.description')}</p>
+            <h3 className="font-bold text-xl tracking-tight text-primary mb-4">
+              NihonThing<span aria-hidden="true" className="inline-block w-1.5 h-1.5 ml-1 rounded-full bg-primary align-baseline" />
+            </h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">{t('footer.description')}</p>
           </div>
           <div>
-            <h4 className="font-medium mb-4">{t('footer.shop')}</h4>
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">{t('footer.shop')}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link to="/catalog" className="hover:text-primary">
@@ -198,7 +201,7 @@ export const CustomerLayout: React.FC = () => {
             </ul>
           </div>
           <div>
-            <h4 className="font-medium mb-4">{t('footer.support')}</h4>
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">{t('footer.support')}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link to="/support" className="hover:text-primary">
@@ -213,7 +216,7 @@ export const CustomerLayout: React.FC = () => {
             </ul>
           </div>
           <div>
-            <h4 className="font-medium mb-4">{t('footer.legal')}</h4>
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">{t('footer.legal')}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link to="/terms" className="hover:text-primary">

@@ -66,9 +66,36 @@ export const createPurchase = async (d1: D1Database, agentId: number, data: any,
   return newPurchase
 }
 
-export const updatePurchase = async (d1: D1Database, id: number, data: any) => {
+export const updatePurchase = async (d1: D1Database, id: number, data: any, agentId: number, isAdmin = false) => {
   const db = drizzle(d1, { schema })
-  return await db.update(schema.Purchases).set(data).where(eq(schema.Purchases.id, id)).returning()
+
+  const existing = await db.query.Purchases.findFirst({ where: eq(schema.Purchases.id, id) })
+  if (!existing) throw new Error('Purchase not found.')
+  if (!isAdmin && existing.agent_id !== agentId) {
+    throw new Error('This purchase belongs to another agent.')
+  }
+
+  // A purchase stays pinned to the line it was recorded against - re-pointing
+  // it would silently move money between orders.
+  const { order_id, order_item_id, product_id, agent_id, ...patch } = data
+
+  if (patch.quantity !== undefined && existing.order_item_id) {
+    const item = await db.query.Order_Items.findFirst({
+      where: eq(schema.Order_Items.id, existing.order_item_id),
+      with: { purchases: true }
+    })
+    if (item) {
+      const boughtByOthers = item.purchases
+        .filter((p) => p.id !== id)
+        .reduce((sum, p) => sum + (p.quantity || 0), 0)
+      const remaining = (item.quantity || 0) - boughtByOthers
+      if (patch.quantity > remaining) {
+        throw new Error(`Quantity exceeds what is left to buy (${remaining} remaining).`)
+      }
+    }
+  }
+
+  return await db.update(schema.Purchases).set(patch).where(eq(schema.Purchases.id, id)).returning()
 }
 
 // Before the deposit an order is a wish, not a commitment; nobody should be

@@ -69,7 +69,16 @@ const deleteAddressRoute = createRoute({
 addressRoutes.openapi(deleteAddressRoute, async (c) => {
   const user = c.get('user')
   const { id } = c.req.valid('param')
-  await deleteAddress(c.env.nihonthing_db, user.id, parseInt(id))
+  try {
+    await deleteAddress(c.env.nihonthing_db, user.id, parseInt(id))
+  } catch (err: any) {
+    // Orders keep a FK to their delivery address; the global handler's
+    // "record does not exist" message would be misleading here.
+    if (err.message?.includes('FOREIGN KEY constraint failed')) {
+      return c.json({ success: false, message: 'This address is used by an order and cannot be deleted.' }, 400)
+    }
+    throw err
+  }
   return c.json({ success: true, message: `Address ${id} deleted.` })
 })
 

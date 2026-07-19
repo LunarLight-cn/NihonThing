@@ -29,8 +29,7 @@ export const createOrder = async (
   userId: number,
   tripId: number,
   addressId: number,
-  items: OrderItemInput[],
-  defaultCutoffDays: number
+  items: OrderItemInput[]
 ) => {
   const db = drizzle(d1, { schema })
   const settings = await getSettings(d1)
@@ -44,7 +43,7 @@ export const createOrder = async (
   if (trip.close_date) {
     cutoffDate = new Date(trip.close_date)
   } else {
-    cutoffDate.setDate(cutoffDate.getDate() - (settings.trip_cutoff_days ?? defaultCutoffDays))
+    cutoffDate.setDate(cutoffDate.getDate() - (settings.trip_cutoff_days ?? 5))
   }
   
   if (trip.status !== 'open' || now > cutoffDate) {
@@ -65,14 +64,16 @@ export const createOrder = async (
     if (item.type === 'product') {
       const product = await db.query.Products.findFirst({ where: eq(schema.Products.id, item.id) })
       if (!product) throw new Error(`Product ${item.id} not found`)
+      if (product.status !== 'active') {
+        throw new Error(`"${product.name_en}" is not available for ordering right now.`)
+      }
       itemPriceTotal += (product.price_tentative_thb || 0) * item.quantity
       totalWeight += (product.weight || 0) * item.quantity
     } else if (item.type === 'ticket') {
-      const ticket = await db.query.Tickets.findFirst({ where: eq(schema.Tickets.id, item.id) })
-      if (!ticket) throw new Error(`Ticket ${item.id} not found`)
-      if (ticket.client_id !== userId) throw new Error(`Unauthorized access to ticket ${item.id}`)
-      itemPriceTotal += (ticket.proposed_price_thb || ticket.expected_price || 0) * item.quantity
-      // Assuming tickets have negligible weight, or we could add weight to tickets later if needed
+      // Deliberately closed until the chat/negotiation flow exists: today the
+      // price would come from client-set expected_price, which lets a caller
+      // invent an arbitrarily cheap order (and deposit).
+      throw new Error('Custom-request ordering is not open yet.')
     }
   }
 

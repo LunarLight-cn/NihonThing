@@ -9,7 +9,7 @@ on:
 
 jobs:
   client:
-    name: Client — lint & build
+    name: Client - lint & build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -26,7 +26,7 @@ jobs:
       - run: npm run build
 
   server:
-    name: Server — build check
+    name: Server - build check
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -39,6 +39,6 @@ jobs:
           cache: npm
           cache-dependency-path: server/package-lock.json
       - run: npm ci
-      # Compiles the Worker with esbuild without deploying — catches build/type
+      # Compiles the Worker with esbuild without deploying - catches build/type
       # errors. Needs no Cloudflare credentials.
       - run: npx wrangler deploy --dry-run --outdir dist

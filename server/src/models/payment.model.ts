@@ -1,8 +1,34 @@
 import { drizzle } from 'drizzle-orm/d1'
-import { eq } from 'drizzle-orm'
+import { eq, and, gt, lt, sql } from 'drizzle-orm'
 import * as schema from '../db/schema'
 import generatePayload from 'promptpay-qr'
 import qrcode from 'qrcode'
+
+const SLIP_MAX_ATTEMPTS = 10
+const SLIP_WINDOW_MINUTES = 15
+// Must not exceed the 60-minute shared prune in auth.service, or live rows
+// would be deleted early.
+const SLIP_PRUNE_MINUTES = 60
+
+// Every verification attempt costs money at the external slip API, so a
+// logged-in user gets a bounded number of tries per window. Uses the same
+// lazily-pruned attempts table as login/registration, namespaced per user.
+export const takeSlipQuota = async (d1: D1Database, userId: number): Promise<boolean> => {
+  const db = drizzle(d1, { schema })
+  const key = `slip:${userId}`
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(schema.Login_Attempts)
+    .where(and(
+      eq(schema.Login_Attempts.email, key),
+      gt(schema.Login_Attempts.cdate, sql`datetime('now', '-${sql.raw(String(SLIP_WINDOW_MINUTES))} minutes')`)
+    ))
+  if (count >= SLIP_MAX_ATTEMPTS) return false
+  await db.insert(schema.Login_Attempts).values({ email: key })
+  await db.delete(schema.Login_Attempts)
+    .where(lt(schema.Login_Attempts.cdate, sql`datetime('now', '-${sql.raw(String(SLIP_PRUNE_MINUTES))} minutes')`))
+  return true
+}
 
 export const getOrderAmountForPayment = async (d1: D1Database, orderId: number, type: 'deposit' | 'remaining', userId: number, userRole: string) => {
   const db = drizzle(d1, { schema })

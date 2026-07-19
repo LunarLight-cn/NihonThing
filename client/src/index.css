@@ -33,7 +33,8 @@
     --input: 40 20% 85%;
     --ring: 350 70% 40%;
  
-    --radius: 0.3rem;
+    /* Soft-modern: generous rounding everywhere (rounded-lg maps to this). */
+    --radius: 0.75rem;
   }
  
   .dark {
@@ -72,7 +73,8 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Anuphan Variable', 'Noto Sans JP Variable', ui-sans-serif, system-ui, sans-serif;
   }
 }
 
@@ -105,15 +107,15 @@
   /* ── Buttons ────────────────────────────────────────────── */
 
   .btn-primary {
-    @apply bg-primary text-primary-foreground px-4 py-2 rounded-lg flex items-center hover:bg-primary/90 transition-colors;
+    @apply bg-primary text-primary-foreground px-4 py-2 rounded-full flex items-center hover:bg-primary/90 active:scale-[0.98] transition-all;
   }
 
   .btn-primary-lg {
-    @apply w-full py-4 bg-primary text-primary-foreground text-lg font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50;
+    @apply w-full py-4 bg-primary text-primary-foreground text-lg font-bold rounded-full hover:bg-primary/90 active:scale-[0.99] transition-all shadow-lg shadow-primary/20 disabled:opacity-50;
   }
 
   .btn-submit {
-    @apply w-full py-2.5 bg-primary text-primary-foreground font-medium rounded-md hover:bg-primary/90 transition-colors flex items-center justify-center disabled:opacity-50;
+    @apply w-full py-2.5 bg-primary text-primary-foreground font-medium rounded-full hover:bg-primary/90 active:scale-[0.99] transition-all flex items-center justify-center disabled:opacity-50;
   }
 
   .btn-icon {
@@ -125,33 +127,33 @@
   }
 
   .btn-secondary {
-    @apply px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors font-medium flex items-center justify-center;
+    @apply px-4 py-2 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-[0.98] transition-all font-medium flex items-center justify-center;
   }
 
   .btn-add-to-cart {
-    @apply px-3 py-1.5 text-sm bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground font-medium rounded-md transition-colors shrink-0;
+    @apply px-3 py-1.5 text-sm bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground font-medium rounded-full transition-colors shrink-0;
   }
 
   .btn-pagination {
-    @apply p-2 border border-border rounded-md hover:bg-secondary disabled:opacity-50 transition-colors;
+    @apply p-2 border border-border rounded-full hover:bg-secondary disabled:opacity-50 transition-colors;
   }
 
   /* ── Cards & Panels ─────────────────────────────────────── */
 
   .card-panel {
-    @apply bg-card border border-border p-6 rounded-xl shadow-sm;
+    @apply bg-card border border-border/60 p-6 rounded-2xl shadow-sm;
   }
 
   .card-panel-flush {
-    @apply bg-card border border-border rounded-xl shadow-sm;
+    @apply bg-card border border-border/60 rounded-2xl shadow-sm;
   }
 
   .stat-card {
-    @apply bg-card border border-border p-6 rounded-xl shadow-sm flex items-center space-x-4;
+    @apply bg-card border border-border/60 p-6 rounded-2xl shadow-sm flex items-center space-x-4;
   }
 
   .product-card {
-    @apply bg-card rounded-2xl overflow-hidden border border-border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary/20 flex flex-col;
+    @apply bg-card rounded-2xl overflow-hidden border border-border/50 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary/20 flex flex-col;
   }
 
   .product-card-img-container {
@@ -165,19 +167,19 @@
   /* ── Form Elements ──────────────────────────────────────── */
 
   .input-admin {
-    @apply w-full p-2 border border-border rounded bg-background;
+    @apply w-full p-2 rounded-xl border border-border/60 bg-secondary/30 focus:bg-card focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary/40 transition-colors;
   }
 
   .input-modal {
-    @apply w-full px-3 py-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50;
+    @apply w-full px-3 py-2 rounded-xl border border-border/60 bg-secondary/30 text-foreground focus:bg-card focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary/40 transition-colors;
   }
 
   .input-customer {
-    @apply w-full p-3 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all;
+    @apply w-full p-3 rounded-xl border border-border/60 bg-secondary/30 focus:bg-card focus:ring-2 focus:ring-primary/25 focus:border-primary/40 outline-none transition-all;
   }
 
   .input-auth {
-    @apply w-full px-4 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors;
+    @apply w-full px-4 py-2 rounded-xl border border-border/60 bg-secondary/30 focus:bg-card focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary/40 transition-colors;
   }
 
   .auth-container {
@@ -185,7 +187,7 @@
   }
 
   .auth-card {
-    @apply w-full max-w-md bg-card border border-border rounded-xl shadow-sm p-8 relative;
+    @apply w-full max-w-md bg-card border border-border/60 rounded-2xl shadow-sm p-8 relative;
   }
 
   .input-inline-select {
@@ -205,7 +207,7 @@
   }
 
   .file-upload {
-    @apply block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20;
+    @apply block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20;
   }
 
   .form-section-divider {
@@ -480,10 +482,6 @@
     @apply border border-border bg-card text-foreground hover:bg-secondary active:scale-[0.98];
   }
 
-  .btn-pill-accent {
-    @apply bg-accent text-accent-foreground hover:bg-accent/90 active:scale-[0.98];
-  }
-
   /* Mobile-only horizontal carousel; becomes a normal grid at md+.
      Pair the container with md:grid + md:grid-cols-*, and give each item its
      own mobile width plus md:w-auto so the grid takes over on desktop.
@@ -535,15 +533,6 @@
     pointer-events: auto;
   }
 
-  /* Dims the page behind an open dropdown, like the reference */
-  .dropdown-backdrop {
-    @apply fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px] opacity-0 pointer-events-none transition-opacity duration-200;
-  }
-
-  .dropdown-backdrop.is-open {
-    @apply opacity-100 pointer-events-auto;
-  }
-
   /* Spinning ring loader - swaps in while a panel's content loads */
   .spinner {
     @apply inline-block rounded-full border-2 border-secondary align-[-0.125em];
@@ -561,7 +550,6 @@
 
   /* Entrance helpers - drive keyframes defined below */
   .animate-fade-in { animation: nt-fade-in 0.25s ease-out both; }
-  .animate-slide-down { animation: nt-slide-down 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
   .animate-scale-in { animation: nt-scale-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 }
 
@@ -573,11 +561,6 @@
 @keyframes nt-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-
-@keyframes nt-slide-down {
-  from { opacity: 0; transform: translateY(-0.5rem); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Overshoot bounce for success ticks / confirmations */
@@ -597,7 +580,6 @@
   .dropdown-panel,
   .btn-pill,
   .animate-fade-in,
-  .animate-slide-down,
   .animate-scale-in {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;

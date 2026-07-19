@@ -64,7 +64,14 @@ const claimTripCapacity = async (
     .set({
       current_items: sql`COALESCE(current_items, 0) + ${itemCount}`,
       current_cap: sql`COALESCE(current_cap, 0) + ${weight}`,
-      current_price: sql`COALESCE(current_price, 0) + ${price}`
+      current_price: sql`COALESCE(current_price, 0) + ${price}`,
+      // Mirror createOrder: the move that fills an axis also closes the trip,
+      // otherwise it would sit "open" while rejecting every new order.
+      status: sql`CASE WHEN
+        (COALESCE(max_items, 0) > 0 AND COALESCE(current_items, 0) + ${itemCount} >= max_items)
+        OR (COALESCE(max_cap, 0) > 0 AND COALESCE(current_cap, 0) + ${weight} >= max_cap)
+        OR (COALESCE(max_price, 0) > 0 AND COALESCE(current_price, 0) + ${price} >= max_price)
+        THEN 'closed' ELSE status END`
     })
     .where(and(
       eq(schema.Ships.id, newTripId),
@@ -137,18 +144,20 @@ export const cancelOverdueOrders = async (d1: D1Database) => {
   const db = drizzle(d1, { schema })
   const settings = await getSettings(d1)
   const days = settings.overdue_cancel_days ?? 14
-  const cutoff = new Date(Date.now() - days * 86_400_000).toISOString()
+  // Compared in SQL: cdate is a SQLite CURRENT_TIMESTAMP string, and matching
+  // it against a JS ISO string ("...T...Z") mis-sorts rows on the boundary day.
+  const cutoffExpr = sql`datetime('now', '-${sql.raw(String(days))} days')`
 
   const noDeposit = await db.query.Orders.findMany({
     where: and(
       inArray(schema.Orders.status, [...ACTIVE_ORDER]),
       eq(schema.Orders.payment_status, 'pending_deposit'),
-      sql`${schema.Orders.cdate} <= ${cutoff}`
+      sql`${schema.Orders.cdate} <= ${cutoffExpr}`
     )
   })
 
   const trips = await db.query.Ships.findMany({
-    where: sql`${schema.Ships.ship_date} <= ${cutoff}`
+    where: sql`${schema.Ships.ship_date} <= ${cutoffExpr}`
   })
   const pastTripIds = trips.map((t) => t.id)
   const noShippingFee = pastTripIds.length

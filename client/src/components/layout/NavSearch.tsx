@@ -18,6 +18,7 @@ interface SearchProduct extends LocRef {
   brand: LocRef | null
   category: LocRef | null
   tag: string | null
+  status?: string
   price_tentative_thb: number | null
   price_thb: number | null
   img: string[] | null
@@ -58,6 +59,7 @@ export const NavSearch: React.FC = () => {
   const q = query.trim().toLowerCase()
   const results = (products || [])
     .filter((p) => {
+      if (p.status === 'inactive') return false
       if (!q) return true
       const parts = [
         getName(p), p.name_en, p.name_th, p.name_jp,
