@@ -128,10 +128,10 @@ export const Catalog: React.FC = () => {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar Filters - Desktop */}
+          {/* Sidebar Filters - Desktop. No box: whitespace does the separating. */}
           <aside className="hidden lg:block w-64 shrink-0">
-            <div className="card-panel sticky top-24">
-              <div className="flex items-center justify-between mb-4">
+            <div className="sticky top-24 pr-2">
+              <div className="flex items-center justify-between mb-5">
                 <h3 className="font-bold text-foreground flex items-center">
                   <SlidersHorizontal className="w-4 h-4 mr-2" />
                   {t('catalog.filters')}
@@ -142,7 +142,7 @@ export const Catalog: React.FC = () => {
               </div>
               {/* Collections */}
               <div className="mb-6">
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('catalog.collections')}</h4>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{t('catalog.collections')}</h4>
                 <div className="space-y-1">
                   <button onClick={() => handleCollectionChange(null)} className={`filter-btn ${!selectedCollection ? 'is-active' : ''}`}>
                     {t('catalog.allProducts')}
@@ -157,7 +157,7 @@ export const Catalog: React.FC = () => {
               </div>
               {/* Categories */}
               <div className="mb-6">
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('catalog.categories')}</h4>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{t('catalog.categories')}</h4>
                 <div className="space-y-1">
                   <button onClick={() => setSelectedCategory(null)} className={`filter-btn ${!selectedCategory ? 'is-active' : ''}`}>
                     {t('catalog.allCategories')}
@@ -171,7 +171,7 @@ export const Catalog: React.FC = () => {
               </div>
               {/* Brands */}
               <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('catalog.brands')}</h4>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{t('catalog.brands')}</h4>
                 <div className="space-y-1">
                   <button onClick={() => setSelectedBrand(null)} className={`filter-btn ${!selectedBrand ? 'is-active' : ''}`}>
                     {t('catalog.allBrands')}

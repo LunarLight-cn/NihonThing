@@ -56,7 +56,7 @@ export const TripSchedule: React.FC = () => {
               return (
                 <div
                   key={trip.id}
-                  className={`hscroll-item w-[72%] sm:w-[55%] md:w-auto bg-card border rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${isFull ? 'border-border/50 opacity-75' : 'border-border'}`}
+                  className={`hscroll-item w-[72%] sm:w-[55%] md:w-auto bg-card border rounded-2xl overflow-hidden shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${isFull ? 'border-border/40 opacity-75' : 'border-border/60'}`}
                 >
                   <div className="p-4">
                     <div className="flex justify-between items-start gap-3 mb-3">
