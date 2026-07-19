@@ -2,7 +2,7 @@ import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { authGuard, adminGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { createOrder, getMyOrders, getAllOrders, updateOrder } from '../models/order.model'
 
-const orderRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; DEFAULT_TRIP_CUTOFF_DAYS: string }; Variables: AuthVariables }>()
+const orderRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database }; Variables: AuthVariables }>()
 
 const OrderItemSchema = z.object({
   type: z.enum(['product', 'ticket']),
@@ -22,9 +22,9 @@ const UpdateOrderSchema = z.object({
   shipped_date: z.string().optional(),
   track_no: z.string().optional(),
   courier_name: z.string().optional(),
-  shipping_fee_jp_th: z.number().optional(),
-  shipping_fee_th_th: z.number().optional(),
-  grand_total: z.number().optional(),
+  shipping_fee_jp_th: z.number().nonnegative().optional(),
+  shipping_fee_th_th: z.number().nonnegative().optional(),
+  grand_total: z.number().nonnegative().optional(),
   status: z.enum(['pending', 'purchasing', 'in_transit', 'arrived', 'local_shipping', 'delivered', 'cancelled']).optional(),
   payment_status: z.enum(['pending_deposit', 'deposit_paid', 'pending_remaining', 'fully_paid']).optional()
 })
@@ -47,10 +47,9 @@ const postOrderRoute = createRoute({
 orderRoutes.openapi(postOrderRoute, async (c) => {
   const user = c.get('user')
   const data = c.req.valid('json')
-  const defaultCutoff = parseInt(c.env.DEFAULT_TRIP_CUTOFF_DAYS) || 5
-  
+
   try {
-    const newOrder = await createOrder(c.env.nihonthing_db, user.id, data.trip_id, data.address_id, data.items, defaultCutoff)
+    const newOrder = await createOrder(c.env.nihonthing_db, user.id, data.trip_id, data.address_id, data.items)
     return c.json({ success: true, data: newOrder })
   } catch (error: any) {
     return c.json({ success: false, message: error.message }, 400)
