@@ -71,7 +71,7 @@ export const CustomerLayout: React.FC = () => {
           </nav>
 
           {/* Search - desktop, center */}
-          <div className="hidden lg:flex flex-1 justify-center px-6">
+          <div className="hidden md:flex flex-1 justify-center px-4 lg:px-6">
             <NavSearch />
           </div>
 

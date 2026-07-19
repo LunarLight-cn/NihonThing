@@ -480,10 +480,6 @@
     @apply border border-border bg-card text-foreground hover:bg-secondary active:scale-[0.98];
   }
 
-  .btn-pill-accent {
-    @apply bg-accent text-accent-foreground hover:bg-accent/90 active:scale-[0.98];
-  }
-
   /* Mobile-only horizontal carousel; becomes a normal grid at md+.
      Pair the container with md:grid + md:grid-cols-*, and give each item its
      own mobile width plus md:w-auto so the grid takes over on desktop.
@@ -535,15 +531,6 @@
     pointer-events: auto;
   }
 
-  /* Dims the page behind an open dropdown, like the reference */
-  .dropdown-backdrop {
-    @apply fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px] opacity-0 pointer-events-none transition-opacity duration-200;
-  }
-
-  .dropdown-backdrop.is-open {
-    @apply opacity-100 pointer-events-auto;
-  }
-
   /* Spinning ring loader - swaps in while a panel's content loads */
   .spinner {
     @apply inline-block rounded-full border-2 border-secondary align-[-0.125em];
@@ -561,7 +548,6 @@
 
   /* Entrance helpers - drive keyframes defined below */
   .animate-fade-in { animation: nt-fade-in 0.25s ease-out both; }
-  .animate-slide-down { animation: nt-slide-down 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
   .animate-scale-in { animation: nt-scale-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 }
 
@@ -573,11 +559,6 @@
 @keyframes nt-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-
-@keyframes nt-slide-down {
-  from { opacity: 0; transform: translateY(-0.5rem); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Overshoot bounce for success ticks / confirmations */
@@ -597,7 +578,6 @@
   .dropdown-panel,
   .btn-pill,
   .animate-fade-in,
-  .animate-slide-down,
   .animate-scale-in {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
