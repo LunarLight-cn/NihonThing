@@ -155,6 +155,7 @@ const PaymentModal: React.FC<{
                 <div>
                   <p className="text-sm text-muted-foreground">{t('myOrders.pay.amountDue')}</p>
                   <p className="text-3xl font-bold text-primary">฿{qr.amount.toLocaleString()}</p>
+                  <p className="text-xs font-medium text-destructive mt-1">{t('checkout.noRefundNote')}</p>
                 </div>
                 <img src={qr.qrBase64} alt="PromptPay QR" className="w-52 h-52 mx-auto" />
                 <p className="text-sm text-muted-foreground">{t('myOrders.pay.scan')}</p>

@@ -4,12 +4,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {
   ShoppingBag, Loader2, MapPin, PlaneTakeoff, Ship as ShipIcon,
-  Calendar, CheckCircle2, QrCode, Upload, AlertCircle
+  Calendar, CheckCircle2, QrCode, Upload, AlertCircle, Plus, ScrollText
 } from 'lucide-react'
 import { api } from '../../services/api'
 import { useCart } from '../../contexts/CartContext'
+import { useAuth } from '../../contexts/AuthContext'
 import { getImageUrl } from '../../utils/image'
 import { Confetti } from '../../components/Confetti'
+import { AddressManager } from '../../components/profile/AddressManager'
 
 interface Trip {
   id: number
@@ -37,12 +39,20 @@ export const Checkout: React.FC = () => {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const { items, totalPrice, clearCart } = useCart()
+  const { user } = useAuth()
 
   const [step, setStep] = useState<Step>('review')
   const [selectedTrip, setSelectedTrip] = useState<number | null>(null)
   const [selectedAddress, setSelectedAddress] = useState<number | null>(null)
   const [placing, setPlacing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showAddrForm, setShowAddrForm] = useState(false)
+  const [showTosModal, setShowTosModal] = useState(false)
+
+  // Terms gate: the acceptance is remembered per account, so the popup only
+  // interrupts the very first order.
+  const tosKey = `tos_accepted:${user?.id ?? 'anon'}`
+  const tosAccepted = () => localStorage.getItem(tosKey) === '1'
 
   // Created order + payment
   const [orderId, setOrderId] = useState<number | null>(null)
@@ -62,6 +72,23 @@ export const Checkout: React.FC = () => {
   })
 
   const openTrips = (trips || []).filter((tr) => !tr.is_closed && tr.status !== 'closed')
+
+  // The button goes through the terms gate first; the actual order call runs
+  // only after (or once) the terms are accepted.
+  const onPlaceOrderClick = () => {
+    if (!selectedTrip || !selectedAddress) return
+    if (!tosAccepted()) {
+      setShowTosModal(true)
+      return
+    }
+    handlePlaceOrder()
+  }
+
+  const acceptTosAndOrder = () => {
+    localStorage.setItem(tosKey, '1')
+    setShowTosModal(false)
+    handlePlaceOrder()
+  }
 
   const handlePlaceOrder = async () => {
     if (!selectedTrip || !selectedAddress) return
@@ -204,11 +231,6 @@ export const Checkout: React.FC = () => {
               </h2>
               {addrLoading ? (
                 <div className="flex justify-center p-6"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
-              ) : (addresses || []).length === 0 ? (
-                <div className="text-sm text-muted-foreground space-y-2">
-                  <p>{t('checkout.noAddresses')}</p>
-                  <Link to="/settings" className="text-primary font-medium hover:underline">{t('checkout.addAddress')}</Link>
-                </div>
               ) : (
                 <div className="space-y-2">
                   {(addresses || []).map((addr) => (
@@ -225,7 +247,28 @@ export const Checkout: React.FC = () => {
                       <p className="text-sm text-muted-foreground">Tel: {addr.tel}</p>
                     </button>
                   ))}
-                  <Link to="/settings" className="inline-block text-sm text-primary hover:underline pt-1">{t('checkout.manageAddresses')}</Link>
+
+                  {(addresses || []).length === 0 && !showAddrForm && (
+                    <p className="text-sm text-muted-foreground">{t('checkout.noAddresses')}</p>
+                  )}
+
+                  {/* The add form expands inline, right here - no jump to Settings */}
+                  {showAddrForm ? (
+                    <div className="border border-border rounded-xl p-4 mt-2 bg-secondary/20">
+                      <AddressManager
+                        hideHeader
+                        hideList
+                        defaultOpen
+                        onSaved={() => { setShowAddrForm(false); qc.invalidateQueries({ queryKey: ['my-addresses'] }) }}
+                        onCancel={() => setShowAddrForm(false)}
+                      />
+                    </div>
+                  ) : (
+                    <button onClick={() => setShowAddrForm(true)} className="inline-flex items-center gap-1 text-sm text-primary hover:underline pt-1">
+                      <Plus className="w-3.5 h-3.5" />
+                      {t('checkout.addAddress')}
+                    </button>
+                  )}
                 </div>
               )}
             </section>
@@ -258,8 +301,12 @@ export const Checkout: React.FC = () => {
                 <p className="text-xs text-muted-foreground">{t('checkout.shippingNote')}</p>
               </div>
               <p className="text-xs text-muted-foreground italic mt-4">{t('checkout.tentativeNote')}</p>
+              <div className="flex items-start gap-2 mt-3 text-xs font-medium text-destructive bg-destructive/5 rounded-lg px-3 py-2">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                <span>{t('checkout.noRefundNote')}</span>
+              </div>
               <button
-                onClick={handlePlaceOrder}
+                onClick={onPlaceOrderClick}
                 disabled={!selectedTrip || !selectedAddress || placing}
                 className="btn-pill btn-pill-primary w-full mt-4 py-3.5 text-base disabled:opacity-50"
               >
@@ -289,6 +336,7 @@ export const Checkout: React.FC = () => {
               <div>
                 <p className="text-sm text-muted-foreground">{t('checkout.depositAmount')}</p>
                 <p className="text-3xl font-bold text-primary">฿{qr.amount.toLocaleString()}</p>
+                <p className="text-xs font-medium text-destructive mt-1">{t('checkout.noRefundNote')}</p>
               </div>
               <img src={qr.qrBase64} alt="PromptPay QR" className="w-56 h-56 mx-auto" />
               <p className="text-sm text-muted-foreground">{t('checkout.scanToPay')}</p>
@@ -332,6 +380,36 @@ export const Checkout: React.FC = () => {
           <div className="flex flex-wrap gap-3 justify-center pt-2">
             <Link to="/orders" className="btn-pill btn-pill-primary px-6">{t('checkout.viewOrders')}</Link>
             <Link to="/catalog" className="btn-pill btn-pill-outline px-6">{t('checkout.continueShopping')}</Link>
+          </div>
+        </div>
+      )}
+
+
+      {/* First-order terms gate */}
+      {showTosModal && (
+        <div className="modal-scrim" onClick={() => setShowTosModal(false)}>
+          <div className="modal-card max-w-md animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-bold text-lg flex items-center gap-2 mb-3">
+              <ScrollText className="w-5 h-5 text-primary" />
+              {t('checkout.tos.title')}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-3">{t('checkout.tos.intro')}</p>
+            <ul className="space-y-2 text-sm mb-4">
+              <li className="flex gap-2"><span className="text-primary shrink-0">•</span>{t('checkout.tos.point1')}</li>
+              <li className="flex gap-2"><span className="text-primary shrink-0">•</span>{t('checkout.tos.point2')}</li>
+              <li className="flex gap-2 font-semibold text-destructive"><span className="shrink-0">•</span>{t('checkout.tos.point3')}</li>
+            </ul>
+            <Link to="/terms" target="_blank" rel="noreferrer" className="inline-block text-sm text-primary hover:underline mb-5">
+              {t('checkout.tos.readFull')} ↗
+            </Link>
+            <div className="flex gap-3">
+              <button onClick={acceptTosAndOrder} className="btn-pill btn-pill-primary flex-1 py-2.5">
+                {t('checkout.tos.accept')}
+              </button>
+              <button onClick={() => setShowTosModal(false)} className="btn-pill btn-pill-outline px-5">
+                {t('checkout.tos.cancel')}
+              </button>
+            </div>
           </div>
         </div>
       )}
