@@ -11,8 +11,7 @@
     "chat": "แชท",
     "logout": "ออกจากระบบ",
     "support": "ช่วยเหลือ",
-    "settings": "ตั้งค่า",
-    "language": "ภาษา"
+    "settings": "ตั้งค่า"
   },
   "footer": {
     "description": "ประตูสู่สินค้าญี่ปุ่นสุดพิเศษ ส่งตรงถึงหน้าบ้านคุณ",
@@ -444,7 +443,8 @@
       "confirm_delete_user": "ลบผู้ใช้นี้? ย้อนกลับไม่ได้นะ",
       "alert_update_role_fail": "เปลี่ยนบทบาทไม่สำเร็จ",
       "alert_update_status_fail": "เปลี่ยนสถานะไม่สำเร็จ",
-      "alert_delete_user_fail": "ลบผู้ใช้ไม่สำเร็จ"
+      "alert_delete_user_fail": "ลบผู้ใช้ไม่สำเร็จ",
+      "you": "คุณเอง"
     },
     "components": {
       "showing_rows": "แสดง {{count}} จาก {{total}} แถว",

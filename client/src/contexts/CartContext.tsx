@@ -36,8 +36,14 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('cart')
-    return saved ? JSON.parse(saved) : []
+    // A corrupted cart in storage must not take the whole app down.
+    try {
+      const saved = localStorage.getItem('cart')
+      const parsed = saved ? JSON.parse(saved) : []
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
   })
 
   const [isCartOpen, setIsCartOpen] = useState(false)

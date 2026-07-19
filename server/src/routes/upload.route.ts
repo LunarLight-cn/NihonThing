@@ -1,8 +1,10 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
+import { verify } from 'hono/jwt'
+import { getCookie } from 'hono/cookie'
 import { authGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { verifyMagicBytes } from '../utils/file'
 
-const uploadRoutes = new OpenAPIHono<{ Bindings: { nihonthing_bucket: R2Bucket }; Variables: AuthVariables }>()
+const uploadRoutes = new OpenAPIHono<{ Bindings: { nihonthing_bucket: R2Bucket; JWT_SECRET: string }; Variables: AuthVariables }>()
 
 // POST /api/uploads
 const postUploadRoute = createRoute({
@@ -57,9 +59,13 @@ uploadRoutes.openapi(postUploadRoute, async (c) => {
     return c.json({ success: false, message: `Invalid file extension ".${ext}". Allowed: ${ALLOWED_EXTENSIONS.join(', ')}` }, 400)
   }
 
-  // Handle dynamic folders
+  // Handle dynamic folders - only known prefixes, so a caller cannot invent
+  // arbitrary key namespaces in the bucket.
   let prefix = ''
   const folder = body['folder'] as string
+  if (folder && !/^(products\/[^/]{1,64}|slips\/(purchase|customer)|receipts|tickets)$/.test(folder)) {
+    return c.json({ success: false, message: 'Unknown upload folder.' }, 400)
+  }
   if (folder) {
     if (folder.startsWith('products/')) {
       prefix = `${folder}/`
@@ -121,6 +127,21 @@ const getUploadRoute = createRoute({
 uploadRoutes.openapi(getUploadRoute, async (c) => {
   const { filename } = c.req.valid('param')
   const objectKey = decodeURIComponent(filename)
+
+  // Product images are public; payment slips and purchase receipts carry money
+  // details and need a valid login. (slip_ covers legacy slips at the root.)
+  if (objectKey.startsWith('slips/') || objectKey.startsWith('slip_') || objectKey.startsWith('receipts/')) {
+    const authHeader = c.req.header('Authorization')
+    let token = getCookie(c, 'token')
+    if (!token && authHeader?.startsWith('Bearer ')) token = authHeader.split(' ')[1]
+    if (!token) return c.text('Unauthorized', 401)
+    try {
+      await verify(token, c.env.JWT_SECRET, 'HS256')
+    } catch {
+      return c.text('Unauthorized', 401)
+    }
+  }
+
   const object = await c.env.nihonthing_bucket.get(objectKey)
   
   if (!object) {

@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/d1'
-import { eq, sql } from 'drizzle-orm'
+import { eq, and, ne, sql } from 'drizzle-orm'
 import * as schema from '../db/schema'
 
 export const getAllUsers = async (d1: D1Database, roleFilter?: string) => {
@@ -33,6 +33,16 @@ type UpdateData = {
 
 export const updateUserProfile = async (d1: D1Database, userId: number, data: UpdateData) => {
   const db = drizzle(d1, { schema })
+
+  // Usernames double as a login identifier, so taking someone else's blocks
+  // their login.
+  if (data.username !== undefined) {
+    const taken = await db.query.Users.findFirst({
+      where: and(eq(schema.Users.username, data.username), ne(schema.Users.id, userId)),
+      columns: { id: true }
+    })
+    if (taken) throw new Error('That username is already taken.')
+  }
 
   const updateFields: Record<string, any> = { udate: sql`CURRENT_TIMESTAMP` }
   if (data.username !== undefined) updateFields.username = data.username

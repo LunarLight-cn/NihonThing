@@ -2,7 +2,7 @@ import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { fetchUsersList } from '../services/user.service'
 import { authGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { updateUserProfile, getUserById, updateUserPassword, getUserPasswordHash, updateUserRole, deleteUser, updateUserStatus } from '../models/user.model'
-import { hashPassword } from '../utils/hash'
+import { verifyPassword, generateSaltAndHash } from '../utils/hash'
 import { adminGuard } from '../middlewares/auth.middleware'
 import addressRoutes from './address.route'
 
@@ -68,7 +68,9 @@ userRoutes.openapi(getMeRoute, async (c) => {
 })
 
 const UpdateProfileSchema = z.object({
-  username: z.string().min(3, 'Username must be at least 3 chars').optional(),
+  // No "@": login treats one field as email-or-username, so an email-shaped
+  // username could shadow someone else's login.
+  username: z.string().min(3, 'Username must be at least 3 chars').refine((u) => !u.includes('@'), 'Username cannot contain "@"').optional(),
   birth_date: z.string().optional(),
   gender: z.enum(['other', 'male', 'female']).optional()
 })
@@ -93,7 +95,10 @@ userRoutes.openapi(putMeRoute, async (c) => {
   try {
     await updateUserProfile(c.env.nihonthing_db, user.id, updateData)
     return c.json({ success: true, message: 'Update Success!' })
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message?.includes('already taken')) {
+      return c.json({ success: false, message: error.message }, 400)
+    }
     return c.json({ success: false, message: 'Update Failed!' }, 500)
   }
 })
@@ -124,15 +129,17 @@ userRoutes.openapi(putPasswordRoute, async (c) => {
   try {
     const currentHash = await getUserPasswordHash(c.env.nihonthing_db, user.id)
     if (!currentHash) return c.json({ success: false, message: 'User not found' }, 404)
-    
-    // Verify current password
-    const hashedAttempt = await hashPassword(current_password, (c.env as any).AUTH_SALT)
-    if (hashedAttempt !== currentHash) {
+
+    // verifyPassword understands both the per-user PBKDF2 format and the
+    // legacy global-salt one; comparing raw hashes here broke password change
+    // for every normally-registered account.
+    const ok = await verifyPassword(current_password, currentHash, (c.env as any).AUTH_SALT)
+    if (!ok) {
       return c.json({ success: false, message: 'Invalid current password' }, 400)
     }
-    
-    // Set new password
-    const newHash = await hashPassword(new_password, (c.env as any).AUTH_SALT)
+
+    // Always store the new password in the current per-user salt format.
+    const newHash = await generateSaltAndHash(new_password)
     await updateUserPassword(c.env.nihonthing_db, user.id, newHash)
     
     return c.json({ success: true, message: 'Password Updated Successfully!' })
@@ -167,7 +174,12 @@ const putRoleRoute = createRoute({
 userRoutes.openapi(putRoleRoute, async (c) => {
   const { id } = c.req.valid('param')
   const { role } = c.req.valid('json')
-  
+
+  // The only admin demoting themselves would lock everyone out of /admin.
+  if (id === c.get('user').id) {
+    return c.json({ success: false, message: 'You cannot change your own role.' }, 400)
+  }
+
   try {
     await updateUserRole(c.env.nihonthing_db, id, role)
     return c.json({ success: true, message: 'Role updated' })
@@ -196,7 +208,11 @@ const putStatusRoute = createRoute({
 userRoutes.openapi(putStatusRoute, async (c) => {
   const { id } = c.req.valid('param')
   const { status } = c.req.valid('json')
-  
+
+  if (id === c.get('user').id) {
+    return c.json({ success: false, message: 'You cannot deactivate your own account.' }, 400)
+  }
+
   try {
     await updateUserStatus(c.env.nihonthing_db, id, status)
     return c.json({ success: true, message: 'Status updated' })
@@ -217,7 +233,11 @@ const deleteUserRoute = createRoute({
 
 userRoutes.openapi(deleteUserRoute, async (c) => {
   const { id } = c.req.valid('param')
-  
+
+  if (id === c.get('user').id) {
+    return c.json({ success: false, message: 'You cannot delete your own account.' }, 400)
+  }
+
   try {
     await deleteUser(c.env.nihonthing_db, id)
     return c.json({ success: true, message: 'User deleted' })

@@ -74,6 +74,8 @@ export const Catalog: React.FC = () => {
   const brands = [...new Set(products?.map((p) => (p.brand ? getName(p.brand) : null)).filter(Boolean) as string[] || [])]
 
   const filteredProducts = products?.filter((p) => {
+    // Inactive is an admin-side state; customers never see those items.
+    if (p.status === 'inactive') return false
     const brandName = p.brand ? getName(p.brand) : ''
     if (selectedCategory && p.category_id !== selectedCategory) return false
     if (selectedBrand && brandName !== selectedBrand) return false

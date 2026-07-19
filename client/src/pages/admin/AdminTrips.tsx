@@ -106,22 +106,23 @@ export const AdminTrips: React.FC = () => {
       header: t('admin.trips.status'),
       cell: ({ row }) => {
         const status = row.original.status
-        const colors = {
-          open: 'bg-green-100 text-green-800',
-          closed: 'bg-yellow-100 text-yellow-800',
-          in_transit: 'bg-blue-100 text-blue-800',
-          arrived: 'bg-gray-100 text-gray-800'
+        // Once a trip has departed its status belongs to the Shipping board
+        // (depart/arrive move the orders too) - only open/closed flip here.
+        if (status === 'in_transit' || status === 'arrived') {
+          return (
+            <span className={`badge ${status === 'in_transit' ? 'badge-blue' : 'badge-purple'}`}>
+              {t(`admin.trips.status_${status}`)}
+            </span>
+          )
         }
         return (
           <select
             value={status}
             onChange={(e) => updateStatusMutation.mutate({ id: row.original.id, status: e.target.value })}
-            className={`text-xs px-2 py-1 rounded-full font-medium ${colors[status] || 'bg-gray-100'} border-0 cursor-pointer`}
+            className={`text-xs px-2 py-1 rounded-full font-medium ${status === 'open' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'} border-0 cursor-pointer`}
           >
             <option value="open">{t('admin.trips.status_open')}</option>
             <option value="closed">{t('admin.trips.status_closed')}</option>
-            <option value="in_transit">{t('admin.trips.status_in_transit')}</option>
-            <option value="arrived">{t('admin.trips.status_arrived')}</option>
           </select>
         )
       }

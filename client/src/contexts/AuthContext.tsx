@@ -14,7 +14,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(null)
+  // Restore from storage so a page refresh doesn't leave token null - callers
+  // like the profile form re-login with the current token and would otherwise
+  // overwrite the stored one with an empty string.
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'))
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -35,11 +38,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     fetchMe()
+
+    // api.ts fires this when any request comes back 401 - the session is dead,
+    // so drop the local state instead of showing a logged-in UI that fails.
+    const onUnauthorized = () => {
+      localStorage.removeItem('token')
+      setToken(null)
+      setUser(null)
+    }
+    window.addEventListener('auth:unauthorized', onUnauthorized)
+    return () => window.removeEventListener('auth:unauthorized', onUnauthorized)
   }, [])
 
   const login = (newToken: string, newUser: User) => {
-    localStorage.setItem('token', newToken)
-    setToken(newToken)
+    if (newToken) {
+      localStorage.setItem('token', newToken)
+      setToken(newToken)
+    }
     setUser(newUser)
   }
 

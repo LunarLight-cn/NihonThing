@@ -108,12 +108,21 @@ const registerRoute = createRoute({
 
 authRoutes.openapi(registerRoute, async (c) => {
   const { username, email, password } = c.req.valid('json')
+  const ip = c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For')?.split(',')[0]?.trim()
 
   try {
-    await registerUser(c.env.nihonthing_db, username, email, password, c.env.AUTH_SALT)
+    await registerUser(c.env.nihonthing_db, username, email, password, c.env.AUTH_SALT, ip)
 
     return c.json({ success: true, message: 'Registration Success'}, 201)
   } catch (error: any) {
+    if (error instanceof TooManyAttemptsError) {
+      return c.json({ success: false, message: error.message }, 429)
+    }
+    // Our own validation messages are safe and actionable; anything else stays
+    // generic.
+    if (error.message?.includes('Username') || error.message?.includes('already registered')) {
+      return c.json({ success: false, message: error.message }, 400)
+    }
     return c.json({ success: false, message: 'Invalid Data or Email already exists'}, 400)
   }
 })

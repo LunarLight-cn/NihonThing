@@ -2,10 +2,10 @@ import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { authGuard, roleGuard, AuthVariables } from '../middlewares/auth.middleware'
 import { getShips, createShip, updateShip } from '../models/ship.model'
 
-const shipRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database; DEFAULT_TRIP_CUTOFF_DAYS: string }; Variables: AuthVariables }>()
+const shipRoutes = new OpenAPIHono<{ Bindings: { nihonthing_db: D1Database }; Variables: AuthVariables }>()
 
 const CreateShipSchema = z.object({
-  type: z.string(),
+  type: z.enum(['flight', 'sea']),
   ship_date: z.string(),
   track_no: z.string().optional(),
   ship_price: z.number().optional(),
@@ -20,7 +20,9 @@ const CreateShipSchema = z.object({
 })
 
 const UpdateShipSchema = CreateShipSchema.partial().extend({
-  status: z.enum(['open', 'closed', 'in_transit', 'arrived']).optional(),
+  // in_transit / arrived are reachable only through the shipping board's
+  // depart/arrive actions, which also move the trip's orders.
+  status: z.enum(['open', 'closed']).optional(),
   current_cap: z.number().optional(),
   current_items: z.number().int().optional(),
   current_price: z.number().optional()
@@ -39,8 +41,7 @@ const getShipsRoute = createRoute({
 })
 
 shipRoutes.openapi(getShipsRoute, async (c) => {
-  const defaultCutoff = parseInt(c.env.DEFAULT_TRIP_CUTOFF_DAYS) || 5
-  const ships = await getShips(c.env.nihonthing_db, defaultCutoff)
+  const ships = await getShips(c.env.nihonthing_db)
   return c.json({ success: true, data: ships })
 })
 

@@ -557,7 +557,7 @@ export const AdminProducts: React.FC = () => {
                     
                     const uploadPromises = selectedFiles.map(async (file) => {
                       const formData = new FormData()
-                      formData.append('folder', 'products/' + (productForm.name_en || 'unnamed').toLowerCase().replace(/\s+/g, '-'))
+                      formData.append('folder', 'products/' + ((productForm.name_en || 'unnamed').toLowerCase().replace(/[\s/\\]+/g, '-').slice(0, 64) || 'unnamed'))
                       formData.append('file', file)
                       const res = await fetch(`${baseUrl}/uploads`, {
                         method: 'POST',

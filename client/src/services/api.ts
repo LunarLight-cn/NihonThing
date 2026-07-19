@@ -16,6 +16,20 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// A 401 anywhere (outside the login call itself) means the session is dead -
+// tell AuthContext so the UI flips to logged-out instead of failing silently.
+api.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    const status = error.response?.status
+    const url: string = error.config?.url || ''
+    if (status === 401 && !url.includes('/auth/')) {
+      window.dispatchEvent(new Event('auth:unauthorized'))
+    }
+    return Promise.reject(error)
+  }
+)
+
 // GET /products is paginated (default limit 20); walk every page so catalog
 // pages that filter client-side see the whole store.
 export const fetchAllProducts = async <T = unknown>(params: Record<string, unknown> = {}): Promise<T[]> => {
