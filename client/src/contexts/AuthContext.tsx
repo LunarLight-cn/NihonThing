@@ -30,7 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Token might be invalid
           logout()
         }
-      } catch (error) {
+      } catch {
         logout()
       } finally {
         setIsLoading(false)
@@ -61,7 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     try {
       await api.post('/auth/logout')
-    } catch (e) {
+    } catch {
       // ignore
     }
     localStorage.removeItem('token')
