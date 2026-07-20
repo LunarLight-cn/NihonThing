@@ -1,0 +1,22 @@
+name: Release Please
+
+# On every push to master, release-please reads the conventional commits since
+# the last release and opens (or updates) a Release PR: feat -> minor, fix ->
+# patch, feat! / BREAKING -> major, chore/docs alone -> no release. Merging that
+# PR cuts the tag, the GitHub Release, and the CHANGELOG entry automatically.
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
